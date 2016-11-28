@@ -1,0 +1,320 @@
+%pragma array=256
+%pragma get
+
+%include "mp4.fl"
+
+%.c{
+
+
+
+
+const unsigned int box_MVEX = BOX( 'm', 'v', 'e', 'x' );
+const unsigned int box_MEHD = BOX( 'm', 'e', 'h', 'd' );
+const unsigned int box_TREX = BOX( 't', 'r', 'e', 'x' );
+const unsigned int box_MFHD = BOX( 'm', 'f', 'h', 'd' );
+const unsigned int box_TFHD = BOX( 't', 'f', 'h', 'd' );
+const unsigned int box_TRUN = BOX( 't', 'r', 'u', 'n' );
+const unsigned int box_TFRA = BOX( 't', 'f', 'r', 'a' );
+const unsigned int box_MOOF = BOX( 'm', 'o', 'o', 'f' );
+const unsigned int box_TRAF = BOX( 't', 'r', 'a', 'f' );
+
+const unsigned int box_TFDT = BOX( 't', 'f', 'd', 't' );
+const unsigned int box_AVCN = BOX( 'a', 'v', 'c', 'n' );
+
+const unsigned int ftyp_DASH = BOX( 'd', 'a', 's', 'h' );
+const unsigned int ftyp_ISO6 = BOX( 'i', 's', 'o', '6' );
+
+const unsigned int box_SDTP = BOX( 's', 'd', 't', 'p' );
+
+
+
+
+
+%.c}
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+aligned(8) class MovieExtendsHeaderBox extends FullBox
+{ 
+     if (version==1) { 
+         unsigned int(32)            fragment_duration_0;
+         unsigned int(32)            fragment_duration; 
+     } else { // version==0 
+         unsigned int(32)            fragment_duration; 
+     } 
+%{
+public:
+	V64(fragment_duration);
+	
+%}
+} 
+
+aligned(8) class TrackExtendsBox extends FullBox
+{ 
+     unsigned int(32)           track_ID; 
+     unsigned int(32)           default_sample_description_index; 
+     unsigned int(32)           default_sample_duration; 
+     unsigned int(32)           default_sample_size; 
+     unsigned int(32)           default_sample_flags; 
+} 
+
+aligned(8) class MovieFragmentHeaderBox extends FullBox
+{ 
+      unsigned int(32)           sequence_number; 
+} 
+
+aligned(8) class TrackFragmentHeaderBox extends FullBox
+{
+      unsigned int(32)           track_ID; 
+      // all the following are optional fields 
+   if(0x000001 & flags)
+   {   
+      unsigned int(32)           base_data_offset_0;
+	  unsigned int(32)           base_data_offset;
+   }
+      
+   if(0x000002 & flags) 
+      unsigned int(32)           sample_description_index = 1; 
+   if(0x000008 & flags)
+      unsigned int(32)           default_sample_duration; 
+   if(0x000010 & flags)
+      unsigned int(32)           default_sample_size; 
+   if(0x000020 & flags)
+      unsigned int(32)           default_sample_flags;
+      
+%{
+public:
+    V64(base_data_offset);
+    
+    TrackFragmentHeaderBox():
+			  base_data_offset_0(0)
+	        , base_data_offset(0)
+	        , sample_description_index(0)
+	        , default_sample_duration(0)
+	        , default_sample_size(0)
+	        , default_sample_flags(0)
+    {
+        
+    }
+%}
+} 
+
+aligned(8) class trun_body(unsigned int flags)
+{ 
+  if(0x000100 & flags)
+    unsigned int(32)           sample_duration; 
+  if(0x000200 & flags)
+    unsigned int(32)           sample_size; 
+  if(0x000400 & flags)
+    unsigned int(32)           sample_flags;
+  if(0x000800 & flags)
+    unsigned int(32)           sample_composition_time_offset; 
+}
+
+aligned(8) class TrackRunBox extends FullBox
+{ 
+%{
+     std::vector<trun_body *> _samples;
+     
+      void cleanup()
+      {
+          for(unsigned int i = 0; i <  _samples.size(); i++)
+	      delete  _samples[i];
+	 
+	      _samples.clear();
+      }
+      
+      void add(unsigned int s_duration,  unsigned int s_size, unsigned int s_flags, unsigned int s_composition_time_offset)
+      {
+		 trun_body * tp = new trun_body;
+		             tp->sample_duration = s_duration;
+		             tp->sample_size     = s_size;
+		             tp->sample_flags    = s_flags;
+		             tp->sample_composition_time_offset = s_composition_time_offset;
+		             
+		  _samples.push_back(tp);
+      }
+      
+      
+%}
+     
+     %p{
+		    sample_count = _samples.size();
+	  %p}
+	  
+     unsigned int(32)          sample_count; 
+     // the following are optional fields 
+     if(0x000001 & flags)
+		int(32) data_offset; 
+	 if(0x000004 & flags)
+     unsigned int(32)          first_sample_flags; 
+     // all fields in the following array are optional
+     
+    unsigned int __i = 0;
+	for (__i=0; __i < sample_count; __i++) {
+	
+	  %p{
+		    _ASSERTE(__i < _samples.size());
+		    _p_trun_body = _samples[__i];
+	  %p}
+	  
+	  trun_body _p_trun_body(flags);
+	  
+	  %g{
+		    _samples.push_back(_p_trun_body);
+	  %g}
+	
+	}
+%{
+public:
+	V32(sample_count);
+	
+	const trun_body & get_item(const int idx) const
+	{
+		return * _samples[idx];
+	}
+	
+	virtual ~TrackRunBox(){cleanup();}
+%}
+}
+
+%{
+struct RandomAccessPoint
+{
+
+     uint64_t time;
+     uint64_t offset;
+     uint64_t traf_number;
+     uint64_t trun_number; 
+     uint64_t sample_number;
+
+};
+%}
+aligned(8) class TrackFragmentRandomAccessBox extends FullBox
+{ 
+%{
+private:
+		std::vector<RandomAccessPoint> _points;
+protected:
+virtual void index_item(
+       uint64_t time
+     , uint64_t offset
+     , uint64_t traf_number 
+     , uint64_t trun_number 
+     , uint64_t sample_number
+)
+{
+     RandomAccessPoint p = {time, offset, traf_number, trun_number, sample_number};
+     _points.push_back(p);
+}
+private:
+%}
+     unsigned int(32)          track_ID; 
+     const unsigned int(26)    reserved = 0; 
+     unsigned int(2)           length_size_of_traf_num; 
+     unsigned int(2)           length_size_of_trun_num; 
+     unsigned int(2)           length_size_of_sample_num; 
+     unsigned int(32)          number_of_entry; 
+     unsigned int i;
+     
+     for(i=1; i <= number_of_entry; i++){ 
+         if(version==1){ 
+             unsigned int(32)           time_0; 
+             unsigned int(32)           time; 
+             unsigned int(32)           moof_offset_0;
+             unsigned int(32)           moof_offset; 
+         }else{ 
+             unsigned int(32)           time; 
+             unsigned int(32)           moof_offset; 
+         } 
+         unsigned int((length_size_of_traf_num+1) * 8)   traf_number; 
+         unsigned int((length_size_of_trun_num+1) * 8)   trun_number; 
+         unsigned int((length_size_of_sample_num+1) * 8) sample_number; 
+     
+     %g{
+		 index_item(
+			  get_time()
+			, get_moof_offset()
+			, traf_number
+			, trun_number
+			, sample_number
+			);
+     %g}
+     } 
+%{
+private:
+      V64(time);
+      V64(moof_offset);
+public:
+	  V32(track_ID);
+	  V32(number_of_entry);
+	  
+	  uint64_t get_count(){return _points.size();}
+	  RandomAccessPoint & get_point(int idx){return _points[idx];}
+	  
+%}
+} 
+
+
+aligned(8) class TrackFragmentBaseMediaDecodeTimeBox extends FullBox
+{ 
+     if (version==1) { 
+         unsigned int(32)            baseMediaDecodeTime_0;
+         unsigned int(32)            baseMediaDecodeTime; 
+     } else { // version==0 
+         unsigned int(32)            baseMediaDecodeTime; 
+     } 
+%{
+public:
+	V64(baseMediaDecodeTime);
+	
+%}
+} 
+
+aligned(8) class TrickPlayBoxRecord
+{ 
+	unsigned int(2) pic_type; 
+	unsigned int(6) dependency_level; 
+} 
+
+aligned(8) class SampleDependencyTypeBoxRecord
+{
+
+unsigned int(2) is_leading;
+unsigned int(2) sample_depends_on;
+unsigned int(2) sample_is_depended_on;
+unsigned int(2) sample_has_redundancy;
+
+}
+
+aligned(8) class SSFLIVE_BODY(unsigned int vers)
+{
+	 %p{
+		    version = vers;
+	 %p}
+	 
+	 %g{
+		    version = vers;
+	 %g}
+	 
+	unsigned int(32)           FragmentAbsoluteTime_0;
+	if(1 == vers)
+		unsigned int(32)           FragmentAbsoluteTime;
+	unsigned int(32)           FragmentDuration_0;
+	if(1 == vers)
+		unsigned int(32)           FragmentDuration;
+%{
+
+	unsigned int version;
+    
+public:
+    V64(FragmentAbsoluteTime);
+    V64(FragmentDuration);
+%}
+}
+
+%{
+__ALX_END_NAMESPACE
+%}

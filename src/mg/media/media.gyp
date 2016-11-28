@@ -1,0 +1,97 @@
+{
+
+   'includes': ['../../../mg.gypi']
+ , 'targets': [
+    {
+      'target_name': 'mgmedia',
+      'type': 'static_library'
+      , 'dependencies': [
+                '../core/core.gyp:mgcore'
+              ]
+      ,'conditions': [
+       		 ['OS == "win"', {
+	
+			        'dependencies': [
+                  '../../../deps/libuv/uv.gyp:libuv'
+              ]
+           }
+           ,{
+            }
+           
+           ]
+      ]
+      
+      
+    , 'rules': [
+       {
+         'rule_name': 'flavor',
+         'extension': 'fl',
+         'inputs': [
+         ],
+         'outputs': [
+           'mp4/<(RULE_INPUT_ROOT).cpp'
+           , 'mp4/<(RULE_INPUT_ROOT).h'
+         ],
+         'action': [
+           'flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
+           , '-oc', 'mp4/<@(RULE_INPUT_ROOT).cpp', '<@(RULE_INPUT_PATH)',
+         ],
+         'process_outputs_as_sources': 1,
+       },
+     ]
+ 
+      
+      
+      
+      
+      
+      , 'defines': [
+        
+      ],
+      'include_dirs': [
+          './'
+        , '../..'
+      ],
+      'sources': [
+          'stdafx.h'
+        , 'TBitstream.h'
+ 
+        , 'mp4/aac.fl'
+        , 'mp4/cenc.fl'
+        , 'mp4/h264.fl'
+        , 'mp4/ltcextension.fl'
+        , 'mp4/mp4.fl'
+        , 'mp4/mp4i_ext.fl'
+        , 'mp4/mp4_fragments.fl'
+        , 'mp4/mpeg4_odf.fl'
+        
+        , 'mp4fragmented.h'
+        , 'media_parser.h'
+        
+        , 'MP4Mux.h'
+        , 'mp4parse.h'
+		, 'media_queue.h'
+		, 'WaveParser.h'
+		, 'fixed_queue.h'
+		, 'h264nal.h'
+		, 'hnano.h'
+		, 'MOOFReader.h'
+    , 'mp4write.h'
+    , 'mp4fragmented.h'
+    , 'MediaJoin.h'
+    , 'mp4edit.h'
+    , 'mp4edit.cpp'
+
+    , '../../mgmedia.h'
+
+    , 'mp4dynamic.h'
+    , 'mp4dynamic.cpp'
+    , 'mp4dynamicinfo.h'
+    , 'mp4dynamicinfo.cpp'
+    , 'hls_renderer.h'
+	, 'mpd_renderer.h'
+        ]              
+    }
+  ]
+}
+

@@ -1,0 +1,11 @@
+{
+         
+  
+   'dependencies': [
+               'test/mgtest.gyp'
+            ]
+    
+
+  
+}
+

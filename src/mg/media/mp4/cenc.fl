@@ -1,0 +1,520 @@
+
+
+%include "mp4.fl"
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+
+%pragma array=256
+
+%.c{
+#include "media_parser.h"
+
+#define box_sinf BOX('s','i','n','f')
+#define box_frma BOX('f','r','m','a')
+#define box_schm BOX('s','c','h','m')
+#define box_schi BOX('s','c','h','i')
+#define box_encv BOX('e', 'n', 'c', 'v')
+#define box_enca BOX('e', 'n', 'c', 'a')
+
+#define box_saio BOX('s', 'a', 'i', 'o')
+#define box_saiz BOX('s', 'a', 'i', 'z')
+
+#define box_senc BOX('s', 'e', 'n', 'c')
+#define box_tenc BOX('t', 'e', 'n', 'c')
+#define box_pssh BOX('p', 's', 's', 'h')
+
+#define box_cenc BOX('c', 'e', 'n', 'c')
+
+#define CENC
+#define BLOCK_LEN 16 
+#define ID_LEN 16
+#define KEY_LEN 16
+
+%.c}
+
+
+
+
+//ainf
+aligned(8) class AssetInformationBox
+{
+	int(32) profile_version;
+	//string APID;
+	//Box other_boxes[]; // optional
+}
+
+//frma
+aligned(8) class OriginalFormatBox 
+{
+   unsigned int(32) data_format;
+   
+   %g{
+         I2C(data_format, _stype);
+   %g}
+  
+  
+  %{
+      TCHAR _stype[5];
+  %}
+	
+}
+
+//schm
+aligned(8) class SchemeTypeBox extends FullBox
+{
+	unsigned int(32) scheme_type; // 4CC identifying the scheme
+	unsigned int(32) scheme_version; // scheme version
+		if (flags & 0x000001) {
+			unsigned int(8) scheme_uri; // browser uri
+		}
+		
+   %g{
+         I2C(scheme_type, _stype);
+   %g}
+  
+  
+  %{
+      TCHAR _stype[5];
+  %}
+}
+
+
+//tenc
+aligned(8) class TrackEncryptionBox extends FullBox
+{
+	unsigned int(8) reserved = 0;
+	if (version==0) {
+		unsigned int(8) reserved2 = 0;
+	}
+	else { // version is 1 or greater
+			unsigned int(4) default_crypt_byte_block;
+			unsigned int(4) default_skip_byte_block;
+	}
+	unsigned int(8) default_isProtected;
+	unsigned int(8) default_Per_Sample_IV_Size;
+	
+	unsigned char(8) default_KID;
+	unsigned char(8) default_KID_0;
+	unsigned char(8) default_KID_1;
+	unsigned char(8) default_KID_2;
+	unsigned char(8) default_KID_3;
+	unsigned char(8) default_KID_4;
+	unsigned char(8) default_KID_5;
+	unsigned char(8) default_KID_6;
+	unsigned char(8) default_KID_7;
+	unsigned char(8) default_KID_8;
+	unsigned char(8) default_KID_9;
+	unsigned char(8) default_KID_10;
+	unsigned char(8) default_KID_11;
+	unsigned char(8) default_KID_12;
+	unsigned char(8) default_KID_13;
+	unsigned char(8) default_KID_14;
+	
+	if (default_isProtected ==1 && default_Per_Sample_IV_Size == 0) {
+		unsigned int(8) default_constant_IV_size;
+		
+		unsigned int x = 0;
+	
+		for (x=0; x < default_constant_IV_size; x++) 
+		{
+		   unsigned char(8) default_constant_IV[[x]];
+		}
+	}
+}
+
+aligned(8) class SampleEncryptionInitializationVector64
+{	
+	unsigned char(8) InitializationVector_0;
+	unsigned char(8) InitializationVector_1;
+	unsigned char(8) InitializationVector_2;
+	unsigned char(8) InitializationVector_3;
+	unsigned char(8) InitializationVector_4;
+	unsigned char(8) InitializationVector_5;
+	unsigned char(8) InitializationVector_6;
+	unsigned char(8) InitializationVector_7;
+}
+
+aligned(8) class SubSampleEncryptionBox
+{
+	unsigned int(16) BytesOfClearData;
+	unsigned int(32) BytesOfProtectedData;
+}
+
+aligned(8) class SingleEncryptionBox(int ff)
+{
+%{
+	std::vector<SubSampleEncryptionBox *> _sub_samples;
+	
+	SingleEncryptionBox():
+		subsample_count(0)
+		, init_vector(NULL)
+	{}
+	
+	virtual ~SingleEncryptionBox()
+	{
+	   for(unsigned int i = 0; i < _sub_samples.size(); i++)
+	   {
+		  delete _sub_samples[i];
+	   }
+	   
+	   _sub_samples.clear();
+	   
+	   delete init_vector;
+	}
+%}
+	SampleEncryptionInitializationVector64 init_vector;
+	if(ff & 0x000002)
+	{
+		unsigned int(16) subsample_count;
+		
+		unsigned int i = 0;
+	
+		for(i = 0; i < subsample_count; i++)
+		{
+		    %p{ _p_sub_sample = _sub_samples[i]; %p}
+		    
+			SubSampleEncryptionBox _p_sub_sample;
+			
+			%g{_sub_samples.push_back(_p_sub_sample);%g}
+		}
+	}
+}
+
+//(‘senc’, version=0, flags)
+aligned(8) class SampleEncryptionBox extends FullBox
+{
+%{
+	std::vector<SingleEncryptionBox *> _samples;
+	
+	void cleanup()
+	{
+	   for(unsigned int i = 0; i < _samples.size(); i++)
+	   {
+		  delete _samples[i];
+	   }
+	   
+	   _samples.clear();
+	}
+	
+	~SampleEncryptionBox()
+	{
+		cleanup();
+	}
+	
+%}
+	unsigned int(32) sample_count;
+	
+	unsigned int i = 0;
+	
+	for(i = 0; i < sample_count; i++)
+	{
+	    %p{ _p_single_box = _samples[i]; %p}
+	    
+		SingleEncryptionBox _p_single_box(flags);
+		
+		%g{_samples.push_back(_p_single_box);%g}
+    
+	}
+	
+	
+}
+
+
+//(‘saiz’, version = 0, flags)
+aligned(8) class SampleAuxiliaryInformationSizesBox extends FullBox
+{
+%{
+	std::vector<int> _samples_info_size;
+%}
+
+	if (flags & 1) {
+		unsigned int(32) aux_info_type;
+		unsigned int(32) aux_info_type_parameter;
+	}
+	
+	unsigned int(8) default_sample_info_size;
+	unsigned int(32) sample_count;
+	
+	if (default_sample_info_size == 0) {
+	   unsigned int i = 0;
+	   for(i = 0 ; i < sample_count; i++)
+	   {
+			%p{ sample_info_size = _samples_info_size[i]; %p}
+		    
+			unsigned int(8) sample_info_size;
+		
+			%g{_samples_info_size.push_back(sample_info_size);%g}
+		}
+	}
+}
+
+//(‘saio’, version, flags)
+aligned(8) class SampleAuxiliaryInformationOffsetsBox extends FullBox
+{
+%{
+	  V64(offset);
+	  
+	  std::vector<uint64_t> _samples_offset;
+%}
+	if (flags & 1) {
+		unsigned int(32) aux_info_type;
+		unsigned int(32) aux_info_type_parameter;
+	}
+	unsigned int(32) entry_count;
+	
+	unsigned int i = 0;
+	   for(i = 0 ; i < entry_count; i++)
+	   {
+			%p{ set_offset(_samples_offset[i]); %p}
+		    
+			unsigned int(32) offset;
+			if ( version == 0 ) {
+				
+			}
+			else {
+				unsigned int(32) offset_0;
+			}
+		
+			%g{_samples_offset.push_back(get_offset());%g}
+		}
+	
+	
+}
+
+//(‘pssh’, version, flags=0)
+aligned(8) class ProtectionSystemSpecificHeaderBox extends FullBox
+{
+%{
+	  unsigned char *  _p_data;
+	  
+	  ~ProtectionSystemSpecificHeaderBox()
+	  {
+		delete[] _p_data;
+	  }
+%}
+	unsigned char(8) SystemID;
+	unsigned char(8) SystemID_1;
+	unsigned char(8) SystemID_2;
+	unsigned char(8) SystemID_3;
+	unsigned char(8) SystemID_4;
+	unsigned char(8) SystemID_5;
+	unsigned char(8) SystemID_6;
+	unsigned char(8) SystemID_7;
+	unsigned char(8) SystemID_8;
+	unsigned char(8) SystemID_9;
+	unsigned char(8) SystemID_10;
+	unsigned char(8) SystemID_11;
+	unsigned char(8) SystemID_12;
+	unsigned char(8) SystemID_13;
+	unsigned char(8) SystemID_14;
+	unsigned char(8) SystemID_15;
+	
+	unsigned char _end = 0x00;
+	
+	if (version > 0)
+	{
+		unsigned int(32) KID_count;
+		
+	   unsigned int i = 0;
+	   for(i = 0 ; i < KID_count; i++)
+	   {
+					unsigned char(8) KID;		
+			        unsigned char(8) KID_1;
+					unsigned char(8) KID_2;
+					unsigned char(8) KID_3;
+					unsigned char(8) KID_4;
+					unsigned char(8) KID_5;
+					unsigned char(8) KID_6;
+					unsigned char(8) KID_7;
+					unsigned char(8) KID_8;
+					unsigned char(8) KID_9;
+					unsigned char(8) KID_10;
+					unsigned char(8) KID_11;
+					unsigned char(8) KID_12;
+					unsigned char(8) KID_13;
+					unsigned char(8) KID_14;
+					unsigned char(8) KID_15;
+		} 
+	}
+	
+	unsigned int(32) DataSize;
+	
+	%g{  _p_data = new unsigned char[DataSize]; %g}
+	
+	unsigned int k = 0;
+	for(k = 0 ; k < DataSize; k++)
+	{
+	   %p{  Data = _p_data[k]; %p}
+	   
+	   unsigned char(8) Data;
+	   
+	   %g{  _p_data[k] = Data; %g}
+	}
+	
+}
+
+/*
+//(‘ainf’, version=0, flags)
+aligned(8) class AssetInformationBox extends FullBox
+{
+	int(32) profile_version;
+	//string APID;
+	//Box other_boxes[]; // optional
+}
+*/
+
+aligned(8) class SampleToGroupBoxItem
+{
+        unsigned int(32) sample_count;
+		unsigned int(32) group_description_index;
+}
+
+//(‘sbgp’, version, 0)
+aligned(8) class SampleToGroupBox extends FullBox
+{
+
+%{
+	std::vector<SampleToGroupBoxItem*> _samples;
+	  
+	~SampleToGroupBox()
+	{
+	   for(unsigned int i = 0; i < _samples.size(); i++)
+	   {
+		  delete _samples[i];
+	   }
+	   
+	   _samples.clear();
+	}
+%}
+
+	unsigned int(32) grouping_type;
+	if (version == 1) {
+		unsigned int(32) grouping_type_parameter;
+	}
+	
+	unsigned int(32) entry_count;
+	
+	unsigned int i = 0;
+	
+	for (i=1; i <= entry_count; i++)
+	{
+		 %p{ _item = _samples[i]; %p}
+		 
+		 SampleToGroupBoxItem _item;
+		 
+		 %g{_samples.push_back(_item);%g}
+	}
+}
+
+
+//extends SampleGroupEntry( ‘seig’ )
+aligned(8) class CencSampleEncryptionInformationGroupEntry
+{
+%{
+	CencSampleEncryptionInformationGroupEntry()
+		: constant_IV_size(0)
+	{}
+%}
+	unsigned int(8) reserved = 0;
+	unsigned int(4) crypt_byte_block = 0;
+	unsigned int(4) skip_byte_block = 0;
+	unsigned int(8) isProtected;
+	unsigned int(8) Per_Sample_IV_Size;
+	
+					unsigned char(8) KID;		
+			        unsigned char(8) KID_1;
+					unsigned char(8) KID_2;
+					unsigned char(8) KID_3;
+					unsigned char(8) KID_4;
+					unsigned char(8) KID_5;
+					unsigned char(8) KID_6;
+					unsigned char(8) KID_7;
+					unsigned char(8) KID_8;
+					unsigned char(8) KID_9;
+					unsigned char(8) KID_10;
+					unsigned char(8) KID_11;
+					unsigned char(8) KID_12;
+					unsigned char(8) KID_13;
+					unsigned char(8) KID_14;
+					unsigned char(8) KID_15;
+	
+	
+	if (isProtected == 1 && Per_Sample_IV_Size == 0) 
+	{
+		unsigned int(8) constant_IV_size;
+		
+		unsigned int k = 0;
+		for(k = 0; k < constant_IV_size; k++)
+		{		
+			unsigned char(8) constant_IV;
+		}
+	}
+}
+
+
+
+//('sgpd', version, 0)
+aligned(8) class SampleGroupDescriptionBox extends FullBox
+{
+
+%{
+	SampleGroupDescriptionBox():_seig(NULL){}
+	~SampleGroupDescriptionBox(){delete _seig;}
+%}
+	unsigned int(32) grouping_type;
+	
+	if (version==1) 
+	{ unsigned int(32) default_length; }
+	
+	unsigned int(32) entry_count;
+	unsigned int i = 0;
+
+	for (i = 1 ; i <= entry_count ; i++)
+	{
+		if (version==1)
+		{
+			if (default_length==0) 
+			{
+				unsigned int(32) description_length;
+			}
+		}
+		
+		
+		if(0x73656967 == grouping_type) //seig
+		{
+			CencSampleEncryptionInformationGroupEntry _seig;
+		}
+	}
+	
+}
+
+
+
+
+/*
+		switch (grouping_type)
+		{
+			
+			case ‘vide’: // for video tracks
+			VisualSampleGroupEntry (grouping_type);
+			break;
+			case ‘soun’: // for audio tracks
+			AudioSampleGroupEntry(grouping_type);
+			break;
+			case ‘hint’: // for hint tracks
+			HintSampleGroupEntry(grouping_type);
+			break;
+			
+			
+		}
+		*/
+	
+
+	
+
+%{
+__ALX_END_NAMESPACE
+%}

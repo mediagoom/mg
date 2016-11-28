@@ -1,0 +1,953 @@
+
+%.c{
+#include "media_parser.h"
+
+#define V64(n) uint64_t get_ ## n  () const {if(1==version){return UI64(n ## _0, n);}else{return static_cast<uint64_t>(n);}}  \
+            void set_ ## n  (const uint64_t rhs){n ## _0 = (rhs >> 32); n = static_cast<uint32_t>(rhs);}
+#define S64(n) int64_t get_ ## n  () const {if(1==version){return I64(n ## _0, n);}else{return n;}}  \
+            void set_ ## n  (const int64_t rhs){n ## _0 = (rhs >> 32); n = static_cast<int>(rhs);}
+#define V32(n) unsigned int get_ ## n  () const {return n;} void set_ ## n  (const  unsigned int rhs){n = rhs;}
+#define I2C(type, v) v[0] = 0x000000FF & type >> 24;v[1] = 0x000000FF & type >> 16;v[2] = 0x000000FF & type >> 8;v[3] = 0x000000FF & type ;v[4] = 0x00;
+
+#define BOX(a,b,c,d) (((a)<<24)|((b)<<16)|((c)<<8)|(d))
+
+//#include "mp4/mpeg4_odf.h"
+
+%.c}
+
+%include "mpeg4_odf.fl"
+
+
+%pragma array=256
+%pragma get
+
+
+%.c{
+
+
+#define box_uuid BOX('u','u','i','d')
+#define box_ftyp BOX('f','t','y','p')
+#define box_avc1 BOX('a','v','c','1')
+#define box_avcC BOX('a','v','c','C')
+#define box_mp4a BOX('m','p','4','a')
+#define box_esds BOX('e','s','d','s')
+#define box_stsz BOX('s','t','s','z')
+#define box_stz2 BOX('s','t','z','2')
+#define box_stco BOX('s','t','c','o')
+#define box_co64 BOX('c','o','6','4')
+#define box_stsc BOX('s','t','s','c')
+#define box_trak BOX('t','r','a','k')
+#define box_tkhd BOX('t','k','h','d')
+#define box_moov BOX('m','o','o','v')
+#define box_mvhd BOX('m','v','h','d')
+#define box_mdia BOX('m','d','i','a')
+#define box_mdhd BOX('m','d','h','d')
+#define box_minf BOX('m','i','n','f')
+#define box_hdlr BOX('h','d','l','r')
+#define box_vmhd BOX('v','m','h','d')
+#define box_smhd BOX('s','m','h','d')
+#define box_dinf BOX('d','i','n','f')
+#define box_dref BOX('d','r','e','f')
+#define box_stbl BOX('s','t','b','l')
+#define box_stsd BOX('s','t','s','d')
+#define box_mdat BOX('m','d','a','t')
+#define box_free BOX('f','r','e','e')
+#define box_btrt BOX('b','t','r','t')
+
+#define box_stts BOX('s','t','t','s')
+#define box_ctts BOX('c','t','t','s')
+#define box_stss BOX('s','t','s','s')
+#define box_edts BOX('e','d','t','s')
+#define box_elst BOX('e','l','s','t')
+#define box_iods BOX('i','o','d','s')
+
+#define box_pasp BOX('p','a','s','p')
+#define box_clap BOX('c','a','a','p')
+
+#define ftyp_isom BOX('i','s','o','m')
+#define ftyp_iso2 BOX('i','s','o','2')
+#define ftyp_avc1 BOX('a','v','c','1')
+#define ftyp_mp41 BOX('m','p','4','1')
+
+
+#define box_url  BOX('u', 'r', 'l', ' ')
+#define box_xml  BOX('x', 'm', 'l', ' ')
+#define box_meta BOX('m', 'e', 't', 'a')
+
+
+
+
+
+%.c}
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+
+const unsigned int BOX_UUID = 0x75756964;
+
+const unsigned int handler_vide = 0x76696465;
+const unsigned int handler_soun = 0x736f756e;
+
+
+aligned(8) class Box
+{
+%{
+private:
+%}
+  unsigned int(32) size;
+  unsigned int(32) type;
+  
+  if(size == 1)
+  {
+     unsigned int(32) x;
+     unsigned int(32) y;
+  }
+  
+  if(type == BOX_UUID)
+  {
+    unsigned char(8) byte_01;
+    unsigned char(8) byte_02;
+    unsigned char(8) byte_03;
+    unsigned char(8) byte_04;
+   
+    unsigned char(8) byte_05;
+    unsigned char(8) byte_06;
+    unsigned char(8) byte_07;
+    unsigned char(8) byte_08;
+   
+    unsigned char(8) byte_09;
+    unsigned char(8) byte_10;
+    unsigned char(8) byte_11;
+    unsigned char(8) byte_12;
+   
+    unsigned char(8) byte_13;
+    unsigned char(8) byte_14;
+    unsigned char(8) byte_15;
+    unsigned char(8) byte_16;
+
+   } 
+    
+   %g{
+         I2C(type, _stype);
+   %g}
+  
+  
+  %{
+      TCHAR _stype[5];
+public:
+      Box()
+      {
+        
+      }
+      
+      const unsigned char * guid() const {return &byte_01;}
+            unsigned char * direct_guid() {return &byte_01;}
+      
+      const TCHAR* get_type_string() const
+      { 
+         return reinterpret_cast<const TCHAR*>(_stype);
+      }
+      
+      uint64_t get_size() const
+      {
+         uint64_t s = size;
+
+         if(1 == s)
+         {
+            s = UI64(x, y);
+         }
+
+	  if(type == BOX_UUID)
+	  	s -= 16; 
+         
+         return s;
+      }
+      
+      V32(type);
+   %}
+}
+
+class FullBox
+{
+%{
+protected:
+%}
+   unsigned int(8) version;
+   bit(24)         flags;
+%{
+public:
+	V32(version);
+	V32(flags);
+
+    FullBox():version(0), flags(0){}
+%}
+}
+
+aligned(8) class PixelAspectRatioBox
+{
+   unsigned int(32) hSpacing;
+   unsigned int(32) vSpacing;
+}
+
+aligned(8) class CleanApertureBox
+{
+unsigned int(32) cleanApertureWidthN;
+unsigned int(32) cleanApertureWidthD;
+unsigned int(32) cleanApertureHeightN;
+unsigned int(32) cleanApertureHeightD;
+unsigned int(32) horizOffN;
+unsigned int(32) horizOffD;
+unsigned int(32) vertOffN;
+unsigned int(32) vertOffD;
+}
+
+
+aligned(8) class MovieHeaderBox extends FullBox
+{
+%{
+private:
+%}
+	if (version==1) 
+	{
+	    unsigned int(32) creation_time_0;
+		unsigned int(32) creation_time;
+		unsigned int(32) modification_time_0;
+		unsigned int(32) modification_time;
+		unsigned int(32) timescale;
+		unsigned int(32) duration_0;
+		unsigned int(32) duration;
+	} else { // version==0
+		unsigned int(32) creation_time;
+		unsigned int(32) modification_time;
+		unsigned int(32) timescale;
+		unsigned int(32) duration;
+	}
+
+	int(32) rate; // = 0x00010000; // typically 1.0
+	int(16) volume; // = 0x0100; // typically, full volume
+	const bit(16) bit_reserved = 0;
+	unsigned int(32) reserved = 0;
+	unsigned int(32) reserved = 0;
+	//int(32)[9] matrix = { 0x00010000,0,0,0,0x00010000,0,0,0,0x40000000 };
+	int(32) matrix_1;
+	int(32) matrix_2;
+	int(32) matrix_3;
+	int(32) matrix_4;
+	int(32) matrix_5;
+	int(32) matrix_6;
+	int(32) matrix_7;
+	int(32) matrix_8;
+	int(32) matrix_9;
+
+	// Unity matrix
+	bit(32) pre_defined = 0;
+	bit(32) pre_defined = 0;
+	bit(32) pre_defined = 0;
+	bit(32) pre_defined = 0;
+	bit(32) pre_defined = 0;
+	bit(32) pre_defined = 0;
+	
+	unsigned int(32) next_track_ID;
+%{
+public:
+    V64(creation_time);
+	V64(modification_time);
+	V64(duration);
+	V32(timescale);
+	V32(rate);
+	V32(volume);
+	V32(next_track_ID);
+	
+	uint64_t get_duration_hns()const{return (1000UL * 10000UL * get_duration()) / get_timescale() ;}
+
+     MovieHeaderBox():
+         matrix_1(0x00010000)
+       , matrix_2(0)
+       , matrix_3(0)
+       , matrix_4(0)
+       , matrix_5(0x00010000)
+       , matrix_6(0)
+       , matrix_7(0)
+       , matrix_8(0)
+       , matrix_9(0x40000000)
+       , rate(0x00010000) // typically 1.0
+       , volume(0x0100)        
+     {
+     }
+%}
+}
+
+aligned(8) class TrackHeaderBox extends FullBox
+{
+%{
+private:
+%}
+	if (version==1) {
+		unsigned int(32) creation_time_0;
+		unsigned int(32) creation_time;
+		unsigned int(32) modification_time_0;
+		unsigned int(32) modification_time;
+		unsigned int(32) track_ID;
+		unsigned int(32) reserved = 0;
+		unsigned int(32) duration_0;
+		unsigned int(32) duration;
+	} else { // version==0
+		unsigned int(32) creation_time;
+		unsigned int(32) modification_time;
+		unsigned int(32) track_ID;
+		unsigned int(32) reserved = 0;
+		unsigned int(32) duration;
+	}
+
+    unsigned int(32) reserved = 0;
+    unsigned int(32) reserved = 0;
+    int(16) layer;
+    int(16) alternate_group;// = 0;
+    int(16) volume; // = {if track_is_audio 0x0100 else 0};
+    unsigned int(16) reserved = 0;
+
+    int(32) matrix_1;
+	int(32) matrix_2;
+	int(32) matrix_3;
+	int(32) matrix_4;
+	int(32) matrix_5;
+	int(32) matrix_6;
+	int(32) matrix_7;
+	int(32) matrix_8;
+	int(32) matrix_9;
+
+	unsigned int(16) width;
+	unsigned int(16) width_coma;
+	unsigned int(16) height;
+	unsigned int(16) height_coma;
+%{
+public:
+    V64(creation_time);
+	V64(modification_time);
+	V64(duration);
+	V32(width);
+	V32(height);
+	V32(volume);
+	V32(track_ID);
+
+	TrackHeaderBox():
+	   layer(0)
+         , alternate_group(0)
+       , matrix_1(0x00010000)
+       , matrix_2(0)
+       , matrix_3(0)
+       , matrix_4(0)
+       , matrix_5(0x00010000)
+       , matrix_6(0)
+       , matrix_7(0)
+       , matrix_8(0)
+       , matrix_9(0x40000000)
+       , duration(0)
+       , width(0)
+       , width_coma(0)
+       , height(0)
+       , height_coma(0)
+	{
+	}
+%}
+}
+
+
+aligned(8) class MediaHeaderBox extends FullBox
+{
+%{
+private:
+        TCHAR _lang[4];
+%}
+	if (version==1) {
+		unsigned int(32) creation_time_0;
+		unsigned int(32) creation_time;
+		unsigned int(32) modification_time_0;
+		unsigned int(32) modification_time;
+		unsigned int(32) timescale;
+		unsigned int(32) duration_0;
+		unsigned int(32) duration;
+	} else { // version==0
+	unsigned int(32) creation_time;
+	unsigned int(32) modification_time;
+	unsigned int(32) timescale;
+	unsigned int(32) duration;
+	}
+	bit(1) pad = 0;
+	//unsigned int(5)[3] language; // ISO-639-2/T language code
+	
+	//char(5) ISO_639_language_code_1;
+	//char(5) ISO_639_language_code_2;
+	//char(5) ISO_639_language_code_3;
+    //char ZERO = '\0';
+
+%{
+public:
+%}   
+    unsigned int(5) lang_1;
+    unsigned int(5) lang_2;
+    unsigned int(5) lang_3;
+    
+	unsigned int(16) pre_defined = 0;
+%{
+public:
+    V64(creation_time);
+	V64(modification_time);
+	V64(duration);
+	V32(timescale);
+/*	
+	lang += 0x60 = ascci
+
+*/
+    TCHAR * get_lang(){_lang[0]=lang_1+0x60;_lang[1]=lang_2+0x60;_lang[2]=lang_3+0x60;_lang[3]='\0';return _lang;}
+    
+    void set_lang(TCHAR * lang){lang_1=lang[0]-0x60;lang_2=lang[1]-0x60;lang_3=lang[2]-0x60;}
+
+
+    uint64_t get_duration_hns()const {return (1000UL * 10000UL * get_duration()) / get_timescale() ;}
+
+    MediaHeaderBox():
+      lang_1(21)
+    , lang_2(14)
+    , lang_3(4)
+    {}
+%}
+}
+
+aligned(8) class HandlerBox extends FullBox
+{
+     unsigned int(32) pre_defined = 0;
+     unsigned int(32) handler_type;
+     unsigned int(32) reserved;
+     unsigned int(32) reserved;
+     unsigned int(32) reserved;
+    %{TCHAR desc[1024];
+      TCHAR htype[5];
+      unsigned int __body_size;
+private:
+    %}
+    unsigned int __x = 0;
+    unsigned int __max = 0;
+
+    %g{__max = __body_size;%g}
+    %p{__max = __body_size;%p}
+    
+    while(__x < __max)
+    {
+       %p{__name = desc[__x++];%p}
+
+       char(8) __name;
+       
+       %g{
+       _ASSERTE(__max < 1022);
+
+      desc[__x++] = __name;
+      //if(__name == '\0')
+      //	 break;
+      %g}
+    }
+
+    %g{
+    desc[__x] = '\0';
+    I2C(handler_type, htype);
+    %g}
+%{
+public:
+    HandlerBox(unsigned int boxsize){ _ASSERTE(32 <= boxsize); __body_size = boxsize - 32;}
+    HandlerBox():reserved(0)
+    {
+desc[0] = 'F';
+desc[1] = 'O';
+desc[2] = 'U';
+desc[3] = 'N';
+desc[4] = 'D';
+desc[5] = 'A';
+desc[6] = 'T';
+desc[7] = 'I';
+desc[8] = 'O';
+desc[9] = 'N';
+desc[10] = ' ';
+desc[11] = 'M';
+desc[12] = 'E';
+desc[13] = 'D';
+desc[14] = 'I';
+desc[15] = 'A';
+desc[16] = ' ';
+desc[17] = 'H';
+desc[18] = 'A';
+desc[19] = 'N';
+desc[20] = 'D';
+desc[21] = 'L';
+desc[22] = 'E';
+desc[23] = 'R';
+desc[24] = '\0';
+desc[25] = '\0';
+desc[26] = '\0';
+
+__body_size = 25;
+       
+    }
+%}
+}
+
+aligned(8) class DataReferenceBox extends FullBox
+{
+   unsigned int(32) entry_count;
+%{
+    DataReferenceBox():entry_count(0)
+    {
+       //flags = 0x000001;//data in the file
+    }
+%}
+}
+
+aligned(8) class SampleDescriptionBox extends FullBox
+{
+   unsigned int(32) entry_count;
+}
+
+aligned(8) class SampleEntry 
+{
+  unsigned int(8) reserved = 0;
+  unsigned int(8) reserved = 0;
+  unsigned int(8) reserved = 0;
+  unsigned int(8) reserved = 0;
+  unsigned int(8) reserved = 0;
+  unsigned int(8) reserved = 0;
+  
+  int(16) data_reference_index;
+}
+
+aligned(8) class VisualSampleEntry extends SampleEntry 
+{
+     unsigned int(16) pre_defined = 0;
+     unsigned int(16) reserved = 0;
+     
+     unsigned int(32)/*[3]*/ pre_defined = 0;
+     unsigned int(32)/*[3]*/ pre_defined = 0;
+     unsigned int(32)/*[3]*/ pre_defined = 0;
+     
+     unsigned int(16) width;
+     unsigned int(16) height;
+
+     unsigned int(32) horizresolution; // 72 dpi
+     unsigned int(32) vertresolution; // 72 dpi
+     unsigned int(32) reserved = 0;
+     unsigned int(16) frame_count;
+     
+     unsigned int(8) size;
+     unsigned int idx = 0;
+     unsigned int _string_array_size = 31;
+     
+     //string[32] compressorname;
+     while(idx < size)
+     {
+	char(8) compressorname[[idx++]];
+     }
+	 
+    %g{compressorname[idx++] = '\0';_string_array_size++;%g}
+	 
+    while(idx < _string_array_size)
+     	char(8) compressorname[[idx++]];
+	 
+     unsigned int(16) depth;
+     int(16) pre_defined16 = -1;
+     //CleanApertureBox clap; // optional
+     //PixelAspectRatioBox pasp; // optional
+}
+
+aligned(8) class AVCDecoderConfigurationRecord 
+{
+%{
+	
+protected:
+	virtual void add_sequence_parameter_set(const unsigned char * body, unsigned int size){}
+	virtual void add_picture_parameter_set (const unsigned char * body, unsigned int size){}
+public:
+%}
+	unsigned int(8) configurationVersion = 1;
+	unsigned int(8) AVCProfileIndication;
+	unsigned int(8) profile_compatibility;
+	unsigned int(8) AVCLevelIndication;
+	bit(6) reserved = 0b111111;
+	unsigned int(2) lengthSizeMinusOne;
+	
+	%p{reserved = 0x7;%p}
+	
+	bit(3) reserved; //= 0b111;
+	
+	%g{if(0x7 != reserved){MG_WARNING("AVCDecoderConfigurationRecord reserved mismatch!");}%g}
+	
+	
+	unsigned int(5) numOfSequenceParameterSets;
+
+	unsigned int __idx = 0;
+	unsigned int __idy = 0;
+	
+	for (__idx=0; __idx < numOfSequenceParameterSets; __idx++) 
+	{
+	    unsigned int(16) sequenceParameterSetLength[[__idx]] ;
+	    
+	    for(__idy = 0; __idy < sequenceParameterSetLength[__idx]; __idy++)
+			unsigned char(8) sequenceParameterSetNALUnit[[__idy]];
+		
+		%g{add_sequence_parameter_set(sequenceParameterSetNALUnit, sequenceParameterSetLength[__idx]);%g}
+    }
+    
+    unsigned int(8) numOfPictureParameterSets;
+    for (__idx=0; __idx< numOfPictureParameterSets; __idx++) 
+    {
+       unsigned int(16) pictureParameterSetLength[[__idx]];
+       
+       for(__idy = 0; __idy < pictureParameterSetLength[__idx]; __idy++)
+       		unsigned char(8) pictureParameterSetNALUnit[[__idy]];
+       		
+       %g{add_picture_parameter_set(pictureParameterSetNALUnit, pictureParameterSetLength[__idx]);%g}
+    }
+%{
+public:
+      const BYTE* get_sequence(unsigned int idx = 0) const {_ASSERTE(0==idx);return sequenceParameterSetNALUnit;}
+      const unsigned int get_sequence_size(unsigned int idx = 0) const {_ASSERTE(0==idx);return  sequenceParameterSetLength[idx];}
+      const unsigned int get_sequence_count() const {return numOfSequenceParameterSets;}
+
+
+
+      const BYTE* get_picture(unsigned int idx = 0) const {_ASSERTE(0==idx);return pictureParameterSetNALUnit;}
+      const unsigned int get_picture_size(unsigned int idx = 0) const {_ASSERTE(0==idx);return  pictureParameterSetLength[idx];}
+      const unsigned int get_picture_count() const {return numOfPictureParameterSets;}
+      
+      unsigned int get_nal_length_size() const {return lengthSizeMinusOne + 1;}
+
+      void set_sps(const BYTE * source, const int size)
+      {
+         numOfSequenceParameterSets    = 1;
+	 sequenceParameterSetLength[0] = size;
+
+	 for(int ix = 0; ix < size; ix++)
+	      sequenceParameterSetNALUnit[ix] = source[ix];
+	       
+
+      }
+
+      void set_pps(const BYTE * source, const int size)
+      {
+         numOfPictureParameterSets    = 1;
+	 pictureParameterSetLength[0] = size;
+
+	 for(int ix = 0; ix < size; ix++)
+	      pictureParameterSetNALUnit[ix] = source[ix];
+	       
+
+      }
+      
+      
+%}
+}
+
+aligned(8) class BitRateBox 
+{
+    unsigned int(32) bufferSizeDB;
+    unsigned int(32) maxBitrate;
+    unsigned int(32) avgBitrate;
+}
+
+aligned(8) class TimeToSampleBox extends FullBox
+{
+    unsigned int(32) entry_count;
+	/*int i;
+	for (i=0; i < entry_count; i++) {
+	unsigned int(32) sample_count;
+	unsigned int(32) sample_delta;
+	}*/
+}
+
+aligned(8) class AudioSampleEntry extends SampleEntry 
+{
+   unsigned int(32) reserved = 0;
+   unsigned int(32) reserved = 0;
+   unsigned int(16) channelcount;
+   unsigned int(16) samplesize;
+   unsigned int(16) pre_defined = 0;
+   unsigned int(16) reserved16 = 0 ;
+   unsigned int(32) samplerate;
+
+%{
+public:
+	V32(channelcount);
+	V32(samplesize);
+    unsigned int get_samplerate() const {return (samplerate >> 16);}
+    void set_samplerate(const unsigned int sr){samplerate = (sr << 16);}
+%}
+}
+
+aligned(8) class EditListBoxItem
+{
+%{
+   uint64_t _segment_duration;
+            int64_t _media_time;
+   short    _media_rate_integer;
+   short    _media_rate_fraction;
+%}
+}
+
+aligned(8) class EditListBox extends FullBox
+{
+%{
+private:
+        std::vector<EditListBoxItem*> _items;
+%}
+	
+	
+	%p{ 
+	_ASSERTE(_items.size());
+	__entry_count = (_items.size());
+	%p}
+	
+	unsigned int(32) __entry_count;
+	
+    unsigned int __i = 0;
+	for (__i=1; __i <= __entry_count; __i++) {
+	
+	
+		%p{
+		    _ASSERTE(__i <= _items.size());
+
+		    set_segment_duration(_items[__i - 1]->_segment_duration);
+		    set_media_time(_items[__i - 1]->_media_time);
+		    media_rate_integer  = _items[__i - 1]->_media_rate_integer;
+		    media_rate_fraction = _items[__i - 1]->_media_rate_fraction;
+		   
+		%p}
+		
+		
+		if (version==1) {
+			unsigned int(32) segment_duration_0;
+			unsigned int(32) segment_duration;
+			int(32) media_time_0;
+			int(32) media_time;
+		} else { // version==0
+			unsigned int(32) segment_duration;
+			int(32) media_time;
+		}
+		int(16) media_rate_integer;
+		int(16) media_rate_fraction = 0;
+		
+
+		%g{
+		add_item(get_segment_duration()
+		       , get_media_time()
+		       , media_rate_integer
+		       , media_rate_fraction);
+
+		%g}
+
+	}
+%{
+      V64(segment_duration);
+      S64(media_time);
+      void cleanup()
+      {
+          for(unsigned int i = 0; i <  _items.size(); i++)
+	    delete  _items[i];
+	 
+	   _items.clear();
+      }
+public:
+      virtual ~EditListBox()
+      {
+        cleanup();
+      }
+
+      unsigned int count() const {_ASSERTE(__entry_count == _items.size());return _items.size();}
+      const EditListBoxItem& entry(uint32_t idx) const{_ASSERTE(idx < _items.size());return *_items[idx];}
+      
+      void add_item(
+       	  const uint64_t segment_duration
+	, const          int64_t media_time
+	, const uint64_t u_media_rate_integer
+	, const uint64_t u_media_rate_fraction = 0
+	)
+      {
+        EditListBoxItem * p     = new EditListBoxItem;
+	p->_segment_duration    = segment_duration;
+	p->_media_time          = media_time;
+	p->_media_rate_integer  = static_cast<short>(u_media_rate_integer);
+	p->_media_rate_fraction = static_cast<short>(u_media_rate_fraction);
+
+	_items.push_back(p);
+      }
+
+%}
+}
+
+
+aligned(8) class FileTypeBox
+{
+%{
+private:
+     std::vector<unsigned int> _items;
+     unsigned int _size;
+     
+%}
+     unsigned int(32) major_brand;
+     unsigned int(32) minor_version;
+
+     unsigned int __size = 0;
+     %g{__size = _size;%g}
+     %p{__size = _items.size() * 4;int c = 0;%p}
+
+     while(__size > 0)
+     {
+
+	%p{compatible_brand = _items[c++];%p}
+
+     	unsigned int(32) compatible_brand; // to end of the box
+	__size -= 4;
+
+	%g{_items.push_back(compatible_brand);%g}
+     }
+
+%{
+public:
+    FileTypeBox():_size(0){}
+    FileTypeBox(unsigned int size):_size(size - 16){}
+    V32(major_brand);
+    V32(minor_version);
+
+    unsigned int count() const {return _items.size();}
+    unsigned int get_brand(unsigned int idx) const {_ASSERTE(_items.size() > idx); return _items[idx];}
+    void add_brand(unsigned int brand){_items.push_back(brand);}
+    
+    void clear_brands()
+    {
+		_items.clear();
+    }
+%}
+}
+
+aligned(8) class SoundMediaHeaderBox extends FullBox
+{
+   int(16) balance;
+   unsigned int(16) reserved;
+%{
+   SoundMediaHeaderBox():
+     balance(0)
+   ,reserved(0)
+   {}
+      
+%}
+}
+
+aligned(8) class VideoMediaHeaderBox extends FullBox
+{
+   unsigned int(16) graphicsmode;
+   unsigned int(16) opcolor1;
+   unsigned int(16) opcolor2;
+   unsigned int(16) opcolor3;
+
+%{
+   VideoMediaHeaderBox():
+     graphicsmode(0)
+   , opcolor1(0)
+   , opcolor2(0)
+   , opcolor3(0)
+   {}
+      
+%}
+}
+
+aligned(8) class SegmentIndexBox extends FullBox { 
+	unsigned int(32) reference_ID; 
+	unsigned int(32) timescale; 
+	 if (version==0) 
+	 { 
+			unsigned int(32) earliest_presentation_time; 
+			unsigned int(32) first_offset; 
+	 } 
+	else 
+	{
+		    unsigned int(32) earliest_presentation_time_0; 
+			unsigned int(32) earliest_presentation_time;
+			unsigned int(32) first_offset_0;  
+			unsigned int(32) first_offset; 
+	} 
+	 
+	 unsigned int(16) reserved = 0; 
+	 unsigned int(16) reference_count; 
+	 unsigned int i = 0;
+	 %g{
+	 _ASSERTE(reference_count <= sizeof(reference_type));
+	 %g}
+	 for(i=0; i < reference_count; i++) 
+	 { 
+			bit (1) reference_type[[i]]; 
+			unsigned int(31) referenced_size[[i]]; 
+			unsigned int(32) subsegment_duration[[i]]; 
+			bit(1) starts_with_SAP[[i]]; 
+			unsigned int(3) SAP_type[[i]]; 
+			unsigned int(28) SAP_delta_time[[i]]; 
+	} 
+%{
+public:
+	V64(earliest_presentation_time)
+	V64(first_offset)
+%}
+} 
+
+
+aligned(8) class XmlBox extends FullBox
+{
+     
+   %{
+      TCHAR *       _p_xml;
+      unsigned int __body_size;
+private:
+    %}
+    unsigned int __x = 0;
+    unsigned int __max = 0;
+
+    %g{__max = __body_size;%g}
+    %p{__max = __body_size;%p}
+    
+    while(__x < __max)
+    {
+       %p{__name = _p_xml[__x++];%p}
+
+       char(8) __name;
+       
+       %g{_p_xml[__x++] = __name;%g}
+    }
+
+    %g{
+       _p_xml[__x] = '\0';
+    %g}
+%{
+    void init()
+    {
+        _p_xml = new TCHAR[__body_size + 1];
+      memset(_p_xml, 0,  __body_size * sizeof(TCHAR));
+    }
+public:
+    XmlBox(unsigned int boxsize):_p_xml(NULL)
+    { _ASSERTE(12 <= boxsize); __body_size = boxsize - 12;
+      init();
+    }
+    ~XmlBox(){if(_p_xml)delete[] _p_xml;}
+    XmlBox(const TCHAR * pszXml):_p_xml(NULL)
+    {
+       __body_size = _tcslen(pszXml);
+       init();
+       ::memcpy(_p_xml, pszXml, __body_size * sizeof(TCHAR));
+    }
+%}
+}
+
+%{
+__ALX_END_NAMESPACE
+%}
+
+
+
+

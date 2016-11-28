@@ -1,0 +1,51 @@
+%.c{
+#include "mp4.h"
+%.c}
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+%.c{
+
+// {8FF9D4A6-3160-4cf9-A29C-8C763FE62E03}
+
+
+#define SET_LTC_BOX_Y(box, y) {int i = 0; unsigned char * bytes = box.direct_guid(); bytes[i++] = y;bytes[i++] = 0xf9;bytes[i++] = 0xd4;bytes[i++] = 0xa6;bytes[i++] = 0x31;bytes[i++] = 0x60;bytes[i++] = 0x4c;bytes[i++] = 0xf9;bytes[i++] = 0xa2;bytes[i++] = 0x9c;bytes[i++] = 0x8c;bytes[i++] = 0x76;bytes[i++] = 0x3f;bytes[i++] = 0xe6;bytes[i++] = 0x03;}
+inline bool IS_LTC_BOX_Y(Box box, BYTE y) {int i = 0; const unsigned char * bytes = box.guid();  if(bytes[i++] != y) return false; if(bytes[i++] != 0xf9) return false; if(bytes[i++] != 0xd4) return false; if(bytes[i++] != 0xa6) return false; if(bytes[i++] != 0x31) return false; if(bytes[i++] != 0x60) return false; if(bytes[i++] != 0x4c) return false; if(bytes[i++] != 0xf9) return false; if(bytes[i++] != 0xa2) return false; if(bytes[i++] != 0x9c) return false; if(bytes[i++] != 0x8c) return false; if(bytes[i++] != 0x76) return false; if(bytes[i++] != 0x3f) return false; if(bytes[i++] != 0xe6) return false; if(bytes[i++] != 0x03) return false; return true;}
+
+#define SET_LTC_BOX(box) SET_LTC_BOX_Y(box, 0x8f)
+#define IS_LTC_BOX(box) IS_LTC_BOX_Y(box, 0x8f)
+
+#define SET_LTC_HANDLER(box) SET_LTC_BOX_Y(box, 0xef)
+#define IS_LTC_HANDLER(box) IS_LTC_BOX_Y(box, 0xef)
+
+#define TIMECODE_READ 0x664
+#define TIMECODE_READ_INTERPOLATED 0x665
+#define TIMECODE_EXP_ELLAPSED 0x666
+#define TIMECODE_EXP_INTERPOLATED 0x667
+
+#define TIMECODE_MISSING 0xFFFF
+#define TIMECODE_MISSING_VALUE 0xFFFFFFFF
+
+%.c}
+
+
+aligned(8) class wmt_timecode
+{
+    little unsigned short(16) wRange;
+    little unsigned int(32) dwTimecode;
+    little unsigned int(32) dwUserbits;
+    little unsigned int(32) dwAmFlags;
+}
+
+aligned(8) class timecode_head
+{
+    little unsigned int(32) avg_frame_rate;
+}
+
+
+
+%{
+__ALX_END_NAMESPACE
+%}

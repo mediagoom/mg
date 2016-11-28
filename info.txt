@@ -1,0 +1,24 @@
+~/bitbucket/release$ ../mg/configure --includedir=/home/alessandro/bitbucket/dist/include --libdir=/home/alessandro/bitbucket/dist/lib --bindir=/home/alessandro/bitbucket/dist/bin
+http://www.bioinf.uni-freiburg.de/~mmann/HowTo/automake.html
+
+
+
+Apart from the usual flags to GCC controlling inlining;
+
+--coverage -fno-inline -fno-inline-small-functions -fno-default-inline
+
+You can instantiate your template classes at the top of your unit test files;
+
+template class std::map<std::string, std::string>;
+
+This will generate code for every method in that template class making the coverage tools work perfectly.
+
+Also, make sure that you initialise your *.gcno files (so for lcov)
+
+lcov -c -i -b ${ROOT} -d . -o Coverage.baseline
+<run your tests here>
+lcov -c -d . -b ${ROOT} -o Coverage.out
+lcov -a Coverage.baseline -a Coverage.out -o Coverage.combined
+genhtml Coverage.combined -o HTML
+
+

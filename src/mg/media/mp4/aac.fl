@@ -1,0 +1,214 @@
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+%.c{
+#include "media_parser.h"
+
+enum AudioObjectType {
+    AOT_NULL,                  
+    AOT_AAC_MAIN,              
+    AOT_AAC_LC,                
+    AOT_AAC_SSR,               
+    AOT_AAC_LTP,               
+    AOT_SBR,                   
+    AOT_AAC_SCALABLE,          
+    AOT_TWINVQ,                
+    AOT_CELP,                  
+    AOT_HVXC,                  
+    AOT_TTSI             = 12, 
+    AOT_MAINSYNTH,             
+    AOT_WAVESYNTH,             
+    AOT_MIDI,                  
+    AOT_SAFX,                  
+    AOT_ER_AAC_LC,             
+    AOT_ER_AAC_LTP       = 19, 
+    AOT_ER_AAC_SCALABLE,       
+    AOT_ER_TWINVQ,             
+    AOT_ER_BSAC,               
+    AOT_ER_AAC_LD,             
+    AOT_ER_CELP,               
+    AOT_ER_HVXC,               
+    AOT_ER_HILN,               
+    AOT_ER_PARAM,              
+    AOT_SSC,                   
+    AOT_PS,                    
+    AOT_SURROUND,              
+    AOT_ESCAPE,                
+    AOT_L1,                    
+    AOT_L2,                    
+    AOT_L3,                    
+    AOT_DST,                   
+    AOT_ALS,                   
+    AOT_SLS,                   
+    AOT_SLS_NON_CORE,          
+    AOT_ER_AAC_ELD,            
+    AOT_SMR_SIMPLE,            
+    AOT_SMR_MAIN,              
+    AOT_USAC_NOSBR,            
+    AOT_SAOC,                  
+    AOT_LD_SURROUND,           
+    AOT_USAC,                  
+};
+
+%.c}
+
+map mpeg4audio_sample_rates(unsigned int) {
+      0b0000, 96000
+    , 0b0001, 88200
+    , 0b0010, 64000
+    , 0b0011, 48000
+    , 0b0100, 44100
+    , 0b0101, 32000
+    , 0b0110, 24000
+    , 0b0111, 22050
+    , 0b1000, 16000
+    , 0b1001, 12000
+    , 0b1010, 11025
+    , 0b1011, 8000
+    , 0b1100, 7350
+}
+
+map mpeg4audio_channels(unsigned int) {
+      0b000, 0
+    , 0b001, 1
+    , 0b010, 2
+    , 0b011, 3
+    , 0b100, 4
+    , 0b101, 5
+    , 0b110, 6
+    , 0b111, 8
+}
+
+aligned(8) class aac_info_mp4
+{
+   unsigned int(5) object_type;
+   if(31 == object_type)
+       unsigned int(32) object_type;
+   unsigned int(mpeg4audio_sample_rates) sample_rate;
+   unsigned int(1) channels_4_bit = 0;
+   unsigned int(mpeg4audio_channels)     channels;
+   if(1 == object_type || 2 == object_type)
+   {
+       unsigned int(1) frame_length_flag;
+       if(!frame_length_flag)
+       {
+          unsigned int(1) depends_core_coder = 0x0;
+	  if(depends_core_coder)
+	  {   unsigned int(14) core_coder_delay;}
+	  unsigned int(1) extension_flag = 0x0;;
+       }
+       else
+       {skipbits(2);}
+   }
+   else
+   {skipbits(3);}
+
+%{
+    aac_info_mp4()
+       : frame_length_flag(0)
+       , depends_core_coder(0)
+       , core_coder_delay(0)
+       , extension_flag(0)
+       , channels_4_bit(0)
+    {}
+%}
+   
+}
+
+
+/*
+Header consists of 7 or 9 bytes (without or with CRC). 
+
+
+Letter 
+
+Length (bits) 
+
+Description 
+
+A  12  syncword 0xFFF, all bits must be 1  
+B  1  MPEG Version: 0 for MPEG-4, 1 for MPEG-2  
+C  2  Layer: always 0  
+D  1  protection absent, Warning, set to 1 if there is no CRC and 0 if there is CRC 
+ 
+E  2  profile, the MPEG-4 Audio Object Type minus 1  
+F  4  MPEG-4 Sampling Frequency Index (15 is forbidden)  
+G  1  private bit, guaranteed never to be used by MPEG, set to 0 when encoding, ignore when decoding  
+H  3  MPEG-4 Channel Configuration (in the case of 0, the channel configuration is sent via an inband PCE)  
+I  1  originality, set to 0 when encoding, ignore when decoding  
+J  1  home, set to 0 when encoding, ignore when decoding  
+K  1  copyrighted id bit, the next bit of a centrally registered copyright identifier, set to 0 when encoding, ignore when decoding  
+L  1  copyright id start, signals that this frame's copyright id bit is the first bit of the copyright id, set to 0 when encoding, ignore when decoding  
+M  13  frame length, this value must include 7 or 9 bytes of header length: FrameLength = (ProtectionAbsent == 1 ? 7 : 9) + size(AACFrame)  
+O  11  Buffer fullness  
+P  2  Number of AAC frames (RDBs) in ADTS frame minus 1, for maximum compatibility always use 1 AAC frame per ADTS frame  
+Q  16  CRC if protection absent is 0 
+
+*/
+
+aligned(8) class ADTS
+{
+    unsigned int(12) syncword = 0xFFF;
+    unsigned int(1)  mpeg_version;
+    unsigned int(2)  layer = 0x0;
+    unsigned int(1)  missing_protection;
+    
+    unsigned int(2)  mpeg_4_audio_object_minus_1;
+    unsigned int(mpeg4audio_sample_rates) mpeg_4_sampling_frequency;
+    unsigned int(1)	 private_bit;
+    unsigned int(mpeg4audio_channels)     channel_configuration;
+    unsigned int(1)  private_bit_2;
+    unsigned int(1)  home;
+    unsigned int(1)	 copyrighted;
+    unsigned int(1)	 copyrighted_start;
+    unsigned int(13) frame_length;
+    unsigned int(11) buffer_fullnes;
+    unsigned int(2)  aac_frames_minus_1;
+    
+    if(!missing_protection)
+    {
+       unsigned int(16) CRC;
+    }
+    
+    %{
+        ADTS():missing_protection(1)
+          , private_bit(0)
+          , private_bit_2(0)
+          , home(0)
+          , copyrighted(0)
+          , copyrighted_start(0)
+          , aac_frames_minus_1(0)
+        {
+        }
+        
+		unsigned int get_body_length()
+		{
+		   return frame_length - ((missing_protection)?7:9);
+		}
+		
+		void set_body_length(unsigned int length)
+		{
+		    frame_length = length + ((missing_protection)?7:9);
+		}
+		
+		unsigned int get_mpeg_4_audio_object()
+		{
+		   return mpeg_4_audio_object_minus_1 + 1;
+		}
+		
+		void set_mpeg_4_audio_object(unsigned int obj)
+		{
+		    mpeg_4_audio_object_minus_1 = obj - 1;
+		}
+		
+		
+    %}
+} 
+
+
+
+%{
+__ALX_END_NAMESPACE
+%}

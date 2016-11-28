@@ -1,0 +1,707 @@
+
+%.c{
+#include "media_parser.h"
+#include <vector>
+%.c}
+
+%pragma array=256
+%pragma get
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+const unsigned int TAG_RESERVED = 0x00;
+const unsigned int TAG_OD = 0x01;
+const unsigned int TAG_IOD = 0x02;
+const unsigned int TAG_ESD = 0x03;
+const unsigned int TAG_DCD = 0x04;
+const unsigned int TAG_DSI = 0x05;
+const unsigned int TAG_SLC = 0x06;
+const unsigned int TAG_CI = 0x07;
+const unsigned int TAG_SCI = 0x08;
+const unsigned int TAG_IPI_PTR = 0x09;
+const unsigned int TAG_IPMP_PTR = 0x0A;
+const unsigned int TAG_IPMP = 0x0B;
+const unsigned int TAG_QOS = 0x0C;
+const unsigned int TAG_REG = 0x0D;
+const unsigned int TAG_ESD_INC = 0x0E;
+const unsigned int TAG_ESD_REF = 0x0F;
+const unsigned int TAG_ISOM_IOD = 0x10;
+const unsigned int TAG_ISOM_OD = 0x11;
+const unsigned int TAG_ISOM_IPI_PTR = 0x12;
+const unsigned int TAG_EXT_PL = 0x13;
+const unsigned int TAG_PL_IDX = 0x14;
+const unsigned int TAG_ISO_BEGIN = 0x15;
+const unsigned int TAG_ISO_END = 0x3F;
+const unsigned int TAG_CC = 0x40;
+const unsigned int TAG_KW = 0x41;
+const unsigned int TAG_RATING = 0x42;
+const unsigned int TAG_LANG = 0x43;
+const unsigned int TAG_SHORT_TEXT = 0x44;
+const unsigned int TAG_TEXT = 0x45;
+const unsigned int TAG_CC_NAME = 0x46;
+const unsigned int TAG_CC_DATE = 0x47;
+const unsigned int TAG_OCI_NAME = 0x48;
+const unsigned int TAG_OCI_DATE = 0x49;
+const unsigned int TAG_SMPTE = 0x4A;
+const unsigned int TAG_SEGMENT = 0x4B;
+const unsigned int TAG_MEDIATIME = 0x4C;
+const unsigned int TAG_IPMP_TL = 0x60;
+const unsigned int TAG_IPMP_TOOL = 0x61;
+const unsigned int TAG_ISO_RES_BEGIN = 0x62;
+const unsigned int TAG_ISO_RES_END = 0xBF;
+
+
+aligned(8) class descriptor
+{
+   bit(8)  tag;
+
+
+%{
+   int  __v_length; 
+   bool _reading;
+
+  
+%}
+
+   //avoid unreference warning
+   %g{ var_dim0_end = 0; if(var_dim0_end){} %g}
+   %p{ var_dim0_end = 0; if(var_dim0_end){} %p}
+
+   %p{__v_length = length;%p}
+
+   int __reading  = 0;
+   int __sizeHeader = 0;
+   int length     = 0x80;
+   unsigned int size = 0;
+   unsigned char vals[4] = {0x00, 0x00, 0x00, 0x00};
+   
+   %g{__reading = _reading;%g}
+   %p{__reading = _reading;%p}
+   
+   if(__reading)
+   {
+     
+      while(length & 0x80)
+      {
+
+         bit(8)   __blength;
+	 length = __blength;
+         
+	 __sizeHeader++;
+	 size <<= 7;
+	 size |= length & 0x7F;
+
+     }
+
+      length = size;
+      
+      
+   }
+   else
+   {
+        %p{length = __v_length;%p}
+              
+        size = length;
+        unsigned int init_length = 0;
+        %p{
+	init_length = size;
+	vals[3] = (unsigned char)  (size & 0x7f);
+	size >>= 7;
+	vals[2] = (unsigned char) ((size & 0x7f) | 0x80); 
+        size >>= 7;
+	vals[1] = (unsigned char) ((size & 0x7f) | 0x80); 
+	size >>= 7;
+	vals[0] = (unsigned char) ((size & 0x7f) | 0x80);
+	%p}
+
+	/*	
+
+	if (init_length < 0x00000080) {
+		%p{__blength = vals[3];%p}
+		bit(8) __blength;
+	} else if (init_length < 0x00004000) {
+	     %p{__blength = vals[2];%p}
+		bit(8) __blength;
+		%p{__blength = vals[3];%p}
+		bit(8) __blength;
+	} else if (init_length < 0x00200000) {
+		%p{__blength = vals[1];%p}
+		bit(8) __blength;
+		%p{__blength = vals[2];%p}
+		bit(8) __blength;
+		%p{__blength = vals[3];%p}
+		bit(8) __blength;
+	} else if (init_length < 0x10000000) {
+	
+	*/
+	        %p{__blength = vals[0];%p}
+		bit(8) __blength;
+		%p{__blength = vals[1];%p}
+		bit(8) __blength;
+		%p{__blength = vals[2];%p}
+		bit(8) __blength;
+		%p{__blength = vals[3];%p}
+		bit(8) __blength;
+	//}
+
+	
+
+   }
+
+%{
+public:
+    descriptor():_reading(true){}
+    descriptor(bool read_mode):_reading(read_mode){}
+%}
+
+  
+}
+
+aligned(8) class language_descriptor extends descriptor
+{
+    unsigned int(24) languageCode;
+}
+
+aligned(8) class extension_descriptor extends descriptor
+{
+   %{
+private:
+     BYTE * _row_memory;
+   %}
+
+    int _byte_size = length;
+
+   //if(0x80 <= tag && tag <= 0xAF)
+   //   bit(8)  length;
+   if(0xD0 <= tag && tag <= 0xDF)
+   {
+      bit(8) length2;
+      _byte_size = length - 1;
+
+      %g{
+          _ASSERTE(false);
+          length = (length << 8) | length2;
+      %g}
+   }
+
+   if(0xE0 == tag)
+   {
+       bit(24) length2;
+       _byte_size = length - 3;
+
+      %g{
+          _ASSERTE(false);
+          length = (length << 24) | length2;
+      %g}
+   }
+
+   %g{
+       _row_memory = new BYTE[_byte_size];
+   %g}
+
+   int __idx = 0;
+
+   for(__idx = 0; __idx <  _byte_size; __idx++)
+   {
+      %p{
+          descriptor_byte = _row_memory[__idx];
+      %p}
+
+       bit(8) descriptor_byte;
+
+      %g{
+         _row_memory[__idx] = descriptor_byte;
+      %g}
+   }  
+   
+
+   %{
+      void cleanup(){if(_row_memory)delete[] _row_memory;_row_memory=NULL;}
+public:
+      extension_descriptor():_row_memory(NULL){}
+      
+      virtual ~extension_descriptor(){cleanup();}
+      unsigned int get_length() const {return length;}
+      const BYTE* get_descriptor() const {return _row_memory;}
+      void set_descriptor(const BYTE* source, const unsigned size)
+      {
+          _ASSERTE(size < 254);
+          _ASSERTE(NULL ==  _row_memory);
+	  length = size;
+	   _byte_size = size;
+	  _row_memory = new BYTE[_byte_size]; 
+	  memcpy(_row_memory, source, _byte_size);
+      }
+   %}
+}
+
+aligned(8) class DecoderConfigDescriptor extends descriptor
+{
+%{
+    std::vector<extension_descriptor *> _extension_descriptors;
+%}
+%g{_ASSERTE(TAG_DCD == tag);%g}
+
+	bit(8) objectProfileIndication;
+	bit(6) streamType;
+	bit(1) upStream;
+	const bit(1) reserved=1;
+	bit(24) bufferSizeDB;
+	bit(32) maxBitrate;
+	bit(32) avgBitrate;
+	//DecoderSpecificInfo decSpecificInfo[];
+
+	if(__reading)
+        {    
+	   while(TAG_DSI == nextbits(8))
+	   {
+		   extension_descriptor p_ext;
+		   %g{_extension_descriptors.push_back(p_ext);%g}
+	   }
+
+       }
+       else
+       {
+              unsigned int __c = 0;
+              unsigned int __i = 0;
+
+		%p{__c = _extension_descriptors.size();%p}
+
+	      for(__i = 0; __i < __c; __i++)
+	      {
+              	%p{  p_ext = _extension_descriptors[__i];%p}
+              	extension_descriptor p_ext;
+	      }
+       }
+
+%{
+      
+public:
+    
+    
+    void cleanup()
+    {
+       for(unsigned int i = 0; i < _extension_descriptors.size(); i++)
+          delete _extension_descriptors[i];
+          
+       _extension_descriptors.clear();
+
+    }
+    
+    virtual ~DecoderConfigDescriptor(){cleanup();}
+
+    void add_extension(const BYTE* source, const unsigned size)
+    {
+    	_reading = false;
+    	extension_descriptor * pe = new extension_descriptor;
+	                       pe->_reading = false;
+			       pe->tag = TAG_DSI;
+	                       pe->set_descriptor(source, size);
+	
+	_extension_descriptors.push_back(pe);
+
+    }
+%}
+}
+
+aligned(8) class SLConfigDescriptor extends descriptor
+{
+%g{_ASSERTE(TAG_SLC == tag);%g}
+
+	bit(8) predefined;
+	if (predefined==0) {
+		bit(1) useAccessUnitStartFlag;
+		bit(1) useAccessUnitEndFlag;
+		bit(1) useRandomAccessPointFlag;
+		bit(1) usePaddingFlag;
+		bit(1) useTimeStampsFlag;
+		bit(1) useWallClockTimeStampFlag;
+		bit(1) useIdleFlag;
+		bit(1) durationFlag;
+		bit(32) timeStampResolution;
+		bit(32) OCRResolution;
+		bit(8) timeStampLength; // must be less than 64
+		bit(8) OCRLength; // must be less than 64
+		bit(8) AU_Length; // must be less than 32
+		bit(8) instantBitrateLength;
+		bit(4) degradationPriorityLength;
+		bit(4) seqNumLength;
+		if (durationFlag) {
+			bit(32) timeScale;
+			bit(16) accessUnitDuration;
+			bit(16) compositionUnitDuration;
+		}
+		if (!useTimeStampsFlag) {
+			if (useWallClockTimeStampFlag){
+				//double(64) wallClockTimeStamp;
+				unsigned int(32)  wallClockTimeStamp_1;
+				unsigned int(32)  wallClockTimeStamp_2;
+			}
+			bit(timeStampLength) startDecodingTimeStamp;
+			bit(timeStampLength) startCompositionTimeStamp;
+		}
+   
+
+    bit(1) OCRstreamFlag;
+    bit(7) reserved=0b1111111;
+    if (OCRstreamFlag)
+      bit(16) OCR_ES_Id;
+
+   }
+}
+
+aligned(8) class IP_IdentificationDataSet extends descriptor
+{
+	unsigned int i;
+
+	const bit(2) compatibility=0;
+	bit(1) contentTypeFlag;
+	bit(1) contentIdentifierFlag;
+	aligned(8) bit(8) supplementaryContentIdentifierCount;
+	if (contentTypeFlag)
+		bit(8) contentType;
+	if (contentIdentifierFlag) {
+		bit(8) contentIdentifierType;
+		bit(8) contentIdentifierLength;
+		bit(8) contentIdentifier[contentIdentifierLength];
+	}
+	if (supplementaryContentIdentifierCount>0) {
+		bit(24) languageCode;
+		for (i=0; i < supplementaryContentIdentifierCount; i++) {
+			bit(8) supplementaryContentIdentifierTitleLength;
+			bit(8) supplementaryContentIdentifierTitle[[i]]
+			[supplementaryContentIdentifierTitleLength];
+			bit(8) supplementaryContentIdentifierValueLength;
+			bit(8) supplementaryContentIdentifierValue[[i]]
+			[supplementaryContentIdentifierValueLength];
+		}
+	}
+}
+
+aligned(8) class IPI_DescPointer extends descriptor 
+{
+bit(16) IPI_ES_Id;
+}
+
+aligned(8) class QoS_Descriptor  extends descriptor
+{
+	unsigned int i;
+	unsigned int x;
+
+	bit(8) predefined;
+	if (predefined==0) {
+		bit(8) QoS_QualifierCount;
+		for (i=0; i<QoS_QualifierCount; i++) {
+			bit(8) QoS_QualifierTag[[i]];
+			bit(8) QoS_QualifierLength[[i]];
+			x =  QoS_QualifierLength[i];
+		        bit(8) QoS_QualifierData[[i]][x];
+			//[QoS_QualifierLength[[i]]];
+
+		}
+	}
+}
+
+
+
+aligned(8) class ES_Descriptor extends descriptor
+{   
+%{
+    std::vector<extension_descriptor *> _extension_descriptors;
+%}
+%g{_ASSERTE(TAG_ESD == tag);%g}
+
+    
+    bit(16) ES_ID;
+    bit(1)  streamDependenceFlag;
+    bit(1)  URL_Flag;
+    //const bit(1) reserved=1;
+    bit(1)  OCR_Flag;
+    bit(5)  streamPriority;
+    if(streamDependenceFlag)
+       bit(16) dependsOn_ES_ID;
+    if(URL_Flag)
+    { 
+      bit(8) s_size;
+      unsigned int __idx = 0;
+      for(__idx = 0; __idx < s_size; __idx++)
+       bit(8) URLstring[[__idx]];
+    }
+    if(OCR_Flag)
+    {
+       unsigned int(16) OCRESID;
+    }
+    
+    if(__reading)
+    {    
+		while(
+				(0x80 <= nextbits(8) && nextbits(8) <= 0xAF)
+		 || (0xD0 <= nextbits(8) && nextbits(8) <= 0xDF)
+		 )
+		 {
+			extension_descriptor p_ext;
+			%g{_extension_descriptors.push_back(p_ext);%g}
+
+			%g{if(dynamic_cast<IBitstream3 & >(var_bs).eof())
+			     break;%g}
+		 }
+
+		
+		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+		 if(TAG_LANG == nextbits(8))
+		 {
+
+		    language_descriptor p_lang;}
+
+		 }
+
+ 		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+                 if(TAG_DCD == nextbits(8) )
+		 {
+
+		    DecoderConfigDescriptor p_decoder_config_descriptor;}
+		 }
+
+		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+		 if(TAG_SLC == nextbits(8)){
+
+		    SLConfigDescriptor      p_sl_config_descriptor;
+			}
+		}
+		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+		 if(TAG_ISOM_IPI_PTR == nextbits(8)){
+
+		    IPI_DescPointer p_ipi_desc_pointer;}
+		}
+		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+		 if(0x26 == nextbits(8))
+		 {
+
+		    IP_IdentificationDataSet p_ip_idset;}
+		 }
+		 %g{if(!dynamic_cast<IBitstream3 & >(var_bs).eof())%g}
+		 {
+		 if(TAG_QOS == nextbits(8)){
+
+		    QoS_Descriptor p_qos;}
+		 }
+
+	 
+
+       	%g{_ASSERTE(NULL != p_decoder_config_descriptor);
+	   _ASSERTE(NULL != p_sl_config_descriptor);%g}
+
+    }
+    else
+    {//writing
+    	DecoderConfigDescriptor p_decoder_config_descriptor;
+	SLConfigDescriptor      p_sl_config_descriptor;
+    }
+    
+    
+%{
+      
+public:
+    
+    ES_Descriptor():
+      p_lang(NULL)
+    , p_decoder_config_descriptor(NULL)
+    , p_sl_config_descriptor(NULL)
+    , p_ipi_desc_pointer(NULL)
+    , p_ip_idset(NULL)
+    , p_qos(NULL)
+    {}
+
+    void cleanup()
+    {
+       for(unsigned int i = 0; i < _extension_descriptors.size(); i++)
+          delete _extension_descriptors[i];
+          
+       _extension_descriptors.clear();
+
+       if(p_lang)
+          delete p_lang;
+
+       p_lang = NULL;
+
+       if(p_decoder_config_descriptor)
+          delete p_decoder_config_descriptor;
+
+      p_decoder_config_descriptor = NULL;
+
+      if(p_sl_config_descriptor)
+        delete p_sl_config_descriptor;
+
+      p_sl_config_descriptor = NULL;
+
+      if(p_ipi_desc_pointer)
+        delete p_ipi_desc_pointer;
+
+      p_ipi_desc_pointer = NULL;
+
+      if(p_ip_idset)
+         delete  p_ip_idset;
+
+       p_ip_idset = NULL;
+
+      if(p_qos)
+        delete p_qos;
+
+      p_qos = NULL;
+
+    }
+    
+    virtual ~ES_Descriptor(){cleanup();}
+
+    void set_extension(const BYTE* source
+                     , const unsigned size
+			, const unsigned int objectProfileIndication
+			, const unsigned int streamType
+			, const unsigned int upStream
+			, const unsigned int bufferSizeDB
+			, const unsigned int maxBitrate
+			, const unsigned int avgBitrate
+		      )
+    {
+    	_reading = false;
+
+	int descriptor_size = 0;
+
+	p_decoder_config_descriptor         = new DecoderConfigDescriptor;
+	p_decoder_config_descriptor->tag    = TAG_DCD;
+	p_decoder_config_descriptor->length = descriptor_size + 13 + 5 + size; 
+	p_decoder_config_descriptor->add_extension(source, size);
+
+	p_decoder_config_descriptor->objectProfileIndication = objectProfileIndication;
+	p_decoder_config_descriptor->streamType = streamType;
+	p_decoder_config_descriptor->upStream = upStream;
+	p_decoder_config_descriptor->bufferSizeDB = bufferSizeDB;
+	p_decoder_config_descriptor->maxBitrate = maxBitrate;
+	p_decoder_config_descriptor->avgBitrate = avgBitrate;
+	
+
+	p_sl_config_descriptor = new SLConfigDescriptor;
+	p_sl_config_descriptor->tag = TAG_SLC;
+	p_sl_config_descriptor->length = descriptor_size + 1;
+	p_sl_config_descriptor->predefined = 0x02;//0xFFFF;
+	p_sl_config_descriptor->_reading = false;
+
+	tag = TAG_ESD;
+	length = 3 + p_sl_config_descriptor->length + p_decoder_config_descriptor->length + 10;
+
+	ES_ID = 0;
+	streamDependenceFlag = 0;
+	URL_Flag =  0;
+	OCR_Flag =  0; 
+	streamPriority = 0;
+	
+    }
+
+    
+    
+%}
+}
+
+aligned(8) class OCIGenericDescriptor extends extension_descriptor
+{
+
+}
+      
+aligned(8) class InitialObjectDescriptor extends descriptor
+{
+%{
+private:
+    std::vector<extension_descriptor *> _extension_descriptors;
+    std::vector<ES_Descriptor *> _es_descriptors;
+    std::vector<OCIGenericDescriptor*> _oci_descriptors;
+%}
+
+	bit(10) ObjectDescriptorID;
+	bit(1) URL_Flag;
+	bit(1) includeInlineProfilesFlag;
+	bit(4) reserved;
+	if (URL_Flag) 
+	{
+		 bit(8) s_size;
+                 unsigned int __idx = 0;
+                 for(__idx = 0; __idx < s_size; __idx++)
+                      bit(8) URLstring[[__idx]];
+	} else 
+	{
+		bit(8) OD;
+		bit(8) sceneProfile;
+		bit(8) audioProfile;
+		bit(8) visualProfile;
+		bit(8) graphicsProfile;
+	}
+	
+	if(__reading)
+        {    
+		while(
+				(0x80 <= nextbits(8) && nextbits(8) <= 0xAF)
+		 || (0xD0 <= nextbits(8) && nextbits(8) <= 0xDF)
+		 )
+		 {
+			extension_descriptor p_ext;
+			%g{_extension_descriptors.push_back(p_ext);%g}
+		 }
+        }
+
+	if (!URL_Flag) 
+	{
+
+	    if(__reading)
+	    {
+	       while(0x40 <= nextbits(8) && nextbits(8) < 0x50)
+               {
+	           OCIGenericDescriptor p_oci;
+		   %g{_oci_descriptors.push_back(p_oci);%g}
+	       }
+	       while(TAG_ESD == nextbits(8))
+	       {
+                   ES_Descriptor p_esd;
+		   %g{ _es_descriptors.push_back(p_esd);%g}
+	       }
+	    }
+	
+	}
+
+%{
+public:
+
+
+void cleanup()
+    {
+       for(unsigned int i = 0; i < _extension_descriptors.size(); i++)
+          delete _extension_descriptors[i];
+          
+       _extension_descriptors.clear();
+
+        for(unsigned int i = 0; i <  _es_descriptors.size(); i++)
+          delete  _es_descriptors[i];
+          
+       _es_descriptors.clear();
+
+        for(unsigned int i = 0; i < _oci_descriptors.size(); i++)
+          delete _oci_descriptors[i];
+          
+       _oci_descriptors.clear();
+
+
+    }
+
+     InitialObjectDescriptor(){}
+     virtual ~ InitialObjectDescriptor(){cleanup();}
+%}
+}
+      
+%{
+__ALX_END_NAMESPACE
+%}
