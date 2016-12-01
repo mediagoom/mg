@@ -10,17 +10,16 @@
        		 ['OS == "win"', {
       
                   'dependencies': [
-                      '../deps/libuv/uv.gyp:libuv'
                     ]
               }
               , 
               {
-                'libraries': ['uv']
               }
               ]
       	]
       , 'dependencies': [
-               '../src/mg/core/core.gyp:mgcore' 	
+               '../deps/libuv/uv.gyp:libuv'
+             , '../src/mg/core/core.gyp:mgcore' 	
              , '../src/mg/media/media.gyp:mgmedia'
              , '../src/mgcli/mgcli.gyp:mg'
       		]

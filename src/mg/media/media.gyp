@@ -10,10 +10,7 @@
               ]
       ,'conditions': [
        		 ['OS == "win"', {
-	
-			        'dependencies': [
-                  '../../../deps/libuv/uv.gyp:libuv'
-              ]
+              'variables'	: {'flavordir': '../../../deps/flavor/<(CONFIGURATION_NAME)/'}
            }
            ,{
             }
@@ -21,6 +18,10 @@
            ]
       ]
       
+    , 'dependencies': [
+                  '../../../deps/libuv/uv.gyp:libuv'
+                , '../../../deps/flavor/flavor.gyp:flavor'
+              ]
       
     , 'rules': [
        {
@@ -33,17 +34,12 @@
            , 'mp4/<(RULE_INPUT_ROOT).h'
          ],
          'action': [
-           'flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
+           '<(flavordir)flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
            , '-oc', 'mp4/<@(RULE_INPUT_ROOT).cpp', '<@(RULE_INPUT_PATH)',
          ],
          'process_outputs_as_sources': 1,
        },
      ]
- 
-      
-      
-      
-      
       
       , 'defines': [
         

@@ -2768,8 +2768,10 @@ int pick_samples(uint64_t start, uint64_t end
 	return 0;
 }
 
-int gop_list(uint64_t start, uint64_t end
-			, CMP4 &mp4)
+int gop_list( uint64_t start
+	        , uint64_t end
+			, CMP4 &mp4
+)
 {
 	
 	MP4Reader reader;
@@ -2801,9 +2803,9 @@ int gop_list(uint64_t start, uint64_t end
 	video = reader.VisualStream();
 		
 
-	uint64_t offset = reader.get_stream_offset(video);
-	uint64_t sample = reader.get_IFrame_number(start, video);
-	uint64_t time   = reader.get_composition_time(sample, video);
+	uint64_t offset   = reader.get_stream_offset(video);
+	uint64_t sample   = reader.get_IFrame_number(start, video);
+	uint64_t time     = reader.get_composition_time(sample, video);
     uint64_t decoding = reader.get_decoding_time(sample, video);
 
 	uint64_t next_time = UINT64_MAX;
@@ -5424,9 +5426,19 @@ int _tmain(int argc, TCHAR* argv[])
 		}
 		else if(kind == _T("gop"))
 		{
+			uint64_t start = 0;
+			uint64_t end = 0;
+
+			if (c.command_specified(_T("starttime")))
+				start = c.get_integer64_value(_T("starttime"));
+
+			if (c.command_specified(_T("endtime")))
+				end = c.get_integer64_value(_T("endtime"));
+
+
 			gop_list(
-				      c.get_integer64_value(_T("starttime"))
-					, c.get_integer64_value(_T("endtime"))
+				      start
+					, end
 					, mp4
 				);
 		}

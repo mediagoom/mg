@@ -10,6 +10,7 @@ param($g = "*"
 		, $perf_dir	     = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\Performance Tools"
 		, $repeat = 1
 		, $cov = $false
+		, $arch = "Win32"
 )
 
 $ErrorActionPreference = "Stop";
@@ -20,7 +21,7 @@ $my_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $env:srcdir=$my_dir;
 $env:MGTEST_REPEAT_TIME=$repeat;
 
-$path = "$my_dir\lib\Win32\$Configuration";
+$path = "$my_dir\bin\$arch\$Configuration";
 
 $path | oh
 

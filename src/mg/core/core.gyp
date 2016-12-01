@@ -8,10 +8,7 @@
       ,'conditions': [
        		 ['OS == "win"', {
 	
-			        'dependencies': [
-                  '../../../deps/libuv/uv.gyp:libuv'
-              ]
-              , 'sources':[
+               'sources':[
                    'win/win-util.h'
                  , 'win/util.cpp'
                  , 'win/ctime.cpp' 
@@ -25,34 +22,37 @@
              }
            
            ]
-      ],
-      'defines': [
+      ]
+			, 'dependencies': [
+                  '../../../deps/libuv/uv.gyp:libuv'
+              ]
+      , 'defines': [
         
-      ],
-      'include_dirs': [
-      ],
-      'sources': [
-          'core.h'
-	, 'char.h'
-	, '../cresource.h'
-	, 'bitstream.cpp'
-	, 'bitstream.h'
-	, 'thread.h'
-	, 'thread.cpp'
-	, '../../mgcore.h'
-	, 'core.gyp'
-  , 'file.cpp'
-  , 'file.h'
-  , '../alxstring.h'
-  , '../cbuffer.h'
-  , '../exception.h'
-  , '../promises.h'
-  , '../cmdline.h'
-  , '../splitter.h'
-  , 'uvbase.h'
-  , 'uvbase.cpp'
-  , 'util.h'
-  , 'ctime.h'
+      ]
+      , 'include_dirs': [
+      ]
+      , 'sources': [
+            'core.h'
+          , 'char.h'
+          , '../cresource.h'
+          , 'bitstream.cpp'
+          , 'bitstream.h'
+          , 'thread.h'
+          , 'thread.cpp'
+          , '../../mgcore.h'
+          , 'core.gyp'
+          , 'file.cpp'
+          , 'file.h'
+          , '../alxstring.h'
+          , '../cbuffer.h'
+          , '../exception.h'
+          , '../promises.h'
+          , '../cmdline.h'
+          , '../splitter.h'
+          , 'uvbase.h'
+          , 'uvbase.cpp'
+          , 'util.h'
+          , 'ctime.h'
       ]              
     }
   ]

@@ -81,7 +81,7 @@
     # libraries in deps/ are not under our control.
     'cflags!': ['-Werror']
 	, 'msvs_configuration_attributes': {
-		  'OutputDirectory': '$(SolutionDir)lib\\$(PlatformName)\\$(ConfigurationName)\\',
+	  'OutputDirectory': '$(SolutionDir)bin\\$(PlatformName)\\$(ConfigurationName)\\',
 	}
     , 'msvs_settings': {
       'VCCLCompilerTool': {

@@ -272,7 +272,7 @@ update.sql
 [0-9][0-9]_*.SQL
 UPDATE_[0-9][0-9]_*.SQL
 
-/deps/*
+#/deps/*
 
 tags
 

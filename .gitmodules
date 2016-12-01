@@ -1,0 +1,9 @@
+[submodule "deps/libuv"]
+	path = deps/libuv
+	url = https://github.com/libuv/libuv.git
+[submodule "deps/AES"]
+	path = deps/AES
+	url = https://github.com/mediagoom/AES.git
+[submodule "deps/flavor"]
+	path = deps/flavor
+	url = https://github.com/mediagoom/flavor.git
