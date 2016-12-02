@@ -8,11 +8,15 @@
       , 'dependencies': [
                 '../core/core.gyp:mgcore'
               ]
+	, 'direct_dependent_settings': {
+            'include_dirs': [ './' ]
+	    }
       ,'conditions': [
        		 ['OS == "win"', {
               'variables'	: {'flavordir': '../../../deps/flavor/<(CONFIGURATION_NAME)/'}
            }
            ,{
+	   	'variables' : { 'flavordir': '../../../test/out/<(CONFIGURATION_NAME)/'}
             }
            
            ]
@@ -28,16 +32,25 @@
          'rule_name': 'flavor',
          'extension': 'fl',
          'inputs': [
-         ],
-         'outputs': [
+         ]
+         , 'outputs': [
            'mp4/<(RULE_INPUT_ROOT).cpp'
            , 'mp4/<(RULE_INPUT_ROOT).h'
-         ],
-         'action': [
-           '<(flavordir)flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
-           , '-oc', 'mp4/<@(RULE_INPUT_ROOT).cpp', '<@(RULE_INPUT_PATH)',
-         ],
-         'process_outputs_as_sources': 1,
+         ]
+	, 'conditions': [
+		['OS == "win"', {
+			  'action': [
+			   '<(flavordir)flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
+			   , '-oc', 'mp4/<@(RULE_INPUT_ROOT).cpp', '<@(RULE_INPUT_PATH)',
+			 ]}
+		,{
+			  'action': [
+			   '<(flavordir)flavor', '-x', '-l', '-oh', 'mp4/<@(RULE_INPUT_ROOT).h'
+			   , '-oc', 'mp4/<@(RULE_INPUT_ROOT).cpp', 'mp4/<@(RULE_INPUT_ROOT).fl',
+			 ]}
+		]
+	]
+         , 'process_outputs_as_sources': 1,
        },
      ]
       
@@ -66,26 +79,26 @@
         
         , 'MP4Mux.h'
         , 'mp4parse.h'
-		, 'media_queue.h'
-		, 'WaveParser.h'
-		, 'fixed_queue.h'
-		, 'h264nal.h'
-		, 'hnano.h'
-		, 'MOOFReader.h'
-    , 'mp4write.h'
-    , 'mp4fragmented.h'
-    , 'MediaJoin.h'
-    , 'mp4edit.h'
-    , 'mp4edit.cpp'
+	, 'media_queue.h'
+	, 'WaveParser.h'
+	, 'fixed_queue.h'
+	, 'h264nal.h'
+	, 'hnano.h'
+	, 'MOOFReader.h'
+	    , 'mp4write.h'
+	    , 'mp4fragmented.h'
+	    , 'MediaJoin.h'
+	    , 'mp4edit.h'
+	    , 'mp4edit.cpp'
 
-    , '../../mgmedia.h'
+	    , '../../mgmedia.h'
 
-    , 'mp4dynamic.h'
-    , 'mp4dynamic.cpp'
-    , 'mp4dynamicinfo.h'
-    , 'mp4dynamicinfo.cpp'
-    , 'hls_renderer.h'
-	, 'mpd_renderer.h'
+	    , 'mp4dynamic.h'
+	    , 'mp4dynamic.cpp'
+	    , 'mp4dynamicinfo.h'
+	    , 'mp4dynamicinfo.cpp'
+	    , 'hls_renderer.h'
+		, 'mpd_renderer.h'
         ]              
     }
   ]
