@@ -166,9 +166,9 @@ public:
 
 	CstringT operator=(const char *str)
 	{
-		uint32_t size = strlen(str); 
+		size_t size = strlen(str); 
 		
-		m_str = new CBuffer<T>(/*null terminated*/++size);
+		m_str = new CBuffer<T>(/*null terminated*/static_cast<uint32_t>(++size));
 		
 		return operator+=(str);
 
@@ -183,9 +183,9 @@ public:
 
 	CstringT operator=(const wchar_t *str)
 	{
-		uint32_t size = wcslen(str);
+		size_t size = wcslen(str);
 
-		m_str = new CBuffer<T>(/*null terminated*/++size);
+		m_str = new CBuffer<T>(/*null terminated*/static_cast<uint32_t>(++size));
 
 		return operator+=(str);
 
@@ -255,7 +255,7 @@ public:
 		if (NULL == str)
 			return *this;
 
-		uint32_t size = wcslen(str);
+		size_t size = wcslen(str);
 
 		if (1 == sizeof(T))
 		{
@@ -285,7 +285,7 @@ public:
 		}
 		else
 		{
-			m_str->add(reinterpret_cast<const T *>(str), size);
+			m_str->add(reinterpret_cast<const T *>(str), static_cast<uint32_t>(size));
 			
 		}
 		

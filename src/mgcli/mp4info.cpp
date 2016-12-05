@@ -4322,12 +4322,15 @@ int _tmain(int argc, TCHAR* argv[])
 	c.add(_T("input"), console_command::type_string , false
 		, _T("input file name"), 'i');
 	c.add(_T("kind"),  console_command::type_string , false
-		, _T("kind of execution \n\r \
-					Could be: \n\r \
-					edit \n\r \
-					mux  \n\r \
+		, _T("kind of execution could be: \n\r \
 					pick  \n\r \
 					gop  \n\r \
+                    dash  \n\r \
+	    "), 'k');
+ 
+/*
+			        edit \n\r \
+					mux  \n\r \
 					H264Header  \n\r \
 					xml  \n\r \
 					tfra  \n\r \
@@ -4338,7 +4341,8 @@ int _tmain(int argc, TCHAR* argv[])
 					analyze  \n\r \
 					simul  \n\r \
 					frame  \n\r \
-	"), 'k');
+*/
+
 
 	c.add(_T("position"),  console_command::type_int , false
 		, _T("file position"), 'p');
@@ -4348,32 +4352,28 @@ int _tmain(int argc, TCHAR* argv[])
 		, _T("handler"), 'h');
 	c.add(_T("size")    ,  console_command::type_int , false
 		, _T("size"), 'z');
-
 	c.add(_T("output"), console_command::type_string , false
 		, _T("output file"), 'o');
 	c.add(_T("starttime"),  console_command::type_int, false
 		, _T("starttime"), 's');
 	c.add(_T("endtime"), console_command::type_int, false
 		, _T("end time"), 'e');
-
 	c.add(_T("stream"), console_command::type_int , false
 		, _T("target stream"));
 	c.add(_T("test"), console_command::type_string , false
 		, _T("target test name"), 't');
 	c.add(_T("help"), console_command::type_string , false
 		, _T("Display Help"), 'h');
-
+	c.add(_T("-help"), console_command::type_string, false
+		, _T("Display Help"));
 	c.add(_T("segment"), console_command::type_int , false
 		, _T("segment duration"));
-
 	c.add(_T("bitrate"), console_command::type_int , false
 		, _T("bitrate"), 'b');
 	c.add(_T("path")   , console_command::type_string , false
 		, _T("path"), 'j');
-
 	c.add(_T("audiotimescale")   , console_command::type_int , false
 		, _T("audio time scale"));
-
 	c.add(_T("validate"), console_command::type_bool, false
 		, _T("validate input in debug build"), 'v');
 
@@ -4391,10 +4391,41 @@ int _tmain(int argc, TCHAR* argv[])
 		return 1;
 	}
 
-	if(c.command_specified(_T("help")))
+	if(c.command_specified(_T("help"))
+		|| c.command_specified(_T("-help"))
+	)
 	{
+		std::cout << std::endl
+			<< "USAGE mg -k:kind -i:[input file path] options"
+			<< std::endl
+			<< std::endl
+			<< "kind is the subcommand should be dash, gop or analyze."
+			<< std::endl
+			<< std::endl
+			<< "DASH: the dash kind will produce a static mpeg-dash fragmented version of your mp4."
+			<< std::endl
+			<< "\tAdd the first mp4 with this sintax: -i:[path] -s:0 -e:0 -b:[bitrate]"
+			<< std::endl
+			<< "\t where -i:path is the path the the file with a -i: prefix. If you want the full file just use -s:0 -e:0."
+			<< std::endl
+			<< "\t use -b:bitrate to specify the video bitrate of the file in kb. For instance 700kb write -b:700."
+			<< std::endl
+			<< "\t use -j:path -b:bitrate to add more file with the same gop structure of your original file bat different bitrate."
+			<< std::endl
+			<< "\t finally add -o:directory to indicate in witch directory writing all fragments."
+			<< std::endl
+			<< std::endl
+			<< "GOP: the gop kind let you see a list of all gop in your file."
+			<< std::endl
+			<< "\t use this command in each of your file to check whether they are gop aligned."
+			<< std::endl
+			<< std::endl;
+		
+		
+		/*
 		std::wcout << static_cast<const TCHAR*>(c.get_help())
 			<< std::endl;
+		*/
 
 		return 0;
 	}
@@ -4806,7 +4837,9 @@ int _tmain(int argc, TCHAR* argv[])
 			
 		}*/
 		else if(kind == _T("ssf") 
-			|| kind == _T("ssfx"))
+			|| kind == _T("ssfx")
+			|| kind == _T("dash")
+			)
 		{
 			unsigned int cnt = c.get_command_count(_T("input"));
 			if(cnt != c.get_command_count(_T("starttime")) ||
@@ -4896,9 +4929,9 @@ int _tmain(int argc, TCHAR* argv[])
 
 				for(unsigned int pp = 0; pp <= npaths; pp++)
 				{
-					ditem.getAt(pp).bitrate = c.get_integer64_value(_T("bitrate"), bitrate_idx++) * 1000UL;
+					ditem.getAt(pp).bitrate       = c.get_integer64_value(_T("bitrate"), bitrate_idx++) * 1000UL;
 					ditem.getAt(pp).audio_bitrate = audio_bitrate;
-					ditem.getAt(pp).lang_count = audio_streams; 
+					ditem.getAt(pp).lang_count    = audio_streams; 
 					
 					for(unsigned int ll = 0; ll < audio_streams; ll++)
 					{
@@ -5127,13 +5160,9 @@ int _tmain(int argc, TCHAR* argv[])
 
 				 out_xml_file += _T("/index.ism");
 
+				 if(kind != _T("dash")) //do not output ssf for dash
 				 {
-					/*
-					CFileOut outfile(out_xml_file, 1024, true);
-
-					outfile.add(reinterpret_cast<const BYTE*>(static_cast<const TCHAR*>(r.xml())), r.xml().size() * sizeof(WCHAR));
-					*/
-
+					
 					 sync_file_bitstream outfile; empty_bitstream_cb cb;
 					 outfile.open(out_xml_file, false);
 
@@ -5150,21 +5179,12 @@ int _tmain(int argc, TCHAR* argv[])
 				 out_xml_file += _T("/index.mpd");
 
 				 {
-				    /*
-					CFileOut outfile(out_xml_file, 1024, true);
-
-					outfile.add(reinterpret_cast<const BYTE*>(static_cast<const TCHAR*>(d.xml())), d.xml().size() * sizeof(WCHAR));
-					*/
-
-					 
+				    
+					 					 
 					 CstringT<char> mpd;
 					                mpd += static_cast<const TCHAR*>(d.xml());
 
-					/*
-					 CFileOut outfile(out_xml_file, 1024, false);
-
-					          outfile.add(reinterpret_cast<const unsigned char *>(static_cast<const char *>(mpd)), mpd.size());
-				     */
+					
 
 						sync_file_bitstream outfile; empty_bitstream_cb cb;
 									outfile.open(out_xml_file, false);

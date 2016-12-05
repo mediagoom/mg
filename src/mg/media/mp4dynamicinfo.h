@@ -79,9 +79,10 @@ public:
 	{
 		if(0 == _paths.size() && start_computed_time > 0)
 			_paths[0] = path;
+
 		
-		
-		_paths[start_computed_time] = path;
+		if(_paths.end() == _paths.find(start_computed_time))
+			_paths[start_computed_time] = path;
 	}
 
 	void rebase(int64_t offset)
@@ -957,11 +958,11 @@ public:
 
 						if(pStream)
 						{
-						//_presentation.get_by_index(i)->AddBitRate(reader.get_stream_bit_rate(i)/1000*1000);
-						if(pStream->is_audio())
-						{
-							bitrate = p_dynamic_items[k].audio_bitrate;
-						}
+						
+							if(pStream->is_audio())
+							{
+								bitrate = p_dynamic_items[k].audio_bitrate;
+							}
 
 						DynamicBitrate * p_dynamic_bitrate = NULL;//_presentation.get_by_index(i)->AddBitRate(bitrate);
 
@@ -1048,21 +1049,22 @@ public:
 
 						if(pStream)
 						{
-						//_presentation.get_by_index(i)->AddBitRate(reader.get_stream_bit_rate(i)/1000*1000);
-						if(pStream->is_audio())
-						{
+							//_presentation.get_by_index(i)->AddBitRate(reader.get_stream_bit_rate(i)/1000*1000);
+							if(pStream->is_audio())
+							{
 						
-							bitrate = p_dynamic_items[k].audio_bitrate;
-						}
+								bitrate = p_dynamic_items[k].audio_bitrate;
+							}
 
-						DynamicBitrate * p_dynamic_bitrate = _presentation.get_by_index(i)->get_bit_rate(bitrate);
+							DynamicBitrate * p_dynamic_bitrate = _presentation.get_by_index(i)->get_bit_rate(bitrate);
 
-						if (NULL == p_dynamic_bitrate)
-							ALXTHROW("invalid bitrate specified");
+							if (NULL == p_dynamic_bitrate)
+								ALXTHROW("invalid bitrate specified");
 						
-						p_dynamic_bitrate->Add(/*_presentation.get_by_index(i)->maxt()*/
-							  _presentation.get_by_index(i)->get_current_end()
-							, p_dynamic_items[k].psz_path);
+							//if (pStream->is_video() || 0 == k)
+								p_dynamic_bitrate->Add(/*_presentation.get_by_index(i)->maxt()*/
+									  _presentation.get_by_index(i)->get_current_end()
+									, p_dynamic_items[k].psz_path);
 
 
 						}//if(pStream)
