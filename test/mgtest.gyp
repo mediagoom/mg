@@ -27,7 +27,7 @@
         
       ]
       , 'include_dirs': [
-      	 '..\src'
+      	 '../src'
       ]
       , 'sources': [
 	  'test.cpp'

@@ -16,9 +16,9 @@
         'variables': {
 
         },
-        'defines': [ 'DEBUG', '_DEBUG' ],
-        'cflags': [ '-g', '-O0' ],
-        'conditions': [
+          'defines': [ 'DEBUG', '_DEBUG' ]
+        , 'cflags': [ '-g3', '-O0' , '-std=c++11']
+        , 'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
           }],
@@ -38,10 +38,9 @@
         },
       },
       'Release': {
-        'variables': {
-        },
-        'cflags': [ '-O3', '-ffunction-sections', '-fdata-sections' ],
-        'conditions': [
+          'variables': {}
+        , 'cflags': [  '-O2', '-g', '-std=c++11', '-static-libstdc++', '-static-libgcc']
+        , 'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
           }],
@@ -75,12 +74,11 @@
           },
         },
       }
-    },
-    # Forcibly disable -Werror.  We support a wide range of compilers, it's
-    # simply not feasible to squelch all warnings, never mind that the
-    # libraries in deps/ are not under our control.
-    'cflags!': ['-Werror']
-	, 'msvs_configuration_attributes': {
+    }
+    
+    , 'cflags!': ['-Werror', '-fno-exceptions']
+    , 'cflags_cc!': [ '-fno-rtti', '-fno-exceptions' ]
+    , 'msvs_configuration_attributes': {
 	  'OutputDirectory': '$(SolutionDir)bin\\$(PlatformName)\\$(ConfigurationName)\\',
 	}
     , 'msvs_settings': {
