@@ -19,6 +19,5 @@ script:
         - git clone https://chromium.googlesource.com/external/gyp.git gyp
         - cd test
         - python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
-        - cat Makefile
         - make CXX=/usr/bin/g++-5 CXX.host=/usr/bin/g++-5 CXX.target=/usr/bin/g++-5
         - env srcdir="$(pwd)" out/Release/mgtest
