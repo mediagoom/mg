@@ -14,11 +14,10 @@ env: COMPILER=g++-5
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y gyp
+  - sudo apt-get install -y gyp 
 script: 
+        - git clone https://chromium.googlesource.com/external/gyp.git gyp
         - cd test
-        - gyp mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
-        - cat ../src/mg/media/mgmedia.target.mk
-        - cat ../src/mg/media/media.Makefile
+        - python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
         - make CXX=/usr/bin/g++-5 V=1
         - env srcdir="$(pwd)" out/Release/mgtest
