@@ -3,6 +3,7 @@ before_install:
   - sudo apt-get install -y gyp
 language: cpp
 script: 
-        - gyp ./test/mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I./deps/libuv/common.gypi
+        - cd test
+        - gyp mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
         - make
-        - env srcdir="$(pwd)/test" out/Release/mgtest
+        - env srcdir="$(pwd)" out/Release/mgtest
