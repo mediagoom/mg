@@ -18,5 +18,5 @@ before_install:
 script: 
         - cd test
         - gyp mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
-        - make CXX=$COMPILER
+        - make CXX=/usr/bin/g++-5
         - env srcdir="$(pwd)" out/Release/mgtest
