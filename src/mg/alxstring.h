@@ -47,6 +47,10 @@
 
 #endif
 
+#ifndef PRId64
+#error "PRId64 not defined"
+#endif
+
 
 
 
@@ -216,7 +220,7 @@ public:
 		if (NULL == str)
 			return *this;
 
-		uint32_t size = strlen(str);
+		uint32_t size = static_cast<uint32_t>(strlen(str));
 
 		if (1 < sizeof(T))
 		{
@@ -490,7 +494,7 @@ public:
 		}
 #endif
 		
-		uint32_t size = _tcslen(sz);		
+		uint32_t size = static_cast<uint32_t>(_tcslen(sz));
 		m_str->add(sz, size);
 			return *this;
 	}
