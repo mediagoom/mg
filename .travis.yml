@@ -1,7 +1,20 @@
+sudo: required
+dist: precise
 language: cpp
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+env: COMPILER=g++-5
+
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y gyp gcc-4.8
+  - sudo apt-get install -y gyp
 script: 
         - cd test
         - gyp mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
