@@ -48,7 +48,8 @@
 #endif
 
 #ifndef PRId64
-#error "PRId64 not defined"
+#warning "PRId64 not defined"
+#define PRId64       "lld"
 #endif
 
 
