@@ -127,7 +127,7 @@ install:
   - choco install python2
    # to run script as a PowerShell command prepend it with ps:
   - git submodule update --init --recursive
-  - git clone https://chromium.googlesource.com/external/gyp.git gyp
+  - ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - ps: ls;$l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
 
 
