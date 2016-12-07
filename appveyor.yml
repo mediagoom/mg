@@ -217,6 +217,8 @@ artifacts:
           name: mg.exe
         - path: '.\test\bin\Win32\Release\mg.pdb'
           name: mg.pdb
+        - path: win-release.zip
+          name: win-release
 
  
 
