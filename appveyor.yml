@@ -30,7 +30,7 @@ branches:
 skip_tags: true
 
 # Start builds on tags only (GitHub and BitBucket)
-skip_non_tags: true
+skip_non_tags: false
 
 # Skipping commits with particular message or from specific user
 skip_commits:
@@ -90,8 +90,8 @@ environment:
   my_var1: value1
   my_var2: value2
   # this is how to set encrypted variable. Go to "Encrypt data" page in account menu to encrypt data.
-  my_secure_var1:
-    secure: FW3tJ3fMncxvs58/ifSP7w==
+  #my_secure_var1:
+  #  secure: FW3tJ3fMncxvs58/ifSP7w==
 
 # environment:
 #  global:
