@@ -234,7 +234,7 @@ deploy:
     # Deploy to GitHub Releases
   - provider: GitHub
     release: mg-v$(appveyor_build_version)
-    artifact:  /win-.*\.zip/
+    artifact:  win-release.zip 
     draft: true
     prerelease: true
     auth_token:
