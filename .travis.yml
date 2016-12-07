@@ -33,5 +33,5 @@ deploy:
   skip_cleanup: true
   on:
     repo: mediagoom/mg
-    branch: dev-nx
-    tags: false
+    branch: master
+    tags: true
