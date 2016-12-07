@@ -1,6 +1,12 @@
 sudo: required
 dist: precise
 language: cpp
+# safelist
+branches:
+  only:
+  - master
+  - dev
+  - dev-nx
 matrix:
   include:
     - compiler: gcc

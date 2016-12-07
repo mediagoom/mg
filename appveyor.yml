@@ -21,7 +21,7 @@ branches:
   only:
     - master
     - dev 
-
+    - dev-win
   # blacklist
   except:
     - gh-pages
