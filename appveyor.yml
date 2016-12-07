@@ -33,14 +33,14 @@ skip_tags: true
 skip_non_tags: false
 
 # Skipping commits with particular message or from specific user
-skip_commits:
-  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/      # Regex for matching commit message
-  author: John                                      # Commit author's username, name, email or regexp maching one of these.
+#skip_commits:
+#  message: /Created.*\.(png|jpg|jpeg|bmp|gif)/      # Regex for matching commit message
+#  author: John                                      # Commit author's username, name, email or regexp maching one of these.
 
 # Including commits with particular message or from specific user
-only_commits:
-  message: /build/                # Start a new build if message contains 'build'
-  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
+#only_commits:
+#  message: /build/                # Start a new build if message contains 'build'
+#  author: jack@company.com        # Start a new build for commit of user with email jack@company.com
 
 # Skipping commits affecting specific files (GitHub only). More details here: /docs/appveyor-yml
 #skip_commits:
@@ -55,7 +55,7 @@ only_commits:
 #    - Project-B/
 
 # Do not build feature branch with open Pull Requests
-skip_branch_with_pr: true
+#skip_branch_with_pr: true
 
 # Maximum number of concurrent jobs for the project
 max_jobs: 1
