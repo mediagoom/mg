@@ -29,7 +29,7 @@ deploy:
   provider: releases
   api_key:
     secure: d8Rd1h43S4S1zfNAvnR6Vhg64HMommrY2WlPMAhGzPHZWP51E+/mQBFX3mR+3lFkDk+bBvEkUjtoTFxY/XMNwbxp6UgZn6r4i+cZnGj+F4s8zn13P7a38yFNm6VpM29e4wTHLl6On7W8UktvSrQM9aBDhycQ29ox/4FHw3s3T85+0f7SNFIU+3HsU7J4LJjwD7TXggEG9F/oJ+pdV6xfLsAxN7nQfq+ZfJrOnwXFD0XKYuO6ggTc4PxFMMsL78Ccq2UmDUUCiUg3Iv/P4aqGg1TWDMl0YkAblclmwXzgWL9ZrT1rUmNT4RqMcKf4IbmoEZBgzxuH6o2uM71jkjHZMlFCzdCHtjJMJ67GL/XTtrJVIjBjIkVs0Kqdd+rxqD2F+V6sm5/OzHPEiB4Ih6h0oKvVGRAvRfMMHx0KAZxQfShjWUs4AQ+vgfqcIzJH6qQwdMyUdTDoFArjkozeAP0gJlG32VH75yTB/ZCARhTV5ElbpCD/4Tdyps3oejB46ZxP/EnRkaQBQH7wXn+Pg4Y5zXu9Ktp3gyGn3HdluLea/an5QjTUIHw2kjV6NHuYd2l3o8UhnaOqw154dzV+wN7QS1jnFzf9Egicx/ZwzTmBuy6FGcztzzw+xYc+hIIi9Etegm7q+d6eLloV80ajdSA8RiG7/5RZQV+xSTBSms4nIu0=
-  file: test/out/Release/mg
+  file: out/Release/mg
   skip_cleanup: true
   on:
     repo: mediagoom/mg
