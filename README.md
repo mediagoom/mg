@@ -1,6 +1,6 @@
 # mg
 
-![trevis-ci](https://travis-ci.org/mediagoom/mg.svg?branch=master)
+[![Build Status](https://travis-ci.org/mediagoom/mg.svg?branch=master)](https://travis-ci.org/mediagoom/mg)
 
 mg tool let you statically package MP4 files into MPEG-DASH.
 
