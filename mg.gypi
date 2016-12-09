@@ -76,7 +76,14 @@
       }
     }
     
-    , 'cflags!': ['-Werror', '-fno-exceptions']
+    , 'cflags!': ['-Werror', '-fno-exceptions'
+			, '-Wall', '-ansi', '-pthread'
+			, '-O3'
+			, '-fstrict-aliasing'
+			, '-fomit-frame-pointer'
+			, '-fdata-sections'
+			, '-ffunction-sections'
+		]
     , 'cflags_cc!': [ '-fno-rtti', '-fno-exceptions' ]
     , 'msvs_configuration_attributes': {
 	  'OutputDirectory': '$(SolutionDir)bin\\$(PlatformName)\\$(ConfigurationName)\\',
