@@ -40,7 +40,8 @@
       'Release': {
           'variables': {}
         , 'cflags': [  '-O2', '-g', '-std=c++11', '-static-libstdc++', '-static-libgcc']
-        , 'conditions': [
+        , 'ldflags': [ '-static-libstdc++', '-static-libgcc'] 
+	, 'conditions': [
           ['target_arch=="x64"', {
             'msvs_configuration_platform': 'x64',
           }],

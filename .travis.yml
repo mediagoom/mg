@@ -2,10 +2,8 @@ sudo: required
 dist: precise
 language: cpp
 branches:
-  only:
-  - master
-  - dev
-  - dev-nx
+  except:
+  - dev-win
 matrix:
   include:
   - compiler: gcc
