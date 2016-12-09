@@ -33,8 +33,8 @@ skip_tags: true
 skip_non_tags: false
 
 # Skipping commits with particular message or from specific user
-skip_commits:
-  message: /.*skip ci.*/      # Regex for matching commit message
+#skip_commits:
+#  message: /.*skip ci.*/      # Regex for matching commit message
 #  author: John                                      # Commit author's username, name, email or regexp maching one of these.
 
 # Including commits with particular message or from specific user
