@@ -1000,6 +1000,12 @@ public:
 							{
 								p_dynamic_bitrate = _presentation.get_by_index(i)->AddBitRate(bitrate);
 								DynamicBitrateVideo * p_dynamic_video = static_cast<DynamicBitrateVideo *>(p_dynamic_bitrate);
+
+								if (reader.stream_count() <= i)
+									ALXTHROW("invalid file stream count");
+
+								if (!reader.IsVisual(i))
+									ALXTHROW("invalid file video stream");
 								
 								const BYTE*    sps_nal_source     = reader.get_visual_entry(0, i).get_avcc_header().get_nal_sequence(0);
 								const unsigned int sps_nal_size   = reader.get_visual_entry(0, i).get_avcc_header().get_sequence_size(0);

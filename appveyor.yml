@@ -129,6 +129,7 @@ install:
   - git submodule update --init --recursive
   - ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - ps: ls;$l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
+  - ps: "--> $($env:APPVEYOR_REPO_TAG_NAME) -- $($env:APPVEYOR_REPO_TAG)" | oh
 
 
 
@@ -242,10 +243,7 @@ deploy:
     auth_token:
         secure: 9yjv22hRjZGOLHgfKr8Z23OYU1Rlz+JSaYxZ8gJlF77DopqYpeyqo5hpL95Aiwnf
     on:
-      branch: 
-        - master                # release from master branch only
-        - dev-win
-      appveyor_repo_tag: false       # deploy on tag push only
+     appveyor_repo_tag: true       # deploy on tag push only
 
    
 
