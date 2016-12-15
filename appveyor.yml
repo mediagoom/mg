@@ -27,7 +27,7 @@ branches:
     - gh-pages
 
 # Do not build on tags (GitHub and BitBucket)
-skip_tags: true
+skip_tags: false
 
 # Start builds on tags only (GitHub and BitBucket)
 skip_non_tags: false
@@ -129,7 +129,7 @@ install:
   - git submodule update --init --recursive
   - ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - ps: ls;$l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
-  - ps: "--> $($env:APPVEYOR_REPO_TAG_NAME) -- $($env:APPVEYOR_REPO_TAG)" | oh
+  - ps: echo "--> $($env:APPVEYOR_REPO_TAG_NAME) -- $($env:APPVEYOR_REPO_TAG)";
 
 
 
