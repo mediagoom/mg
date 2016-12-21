@@ -1,0 +1,199 @@
+
+%.c{
+#include "media_parser.h"
+%.c}
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+// Layers
+const unsigned int LAYER1    = 0b11;
+const unsigned int LAYER2    = 0b10;
+const unsigned int LAYER3    = 0b01;
+
+// Modes
+const int SINGLE_CHANNEL	= 0b11;
+const int DUAL_CHANNEL      = 0b10;
+const int JOINT_STEREO      = 0b01;
+const int STEREO            = 0b00;
+
+const int BITRATE[4][4][16]=
+{
+    {{0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio 2.5 layer X
+     {0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0},  //MPEG Audio 2.5 layer 3
+     {0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0},  //MPEG Audio 2.5 layer 2
+     {0,  32,  48,  56,  64,  80,  96, 112, 128, 144, 160, 176, 192, 224, 256,   0}}, //MPEG Audio 2.5 layer 1
+    {{0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio X layer X
+     {0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio X layer 3
+     {0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio X layer 2
+     {0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0}}, //MPEG Audio X layer 1
+    {{0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio 2 layer X
+     {0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0},  //MPEG Audio 2 layer 3
+     {0,   8,  16,  24,  32,  40,  48,  56,  64,  80,  96, 112, 128, 144, 160,   0},  //MPEG Audio 2 layer 2
+     {0,  32,  48,  56,  64,  80,  96, 112, 128, 144, 160, 176, 192, 224, 256,   0}}, //MPEG Audio 2 layer 1
+    {{0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0},  //MPEG Audio 1 layer X
+     {0,  32,  40,  48,  56,  64,  80,  96, 112, 128, 160, 192, 224, 256, 320,   0},  //MPEG Audio 1 layer 3
+     {0,  32,  48,  56,  64,  80,  96, 112, 128, 160, 192, 224, 256, 320, 384,   0},  //MPEG Audio 1 layer 2
+     {0,  32,  64,  96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448,   0}} //MPEG Audio 1 layer 1
+};
+const int SAMPLING_FREQ[4][4] = { 
+	{ 11025, 12000, 8000, -1 }, 
+	{ -1, -1, -1, -1 }, 
+	{ 22050, 24000, 16000, -1 }, 
+	{ 44100, 48000, 32000, -1 } 
+};
+
+const int COEFFICIENTS[2][3] =
+{
+	{	// MPEG 1
+		12,		// Layer1	(must be multiplied with 4, because of slot size)
+		144,	// Layer2
+		144		// Layer3
+	},
+	{	// MPEG 2, 2.5
+		12,		// Layer1	(must be multiplied with 4, because of slot size)
+		144,	// Layer2
+		72		// Layer3
+	}
+};
+
+// Header
+class AudioHeader {
+    const bit(11) syncword = 0b1111.1111.111;
+    bit(2) id; 
+    bit(2) layer;
+    bit(1) protection_bit;
+    bit(4) bitrate_index;
+    bit(2) sampling_frequency;
+    bit(1) padding_bit;
+    bit(1) private_bit;
+    bit(2) mode;
+    bit(2) mode_extension;
+    bit(1) copyright;
+    bit(1) original_copy;
+    bit(2) emphasis;
+
+		%{
+		
+		AudioHeader():layer(0){}
+		
+				unsigned int getBitRate() const{return BITRATE[id][layer][bitrate_index] * 1000;}
+        unsigned int getByteRate()   const {return getBitRate()/8;}
+		unsigned int getChannels()   const {return (mode == SINGLE_CHANNEL) ? 1 : 2; }
+		         int getFrequency()  const {return SAMPLING_FREQ[id][sampling_frequency];}
+		unsigned int getFrameLength()const {
+										
+										unsigned int ll = getLayer();
+										if(1 > ll)
+											return 0;
+										
+										int lf = (0x3 == id)?0:1;
+										int c  = COEFFICIENTS[lf][(getLayer()-1)];
+										unsigned int l = (0x3 == layer)? 
+									(c * (getBitRate()) / getFrequency() + padding_bit) * 4:
+									 c * (getBitRate()) / getFrequency() + padding_bit;
+
+						return l;
+		}
+		unsigned __int64 getFrameTime() const{return static_cast<__int64>(((double)getFrameLength()/(double)getByteRate())*10000000);}
+		unsigned int getLayer() const
+		{
+			if(LAYER1==layer)
+				return 1;
+			if(LAYER2==layer)
+				return 2;
+			if(LAYER3==layer)
+				return 3;
+
+			return 0;
+		}
+		float getFrame_rate() const
+		{
+			return ((float)10000000)/((float)getFrameTime());
+		}
+		
+		bool operator==(AudioHeader rhs) const
+		{
+		    return syncword == rhs.syncword 
+				&& id == rhs.id 
+				&& layer == rhs.layer 
+				&& protection_bit == rhs.protection_bit 
+				&& bitrate_index == rhs.bitrate_index 
+				&& sampling_frequency == rhs.sampling_frequency 
+				&& padding_bit == rhs.padding_bit 
+				&& private_bit == rhs.private_bit 
+				&& mode == rhs.mode 
+				&& mode_extension == rhs.mode_extension 
+				&& copyright == rhs.copyright 
+				&& original_copy == rhs.original_copy 
+				&& emphasis == rhs.emphasis ;
+
+		}
+		
+		bool IsValid()
+		{
+		  return       0 < layer && 4 > layer 
+					&& getFrameLength() > 0
+					&& getBitRate() > 0
+					&& getFrequency() > 0
+					;
+		}
+	%}
+}
+
+class ID3 
+{
+	bit(8) ID_1;
+	bit(8) ID_2;
+	bit(8) ID_3;
+}
+
+//THIS IS AT THE END OF THE FILE
+//class ID2V1 extends ID3
+//{
+//	int i = 0;
+//	while(i < 30){char(8)  Title [[i++]]}; 
+//    while(i < 30){char(8)  Artist[[i++]]}; 
+//    while(i < 30){char(8)  Album [[i++]]};  
+//    unsigned int(32)   Year; 
+//    while(i < 30){char(8)  Comment[[i++]]}; 
+//    unsigned int(8)  Genre;
+//}
+
+class ID2V2_3 extends ID3
+{
+	bit(8)  Version;
+	bit(8)  Revision;
+	
+	bit(5)  Flags = 0x0;
+	bit(1)  ExperimentalIndicator;
+	bit(1)  Extendedheader;
+	bit(1)  Unsynchronisation;
+
+	bit(1)  check = 0x0;
+	unsigned int(7)  size1;
+	bit(1)  check = 0x0;
+	unsigned int(7)  size2;
+	bit(1)  check = 0x0;
+	unsigned int(7)  size3;
+	bit(1)  check = 0x0;
+	unsigned int(7)  size4;
+	
+
+	unsigned int Size = ((size1 << 21) |
+		                (size2 << 14) |
+						(size3 << 7)  |
+						(size4))
+						+ 10;
+
+	%{
+		
+	%}
+
+}
+
+
+%{
+__ALX_END_NAMESPACE
+%}

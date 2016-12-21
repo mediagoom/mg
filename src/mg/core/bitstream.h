@@ -177,6 +177,13 @@ public:
 	virtual void read(unsigned char * pbytes, uint32_t size, uint32_t * read) = 0;
 	virtual void write(const unsigned char * pbyte, uint32_t size) = 0;
 
+
+	/* Search for a specified code (input); returns number of bits skipped, excluding the code.
+	* If alen>0, then output bits up to the specified alen-bit boundary (output); returns number of bits written
+	* The code is represented using n bits at alen-bit boundary.
+	*/
+	virtual unsigned int nextcode(unsigned int code, int n, int alen) = 0;
+
 	
 };
 
@@ -1017,6 +1024,31 @@ protected:
 
 		
 	}
+
+	virtual uint32_t _nextcode(unsigned int code, int n, int alen)
+	{
+		unsigned int s = 0;
+
+		if (_load) {
+			if (!alen) {
+				while (code != _nextbits(n)) {
+					s += 1;
+					_skipbits(1);
+				}
+			}
+			else {
+				s += _align(alen);
+				while (code != _nextbits(n)) {
+					s += alen;
+					_skipbits(alen);
+				}
+			}
+		}
+		else 
+			s += _align(alen);
+
+		return s;
+	}
 };
 
 
@@ -1081,6 +1113,11 @@ public:
 	virtual void write(const unsigned char * pbytes, uint32_t size)
 	{
 		bitstream_base<Type>::_write_direct(pbytes, size);
+	}
+
+	virtual uint32_t nextcode(unsigned int code, int n, int alen)
+	{
+		bitstream_base<Type>::_nextcode(code, n, alen);
 	}
 
 };  

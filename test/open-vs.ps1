@@ -17,9 +17,10 @@ $ErrorActionPreference = "Stop";
 $my_dir = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 
 $k = & "$my_dir\compile-gyp.ps1" $arch
-
-"LASTEXITCODE: $k" | oh
-if(0 -eq $k)
+$j = $LASTEXITCODE
+$k | oh
+"LASTEXITCODE: $j" | oh
+if(0 -eq $j)
 {
   & "$my_dir\mgtest.sln"
 }

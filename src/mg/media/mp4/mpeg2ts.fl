@@ -1,0 +1,1682 @@
+
+%pragma array=256
+%pragma get
+//%pragma trace
+
+%.c{
+#include <stdio.h>
+#include "media_parser.h"
+#include <vector>
+
+const int TRANSPORT_PACKET_SIZE = 188;
+%.c}
+
+%{
+__ALX_BEGIN_NAMESPACE
+%}
+
+//////////////
+//stream_id///
+//////////////
+const unsigned int private_stream_2 = 0xBF;
+const unsigned int padding_stream   = 0xBE;
+
+//////////////
+//video///////
+//////////////
+const unsigned int extension_start_code	= 0x000001B5;
+
+///////////////
+// PES Types //
+///////////////
+const unsigned int ST_PSMapTable    = 0x000001BC;
+const unsigned int ST_Private1      = 0x000001BD;
+const unsigned int ST_Padding       = 0x000001BE;
+const unsigned int ST_Private2      = 0x000001BF;
+const unsigned int ST_Audio1        = 0x000001C0;
+const unsigned int ST_Audio2        = 0x000001DF;
+const unsigned int ST_Video1        = 0x000001E0;
+const unsigned int ST_Video2        = 0x000001EF;
+const unsigned int ST_ECM           = 0x000001F0;
+const unsigned int ST_EMM           = 0x000001F1;
+const unsigned int ST_DSMCC         = 0x000001F2;
+const unsigned int ST_ISO_13522     = 0x000001F3;
+const unsigned int ST_ITUT_A        = 0x000001F4;
+const unsigned int ST_ITUT_B        = 0x000001F5;
+const unsigned int ST_ITUT_C        = 0x000001F6;
+const unsigned int ST_ITUT_D        = 0x000001F7;
+const unsigned int ST_ITUT_E        = 0x000001F8;
+const unsigned int ST_PSDirectory   = 0x000001FF;
+
+/////////////////
+// Trick codes //
+/////////////////
+const unsigned int fast_forward     = 0b000;
+const unsigned int slow_motion      = 0b001;
+const unsigned int freeze_frame     = 0b010;
+const unsigned int fast_reverse     = 0b011;
+const unsigned int slow_reverse     = 0b100;
+
+
+
+/*
+HEADER 187 POSITION: 645134 -> System Header
+        0:                  begin SystemHeader
+       32:   16       00 12 header_length (18)
+       48:    1          01 marker (1)
+       49:   22    00 62 70 rate_bound (25200)
+       71:    1          01 marker (1)
+       72:    6          01 audio_bound (1)
+       78:    1          00 fixed_flag (0)
+       79:    1          00 CSPS_flag (0)
+       80:    1          01 system_audio_lock_flag (1)
+       81:    1          01 system_video_lock_flag (1)
+       82:    1          01 marker (1)
+       83:    5          01 video_bound (1)
+       88:    1          00 packet_rate_restriction_flag (0)
+       89:    7          7F reserved (127)
+       96:    8          B9 stream_id[0] (185)                   ALL VIDEO
+      104:    2          03 bit_pattern (3)
+      106:    1          01 P_STD_buffer_bound_scale (1)
+      107:   13       00 E8 P_STD_buffer_size_bound (232)
+      120:    8          B8 stream_id[1] (184)                   ALL AUDIO
+      128:    2          03 bit_pattern (3)
+      130:    1          00 P_STD_buffer_bound_scale (0)
+      131:   13       00 20 P_STD_buffer_size_bound (32)
+      144:    8          BD stream_id[2] (189)                   PRIVATE STREAM 1
+      152:    2          03 bit_pattern (3)
+      154:    1          01 P_STD_buffer_bound_scale (1)
+      155:   13       00 3A P_STD_buffer_size_bound (58)
+      168:    8          BF stream_id[3] (191)                   PRIVATE STREAM 2
+      176:    2          03 bit_pattern (3)
+      178:    1          01 P_STD_buffer_bound_scale (1)
+      179:   13       00 02 P_STD_buffer_size_bound (2)
+*/
+
+
+
+class MpegTime{
+	%{
+		static uint64_t Time(unsigned int t32_30, unsigned int t29_15, unsigned int t14_0, unsigned int ext)
+		{
+			unsigned __int64 SCR;
+			double scr_val(0);
+	
+			SCR = t32_30; //SCR 32..30
+			//scr_val= (SCR>3)?4294967296.0:0.0;	// caz pt. SCR[32]=1 -> overflow
+			SCR = SCR << 30;
+			SCR |= t29_15 << 15;           //SCR 29..15
+			SCR |= t14_0;
+
+			scr_val += static_cast<double>(SCR);
+    
+			scr_val *= 300.0;
+	
+			SCR  = ext;		// SCR_ext
+	
+			scr_val += static_cast<double>(SCR);
+			scr_val = scr_val/27000.0;	
+
+			return static_cast<uint64_t>(scr_val * 10000);
+
+		}
+
+        static uint64_t Time(unsigned int t32_30, unsigned int t29_15, unsigned int t14_0)
+		{
+			return Time(t32_30, t29_15, t14_0, 0);
+		}
+
+        static void ToMpegTime(uint64_t time, unsigned int &t32_30, unsigned int &t29_15, unsigned int &t14_0, unsigned int &ext)
+		{
+			uint64_t system_clock_frequency = 27000;
+
+			time = time / 10000;
+
+	
+
+			uint64_t pcr_base =  (time * system_clock_frequency)/300;//((system_clock_frequency * time)/300)%(2^33);
+			uint64_t pcr_ext  =  (time * system_clock_frequency)%300;//((system_clock_frequency * time)%(300*2^33)) - (pcr_base*300);
+    
+			t32_30 = static_cast<uint32_t>( pcr_base >> 30 );
+			t29_15 = (pcr_base & 0x2FFFFFFF) >> 15;
+			t14_0  = (pcr_base & 0x00007FFF);
+			ext    =  pcr_ext;
+
+    
+		}
+
+
+        static void ToMpegTime(uint64_t time, unsigned int &t32_30, unsigned int &t29_15, unsigned int &t14_0)
+		{
+			unsigned int ext(0);
+
+			ToMpegTime(time, t32_30, t29_15, t14_0, ext);
+		}
+
+
+
+	%}
+}
+
+class SystemHeaderStream
+{
+	unsigned int(8) stream_id;
+    bit(2) bit_pattern = 0b11;
+    bit(1) P_STD_buffer_bound_scale;
+    unsigned int(13) P_STD_buffer_size_bound;
+}
+
+
+/* 
+ * SystemHeader
+ *
+ */
+class SystemHeader 
+{
+    //nextcode(aligned(8), 0x000001BB);   // PS System Header 
+    //skipbits(32);                       // The next 32 bits must be the system header sc
+
+	unsigned int(24) packet_start_code_prefix = 0x000001;
+    unsigned int(8)  id = 0xBB;
+
+    unsigned int(16) header_length;
+    bit(1) marker = 0b1;
+    unsigned int(22) rate_bound;        // UB on the program_mux_rate field
+                                        // Should check that rate_bound >= max(program_mux_rate)
+    bit(1) marker = 0b1;  
+    unsigned int(6) audio_bound;        // UB on the number of active audio streams
+    bit(1) fixed_flag;                  // 1 = fixed bit rate
+    bit(1) CSPS_flag;                   // 1 = constrained params
+    bit(1) system_audio_lock_flag;      // Locked to the STC
+    bit(1) system_video_lock_flag;      // Locked to the STC
+    bit(1) marker = 0b1;
+    unsigned int(5) video_bound;        // UB on the number of video streams 
+    bit(1) packet_rate_restriction_flag;
+    const bit(7) reserved = 0x7F;
+    
+	int i = 0;
+
+    while (nextbits(1) == 0b1) {
+        
+		unsigned int(8) stream_id[[i++]];
+        if (stream_id[i] < 0xBC) {
+            if (stream_id[i] != 0xB8) {
+                if (stream_id[i] != 0xB9) {
+                    %g{ 
+                    print_error(); %g}
+                }
+            }
+        } 
+
+        bit(2) bit_pattern = 0b11;
+        bit(1) P_STD_buffer_bound_scale[[i]];
+        unsigned int(13) P_STD_buffer_size_bound[[i]];
+    }
+ 
+    %.c{
+    void print_error() { printf("Error in SystemHeader! Wrong stream_id!"); } %.c}
+    %.j{
+    void print_error() { System.out.println("Error in SystemHeader! Wrong stream_id!"); } %.j}
+}
+
+/* 
+ * PackHeader
+ * 
+ */
+class PackHeader 
+{
+    //nextcode(aligned(8), 0x000001BA); 
+    //skipbits(32);    
+
+	unsigned int(24) packet_start_code_prefix = 0x000001;
+    unsigned int(8)  id = 0xBA;
+
+    bit(2) bit_pattern = 0b01;
+    bit(3) system_clock_ref_1;
+    bit(1) marker = 0b1;
+    bit(15) system_clock_ref_2;
+    bit(1) marker = 0b1;
+    bit(15) system_clock_ref_3;
+    bit(1) marker = 0b1;
+    unsigned int(9) system_clock_ref_extension;
+    bit(1) marker = 0b1;
+	//This is a positive integer specifying the rate at which the P-STD receives the ISO/IEC 13818 Program Stream during the pack in which it is included. The value of program_mux_rate is measured in units of 50 bytes/second rounded upwards.  The value 0 is forbidden.  The value represented in program_mux_rate is used to define the time of arrival of bytes at the input to the P-STD in clause 2.5.2 on page 39 of this Recommendation | International Standard. The value encoded in the program_mux_rate field may vary from pack to pack in an ISO/IEC 13818 program multiplexed stream.
+    unsigned int(22) program_mux_rate;
+
+    //if (program_mux_rate == 0) {
+    //    %g{ 
+    //    print_error(); %g}
+    //}
+    
+    bit(1) marker = 0b1;
+    bit(1) marker = 0b1;
+    bit(5) reserved;
+    unsigned int(3) stuffing_len;
+
+    unsigned int i;
+    for(i=0; i < stuffing_len; i++)
+        bit(8) stuffing_byte = 0xFF;
+    //if (nextbits(32) == 0x000001BB) 
+    //    SystemHeader system_header;
+   
+//    %.c{
+//    void print_error() { printf("Error in PackHeader! The program_mux_rate = 0!"); } %.c}
+//    %.j{
+//    void print_error() { System.out.println("Error in PackHeader! The program_mux_rate = 0!"); } %.j}
+
+
+	%{ unsigned __int64 GetTime() const {return MpegTime::Time(system_clock_ref_1, system_clock_ref_2, system_clock_ref_3, system_clock_ref_extension);}
+	%}
+
+}
+
+
+//descriptor without inheritance
+class base_program_descriptor
+{
+	unsigned int(8) tag;
+	unsigned int(8) length;
+	
+	int des_byte_count = 0;
+	
+	for (des_byte_count=0; des_byte_count < length; des_byte_count++) 
+	{
+	   unsigned char(8) descriptor_data_byte[[des_byte_count]];
+	}
+	
+}
+
+
+/////////////////////////
+// Program Descriptors //
+/////////////////////////
+abstract class BaseProgramDescriptor : unsigned int(8) tag = 0 
+{
+    unsigned int(8) length;
+}
+
+class VideoDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 2 
+{
+    bit(1) multiple_frame_rate_flag;
+    unsigned int(4) frame_rate_code;
+    bit(1) MPEG1_only_flag;
+    bit(1) constrained_parameter_flag;
+    bit(1) still_picture_flag;
+    if (MPEG1_only_flag == 0b1) {
+        unsigned int(8) profile_and_level_indication;
+        unsigned int(2) chroma_format;
+        bit(1) frame_rate_extension_flag;
+        bit(5) reserved;
+    }
+}
+
+class AudioDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 3 
+{
+    bit(1) free_format_flag;
+    bit(1) ID;
+    bit(2) layer;
+    bit(1) variable_rate_audio_indicator;
+    bit(3) reserved;
+}
+
+class HierarchyDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 4 
+{
+    bit(4) reserved;
+    unsigned int(4) hierarchy_type;
+    bit(2) reserved;
+    unsigned int(6) hierarchy_layer_index;
+    bit(2) reserved;
+    unsigned int(6) hierarchy_embedded_layer_index;
+    bit(2) reserved;
+    unsigned int(6) hierarchy_channel;
+}
+
+class RegistrationDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 5 
+{
+    unsigned int(32) format_identifier;
+    unsigned int bytes_read;
+    for (bytes_read=4; bytes_read < length; ) {
+        bit(8) additional_identification_info;
+        bytes_read += 1;
+    }
+}
+
+class DataAlignmentDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 6 
+{
+    unsigned int(8) alignment_type;
+}
+
+class TargetBackgroundGridDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 7 
+{
+    unsigned int(14) horizontal_size;
+    unsigned int(14) vertical_size;
+    unsigned int(4) aspect_ratio_information;
+}
+
+class VideoWindowDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 8 
+{
+    unsigned int(14) horizontal_offset;
+    unsigned int(14) vertical_offset;
+    unsigned int(4) window_priority;
+}
+
+class ConditionalAccessDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 9 
+{
+    unsigned int(16) CA_system_ID;
+    bit(3) reserved;
+    unsigned int(13) CA_PID;
+    unsigned int bytes_read;
+    for (bytes_read=4; bytes_read < length; ) {
+        unsigned int(8) private_data_byte;
+        bytes_read += 1;
+    }
+}
+
+class LanguageDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 10 
+{
+    unsigned int bytes_read;
+    for (bytes_read=0; bytes_read < length; ) {
+        bit(24) ISO_639_language_code;
+        bit(8) audio_type;
+        bytes_read += 4;
+    }
+}
+
+class SystemClockDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 11 
+{
+    bit(1) external_clock_reference_indicator;
+    bit(1) reserved;
+    unsigned int(6) clock_accuracy_indicator;
+    unsigned int(3) clock_accuracy_exponent;
+    bit(5) reserved;
+}
+
+class MultiplexBufferUtilizationDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 12
+{
+    bit(1) bound_valid_flag; 
+    unsigned int(15) LTW_offset_lower_bound;
+    bit(1) reserved;
+    unsigned int(15) LTW_offset_upper_bound;
+}
+
+class CopyrightDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 13 
+{
+    unsigned int(32) copyright_identifier;
+    unsigned int bytes_read;
+    for (bytes_read=4; bytes_read < length; ) {
+        bit(8) additional_copyright_info;
+        bytes_read += 1;
+    }
+}
+
+class MaximumBitrateDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 14 
+{
+    bit(2) reserved;
+    unsigned int(22) maximum_bitrate;
+}
+
+class PrivateDataIndicatorDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 15 
+{
+    unsigned int(32) private_data_indicator;
+}
+
+class SmoothingBufferDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 16 
+{
+    bit(2) reserved;
+    unsigned int(22) sb_leak_rate;
+    bit(2) reserved;
+    unsigned int(22) sb_size;
+}
+
+class STDDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 17 
+{
+    bit(7) reserved;
+    bit(1) leak_valid_flag;
+}
+
+class IBPDescriptor extends BaseProgramDescriptor : unsigned int(8) tag = 18 
+{
+    unsigned int(1) closed_gop_flag;
+    unsigned int(1) identical_gop_flag; 
+    unsigned int(14) max_gop_length;
+}
+
+class base_stream_descriptor
+{
+%{
+private:
+      
+      std::vector<base_program_descriptor*> _program_descriptor;
+      void cleanup()
+      {
+          for(int i = 0; i <  _program_descriptor.size(); i++)
+				delete  _program_descriptor[i];
+	 
+		  _program_descriptor.clear();
+      }
+public:
+      virtual ~base_stream_descriptor()
+      {
+        cleanup();
+      }
+      
+      int parsed_size()
+      {
+         return 3 + elementary_stream_info_length;
+      }
+%}
+	unsigned int(8)	 elementary_stream_id;
+    unsigned int(16) elementary_stream_info_length;
+    
+    unsigned int parsedBytes = 0;
+    %p{ 
+			int descriptor_count = 0;
+		%p}
+		
+    for (parsedBytes=0; parsedBytes < elementary_stream_info_length; ) {
+    
+		%p{
+		   descriptor      = _program_descriptor[descriptor_count++];
+		   parsedBytes += (descriptor->length + 2);
+	   %p}
+	   
+	   base_program_descriptor descriptor;
+	   
+	   %g{
+			_program_descriptor.push_back(descriptor);
+			parsedBytes += (descriptor->length + 2);
+	   %g}
+	}
+}
+
+////////////////////////
+// Stream Descriptors //
+////////////////////////
+abstract class BaseStreamDescriptor : unsigned int(8) type = 0x00 
+{
+    unsigned int(8) elementary_stream_id;
+    unsigned int(16) elementary_stream_info_length;
+
+    unsigned int parsedBytes;
+    for (parsedBytes=0; parsedBytes < elementary_stream_info_length; ) {
+        BaseProgramDescriptor descriptor;
+        parsedBytes += lengthof(descriptor);
+    }
+}
+
+class MPEG1VideoStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x01 {}
+class MPEG2VideoStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x02 {}
+class MPEG1AudioStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x03 {}
+class MPEG2AudioStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x04 {}
+class PrivateStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x05 {}
+class PrivatePESDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x06 {}
+class MHEGStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x07 {}
+class DSMCCStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x08 {}
+class H222_1StreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x09 {}
+class ATypeStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0A {}
+class BTypeStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0B {}
+class CTypeStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0C {}
+class DTypeStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0D {}
+class AuxiliaryStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0E {}
+class ReservedStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x0F .. 0x7F {}
+class UserPrivateStreamDescriptor extends BaseStreamDescriptor : unsigned int(8) type = 0x80 .. 0xFF {}
+
+/* If trick_mode '0' was not assigned to fast_forward, then we could have 
+ * used polymorphic class inheritance.
+ */
+class TrickModeControl 
+{
+    unsigned int(3) trick_mode_control;
+    if (trick_mode_control == fast_forward || trick_mode_control == fast_reverse) {
+        bit(2) field_id;
+        bit(1) intra_slice_refresh;
+        bit(2) frequency_truncation;
+    }
+    else if (trick_mode_control == slow_motion) 
+        unsigned int(5) rep_ctrl;
+    else if (trick_mode_control == freeze_frame) {
+        bit(2) field_id;
+        bit(3) reserved;
+    }
+    else if (trick_mode_control == slow_reverse) 
+        unsigned int(5) rep_ctrl;
+    else
+        bit(5) reserved;
+}
+
+
+
+/////////
+// PES //
+/////////
+/*
+ * PesBase
+ *
+ * Abstract base class for all PES Packet derivations
+ *
+ */
+class PesBase
+{
+	unsigned int(24) packet_start_code_prefix = 0x000001;
+    unsigned int(8)  stream_id;
+
+    unsigned int(16) PES_packet_length; 
+}
+
+
+////////////////
+// PSMapTable //
+////////////////
+class PSMapTable extends PesBase //: const unsigned int(32) st_id = ST_PSMapTable 
+{
+    if (PES_packet_length > 1018) {
+        %g{ 
+        print_error(); %g}
+    }
+
+    bit(1) current_next_indicator;
+    bit(2) reserved;
+    unsigned int(5) program_stream_map_version;
+    bit(7) reserved;
+    bit(1) marker = 0b1;
+    unsigned int(16) program_stream_info_length;
+
+    unsigned int parsed;
+    for (parsed=0; parsed < program_stream_info_length; ) {
+        BaseProgramDescriptor program_descriptor;
+        parsed += lengthof(program_descriptor);
+    }
+    
+    unsigned int(16) elementary_stream_map_length;
+    unsigned int stream_map_ct;
+    for (stream_map_ct=0; stream_map_ct < elementary_stream_map_length; ) {
+        BaseStreamDescriptor stream_descriptor;
+        stream_map_ct += lengthof(stream_descriptor);
+    }
+    
+    unsigned int(32) CRC_32;
+
+    %.c{
+    void print_error() { printf("Error in PSMapTable! The PES_packet_length is too high!"); } %.c}
+    %.j{
+    void print_error() { System.out.println("Error in PSMapTable! The PES_packet_length is too high!"); } %.j}
+}
+
+/////////////////
+// PSDirectory //
+/////////////////
+class PSDirectory extends PesBase //: const unsigned int(32) st_id = ST_PSDirectory 
+{
+    unsigned int(15) number_of_access_units;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_1;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_2;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_3;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_4;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_5;
+    bit(1) marker = 0b1;
+    unsigned int(15) previous_directory_offset_6;
+    bit(1) marker = 0b1;
+
+    unsigned int i;
+    for (i=0; i < number_of_access_units; i++) {
+        unsigned int(8) packet_stream_id;
+        int(1) PES_header_position_offset_sign;
+        unsigned int(14) PES_header_position_offset_1;
+        bit(1) marker = 0b1;
+        unsigned int(15) PES_header_position_offset_2;
+        bit(1) marker = 0b1;
+        unsigned int(15) PES_header_position_offset_3;
+        bit(1) marker = 0b1;
+        unsigned int(16) reference_offset;
+        bit(1) marker = 0b1;
+        bit(3) reserved;
+        unsigned int(3) PTS_1;
+        bit(1) marker = 0b1;
+        unsigned int(15) PTS_2;
+        bit(1) marker = 0b1;
+        unsigned int(15) PTS_3;
+        bit(1) marker = 0b1; 
+        unsigned int(15) bytes_to_read;
+        bit(1) marker = 0b1;
+        unsigned int(8) bytes_to_read;
+        bit(1) marker = 0b1;
+        bit(1) intra_coded_indicator;
+        bit(2) coding_parameters_indicator;
+        bit(4) reserved;
+    }
+}
+
+
+
+
+/*
+ * PesData
+ *
+ * Abstract base class for all PESPacket derivations whose stream id's
+ * Range from 0xC0 .. 0xEF
+ *
+ */
+class PesData extends PesBase 
+{
+    //skipbits(8*PES_packet_length);
+
+	if (stream_id != private_stream_2 && stream_id != padding_stream) {
+
+	bit(2) check = 0b10;
+	bit(2) PES_scrambling_control;
+    bit(1) PES_priority;
+
+	
+	bit(1) data_alignment_indicator;
+	bit(1) copyright;
+	bit(1) original_or_copy;
+	bit(1) PTS_flags;
+	bit(1) DTS_flags;
+	bit(1) ESCR_flag;
+	bit(1) ES_rate_flag;
+	bit(1) DSM_trick_mode_flag;
+	bit(1) additional_copy_info_flag;
+	bit(1) PES_CRC_flag;
+	bit(1) PES_extension_flag;
+	unsigned int(8) PES_header_data_length;
+
+	unsigned int size;
+	size = 0;
+
+	if(PTS_flags)
+	{
+		bit(4)  check2 = 0b0011 & (0b10 | DTS_flags);
+		bit(3)  PTS_32_30;
+		bit(1)  marker_bit = 1;
+		bit(15) PTS_29_15;
+		bit(1)  marker_bit = 1;
+		bit(15) PTS_14_0;
+		bit(1)  marker_bit = 1;
+
+		size += 40;
+	}
+
+	if(DTS_flags)
+	{
+		bit(4)  check2 = 0b0001;
+		bit(3)  DTS_32_30;
+		bit(1)  marker_bit = 1;
+		bit(15) DTS_29_15;
+		bit(1)  marker_bit = 1;
+		bit(15) DTS_14_0;
+		bit(1)  marker_bit = 1;
+
+		size += 40;
+	}
+
+	if(ESCR_flag)
+	{
+		bit(2)  reserved;
+		bit(3)  ESCR_base_32_30;
+		bit(1)  marker_bit = 1;
+		bit(15) ESCR_base_29_15;
+		bit(1)  marker_bit = 1;
+		bit(15) ESCR_base_14_0;
+		bit(1)  marker_bit = 1;
+		bit(9)  ESCR_extension;
+		bit(1)  marker_bit;
+
+		size += 48;
+	}
+
+	if(ES_rate_flag)
+	{
+		bit(1) marker_bit = 1;
+        bit(22) ES_rate;
+        bit(1) marker_bit = 1;
+
+		size += 24;
+	}
+
+    if(DSM_trick_mode_flag == 1) 
+	{
+		bit(3) trick_mode_control;
+
+		
+        	if ( trick_mode_control == 0b000 ) {
+				bit(2) field_id;
+				bit(1) intra_slice_refresh;
+				bit(2) frequency_truncation;
+			}
+			else if( trick_mode_control == 0b001 ){
+				bit(5) field_rep_cntrl;
+			}
+			else if( trick_mode_control == 0b010 ) {
+				bit(2) field_id;
+				bit(3) reserved;
+			} 
+			else if ( trick_mode_control == 0b011 ) {
+				bit(2) field_id;
+				bit(1) intra_slice_refresh;
+				bit(2) frequency_truncation;
+			}
+
+			size += 8;
+	}
+	if ( additional_copy_info_flag == 1) 
+	{	
+		bit(1) marker_bit = 1;
+		bit(7) additional_copy_info;
+
+		size += 8;
+	}
+	if (PES_CRC_flag == 1) 
+	{
+		bit(16) previous_PES_packet_CRC;
+
+		size += 8;
+	}
+	if (PES_extension_flag == 1) 
+	{
+		bit(1) PES_private_data_flag;
+		bit(1) pack_header_field_flag;
+		bit(1) program_packet_sequence_counter_flag;
+		bit(1) P_STD_buffer_flag;
+		bit(3) reserved_Pes;
+		bit(1) PES_extension_field_flag;
+
+		size += 8;
+
+		if (PES_private_data_flag == 1 ) 
+		{ 
+			bit(32) PES_private_data_1;
+			bit(32) PES_private_data_2;
+			bit(32) PES_private_data_3;
+			bit(32) PES_private_data_4;
+
+			size += 128;
+		}
+
+		if (pack_header_field_flag == 1 ) 
+		{
+			bit(8) pack_field_length;
+			skipbits(pack_field_length*8);
+
+			size += 8;
+			size += (pack_field_length*8);
+		}
+		if(program_packet_sequence_counter_flag== 1)
+		{
+			 bit(1) marker_bit;
+		     bit(7) program_packet_sequence_counter;
+		     bit(1) marker_bit;
+		     bit(7) original_stuff_length;
+
+			 size += 16;
+		}
+		if ( P_STD_buffer_flag == 1 ) 
+		{
+			bit(2)  P_STD_Reserved = 0b01;
+		    bit(1)  P_STD_buffer_scale;
+		    bit(13) P_STD_buffer_size;
+
+			size += 16;
+		}
+
+		if ( PES_extension_field_flag == 1)
+		{
+			bit(1) marker_bit;
+			bit(7) PES_extension_field_length;
+			int PES_extension_field_count = 0;
+			for(PES_extension_field_count=0;PES_extension_field_count<PES_extension_field_length;PES_extension_field_count++) 
+			{
+				bit(8) reserved;
+			}
+
+			size += 8;
+			size += (PES_extension_field_length*8);
+		}
+
+	}
+
+	//stuffing
+	//skipbits(size - (PES_header_data_length*8));
+
+	size = (PES_header_data_length*8) - size;
+	unsigned int i;
+    for(i=0; i < (size/8); i++)
+        bit(8) stuffing_byte = 0xFF;
+		
+	}//if (stream_id != private_stream_2 && stream_id != padding_stream) {
+
+
+
+	%{ 
+		unsigned int getHeaderSize() const
+		{
+			if (stream_id == private_stream_2 || stream_id == padding_stream) 
+			{return 6;}
+
+			return 9 + PES_header_data_length;
+		}
+        //<summary>Return the compleate size of the pes PayLoad</summary>
+		unsigned int getBodySize() const
+		{			
+			unsigned int len   = getHeaderSize();
+			unsigned int bytes = 6 + PES_packet_length - len;
+			return bytes;
+		}
+
+		unsigned __int64 GetTime() const {return MpegTime::Time(PTS_32_30, PTS_29_15, PTS_14_0);}
+		unsigned __int64 GetDTSTime() const {return MpegTime::Time(DTS_32_30, DTS_29_15, DTS_14_0);}
+		bool IsVideo() const {return (stream_id >= 0xE0 && stream_id <= 0xEF);}
+		bool IsAudio() const {return (stream_id >= 0xC0 && stream_id <= 0xDF);}
+	%}
+}
+
+
+// The PesPadding is similar to the PesNonData with the exception that the 8 bit padding bytes must have the value 0xFF
+class PesPadding extends PesBase : const unsigned int(32) st_id = ST_Padding 
+{
+    unsigned int i;
+    for (i=0; i < PES_packet_length; i++) {
+        bit(8) padding_byte = 0xFF;
+
+    }
+}
+
+
+//class PesAudio extends PesData : const unsigned int(32) st_id = ST_Audio1 .. ST_Audio2 {}
+//class PesVideo extends PesData : const unsigned int(32) st_id = ST_Video1 .. ST_Video2 {}
+//class PesITUT_E extends PesNonData : const unsigned int(32) st_id = ST_ITUT_E {}
+//class PesPrivate1 extends PesNonData : const unsigned int(32) st_id = ST_Private1 {}
+//class PesPrivate2 extends PesNonData : const unsigned int(32) st_id = ST_Private2 {}
+//class PesECM extends PesNonData : const unsigned int(32) st_id = ST_ECM {}
+//class PesEMM extends PesNonData : const unsigned int(32) st_id = ST_EMM {}
+//class PesDSMCC extends PesBase : const unsigned int(32) st_id = ST_DSMCC {}
+//
+
+class Adaptation_Field
+{
+	unsigned int(8) adaptation_field_length;
+	if(adaptation_field_length > 0 && adaptation_field_length <= 183) 
+	{
+		bit(1) discontinuity_indicator;
+		bit(1) random_access_indicator;
+		bit(1) elementary_stream_priority_indicator;
+		bit(1) PCR_flag;
+		bit(1) OPCR_flag;
+		bit(1) splicing_point_flag;
+		bit(1) transport_private_data_flag;
+		bit(1) adaptation_field_extension_flag;
+
+		int total_bits = 8;
+
+		if(PCR_flag == 0x1) 
+		{
+			//program_clock_reference_base;
+			bit(3)  program_clock_ref_1;
+            bit(15) program_clock_ref_2;
+            bit(15) program_clock_ref_3;
+			bit(6)  reserved;
+			bit(9)  program_clock_reference_extension;
+
+			total_bits += 48;
+		}
+
+		if(OPCR_flag == 0x1) 
+		{
+			//original_program_clock_reference_base uimsbf
+			bit(3)  original_program_clock_ref_1;
+            bit(15) original_program_clock_ref_2;
+            bit(15) original_program_clock_ref_3;
+			bit(6)  original_reserved;
+			bit(9)  original_program_clock_reference_extension;
+
+			total_bits += 48;
+		}
+
+		if (splicing_point_flag == 0x1) 
+		{
+			unsigned int(8) splice_countdown; //tcimsbf
+
+			total_bits += 8;
+		}
+		
+		if(transport_private_data_flag == 1) 
+		{
+			unsigned int(8) transport_private_data_length; //uimsbf
+			int i = 0;
+			for (i=0; i < transport_private_data_length; i++)
+			{
+				unsigned char(8) private_data_byte[[i]];
+			}
+
+			total_bits += transport_private_data_length * 8;
+		}
+		if (adaptation_field_extension_flag == 1 ) 
+		{
+			unsigned int(8) adaptation_field_extension_length;
+			//for ( i=0;i<adaptation_field_extension_length;i++) 
+			//{
+			//	reserved
+			//}
+
+			total_bits += adaptation_field_extension_length/8;
+
+			skipbits(adaptation_field_extension_length*8);
+		}
+		//for (i=0;i<N;i++){
+		//	stuffing_byte
+		//}
+				
+
+		if((total_bits / 8) < adaptation_field_length)
+			skipbits((adaptation_field_length*8) - total_bits);
+			
+		
+
+	}
+	
+	%{
+	Adaptation_Field():
+		  PCR_flag(0)
+		, discontinuity_indicator(0)
+		, random_access_indicator(0)
+	{}
+	Adaptation_Field& operator&(Adaptation_Field& rhs)
+	{
+	    adaptation_field_length = rhs.adaptation_field_length;
+		if(adaptation_field_length > 0 && adaptation_field_length <= 183) 
+		{
+			discontinuity_indicator = rhs.discontinuity_indicator;
+			random_access_indicator = rhs.random_access_indicator;
+			elementary_stream_priority_indicator = rhs.elementary_stream_priority_indicator;
+			PCR_flag = rhs.PCR_flag;
+			OPCR_flag = rhs.OPCR_flag;
+			splicing_point_flag = rhs.splicing_point_flag;
+			transport_private_data_flag = rhs.transport_private_data_flag;
+			adaptation_field_extension_flag = rhs.adaptation_field_extension_flag;
+
+			if(PCR_flag == 0x1) 
+			{
+				program_clock_ref_1 = rhs.program_clock_ref_1;
+				program_clock_ref_2 = rhs.program_clock_ref_2;
+				program_clock_ref_3 = rhs.program_clock_ref_3;
+				reserved = rhs.reserved;
+				program_clock_reference_extension = rhs.program_clock_reference_extension;
+
+			}
+
+			if(OPCR_flag == 0x1) 
+			{
+				original_program_clock_ref_1 = rhs.original_program_clock_ref_1;
+				original_program_clock_ref_2 = rhs.original_program_clock_ref_2;
+				original_program_clock_ref_3 = rhs.original_program_clock_ref_3;
+				original_reserved = rhs.original_reserved;
+				original_program_clock_reference_extension = rhs.original_program_clock_reference_extension;
+
+			}
+
+			if (splicing_point_flag == 0x1) 
+			{
+				splice_countdown = rhs.splice_countdown;
+			}
+			
+			if(transport_private_data_flag == 1) 
+			{
+				transport_private_data_length = rhs.transport_private_data_length;
+				for (int i=0; i < transport_private_data_length; i++)
+				{
+					private_data_byte[i] = rhs.private_data_byte[i];
+				}
+			}
+			
+			adaptation_field_extension_length = rhs.adaptation_field_extension_length;
+			
+		}
+	}
+	
+	Adaptation_Field(Adaptation_Field &rhs)
+	{
+		operator=(rhs);
+	}
+	
+	unsigned __int64 get_pcr()
+	{
+	   return 
+	   MpegTime::Time
+	   (  program_clock_ref_1
+		, program_clock_ref_2
+		, program_clock_ref_3
+		, program_clock_reference_extension);
+	}
+	
+	%}
+	
+	
+}
+
+class Pointer_Field
+{
+	unsigned int(8) pointer_field;
+	skipbits(pointer_field / 8);
+}
+
+class BaseSection 
+{
+    unsigned int(8) table_id;
+	bit(1) section_syntax_indicator = 0b1;
+	bit(1) marker;// = 0b0;
+	bit(2) reserved;
+	
+	unsigned int(12) section_length;
+	//24bit
+
+	unsigned int(16) id;//program_number;unsigned int(16) transport_stream_id;
+	bit(2) reserved2;
+	unsigned int(5) version_number;
+	bit(1) current_next_indicator;
+	unsigned int(8) section_number;
+	unsigned int(8) last_section_number;
+	
+	//40bit
+	
+}
+
+class Program_Association_Section extends BaseSection 
+{	
+	
+	//40bit after section_length 5 bytes + CRC 4 bytes
+
+	int i = 0;
+
+	for (i = 0; i < ( (section_length - (5 + 4))/ 4 ); i++) 
+	{
+		
+		unsigned int(16) program_number[[i]];
+		bit(3) reserved3;
+		
+		if(program_number[i] == 0) {
+			
+			unsigned int(13) network_PID;
+		}
+		else {
+
+			unsigned int(13) program_map_PID[[i]];
+		}
+
+		//32 bit 4 bytes
+	}
+	
+	unsigned int(32) CRC_32;
+}
+
+
+class Program_Map_Section extends BaseSection 
+{		
+%{
+private:
+      
+      std::vector<base_program_descriptor*> _program_descriptor;
+      std::vector<std::vector<base_program_descriptor*>* > _stream_descriptors;
+      
+      void cleanup()
+      {
+          for(int i = 0; i <  _program_descriptor.size(); i++)
+				delete  _program_descriptor[i];
+	 
+		  _program_descriptor.clear();
+		  
+		  for(int i = 0; i < _stream_descriptors.size(); i++)
+		  {
+			    for(int k = 0; k < _stream_descriptors[i]->size(); k++)
+			    {
+					delete (*_stream_descriptors[i])[k];
+			    }
+		  
+				_stream_descriptors[i]->clear();
+				
+				delete _stream_descriptors[i];
+		  }
+		  
+		  _stream_descriptors.clear();
+      }
+public:
+      virtual ~Program_Map_Section()
+      {
+        cleanup();
+      }
+%}
+	bit(3) reserved3;
+	unsigned int(13) PCR_PID;
+	bit(4) reserved4;
+
+	unsigned int(12) program_info_length;
+
+	//72 bit 9 bytes
+
+	int des_byte_count = 0;
+	
+	%p{ 
+	    int descriptor_count = 0;
+	%p}
+
+	for (des_byte_count=0; des_byte_count < program_info_length;) 
+	{
+	   %p{
+		   descriptor      = _program_descriptor[descriptor_count++];
+		   des_byte_count += (descriptor->length + 2);
+	   %p}
+	   
+	   base_program_descriptor descriptor;
+	   
+	   %g{
+			_program_descriptor.push_back(descriptor);
+			des_byte_count += (descriptor->length + 2);
+	   %g}
+	}
+
+	int program_byte_count = 0;
+	int stream_count = 0;
+	
+	for (program_byte_count=0; program_byte_count < (section_length - (9 + 4) - program_info_length); program_byte_count) 
+	{
+		unsigned int(8) stream_type[[stream_count]];
+		bit(3) reserved5;
+		unsigned int(13) elementary_PID[[stream_count]];
+		bit(4) reserved6;
+		unsigned int (12) ES_info_length;
+		//for (i=0; i<Q; i++) 
+		//{
+		//	descriptor()
+		//}
+		//skipbits(ES_info_length*8);
+		
+		int stream_info_descriptor = 0;
+		%p{ 
+			int stream_descriptor_count = 0;
+		%p}
+		
+		%g{
+				_stream_descriptors.push_back(new std::vector<base_program_descriptor*>);
+		%g}
+		
+		for(stream_info_descriptor = 0; stream_info_descriptor < ES_info_length; stream_info_descriptor)
+		{
+			%p{
+				descriptor      = (*_stream_descriptors[stream_count])[stream_descriptor_count++];
+				stream_info_descriptor += (descriptor->length + 2);
+			%p}
+			
+			base_program_descriptor descriptor;
+			
+			%g{
+				
+					
+				_stream_descriptors[stream_count]->push_back(descriptor);
+				stream_info_descriptor += (descriptor->length + 2);
+			%g}
+		}
+
+		program_byte_count += (5 + ES_info_length);
+
+		stream_count++;
+	}
+		
+	unsigned int(32) CRC_32;
+}
+
+class Transport_Packet
+{
+    %g{
+       CleanUp();
+       var_bs.nextcode(0x47, 8, 8);
+       var_bs.skipbits(8);
+    %g}
+    %p{
+       var_bs.putbits(0x47, 8);
+    %p}
+	//nextcode(aligned(8), 0x47);   // sync_byte
+    //skipbits(8); 
+
+	bit(1) 	transport_error_indicator;
+
+	if(!transport_error_indicator)
+	{
+			bit(1) 	payload_unit_start_indicator;
+			bit(1) 	transport_priority;
+
+			unsigned int(13) PID;
+
+			bit(2) transport_scrambling_control;
+			//bit(2) adaptation_field_control;
+			bit(1) adaptation_flag;
+			bit(1) payload_field;
+				
+			unsigned int(4) continuity_counter;
+
+			//32-bit 4-bytes 188-4 = 184
+
+			if(adaptation_flag == 1)
+			{
+				Adaptation_Field adaptation_field;
+
+				if(payload_field == 1 && adaptation_field.adaptation_field_length <= 183)
+				{
+					int i = 0;
+					for (i=0; i < (183 - adaptation_field.adaptation_field_length); i++)
+					{
+						unsigned char(8) payload_after_adaptation_byte[[i]];
+					}
+				}
+			}
+			else
+			{
+				if(payload_field == 1)
+				{
+					int i = 0;
+					for (i=0; i < 184; i++)
+					{
+						unsigned char(8) payload_byte[[i]];
+					}
+				}
+			}
+
+	}
+	
+	%{
+	  
+	  unsigned __int64 _packet_count;
+	%}
+	
+	%g{_packet_count++;%g}
+
+
+	%{ Transport_Packet():
+	                      adaptation_field(0)
+	                    , _packet_count(0)
+	                    {}
+
+		virtual void CleanUp()
+		{
+			if(adaptation_field)
+			{
+				delete adaptation_field;
+				adaptation_field = 0;
+			}
+		}
+		virtual ~Transport_Packet()
+		{
+			//if(adaptation_flag == 1)
+			//{
+				CleanUp();
+			//}
+		}
+		
+		Transport_Packet& operator=(Transport_Packet &rhs)
+		{
+			transport_error_indicator = rhs.transport_error_indicator;
+            payload_unit_start_indicator = rhs.payload_unit_start_indicator;
+			transport_priority = rhs.transport_priority;
+			PID = rhs.PID;
+			transport_scrambling_control = rhs.transport_scrambling_control;
+			adaptation_flag = rhs.adaptation_flag;
+			payload_field = rhs.payload_field;
+			continuity_counter = rhs.continuity_counter;
+            
+            if(adaptation_flag == 1)
+			{
+				*adaptation_field = *rhs.adaptation_field;
+
+				if(payload_field == 1 && adaptation_field->adaptation_field_length <= 183)
+				{
+					int i = 0;
+					for (i=0; i < (183 - adaptation_field->adaptation_field_length); i++)
+					{
+						payload_after_adaptation_byte[i] = rhs.payload_after_adaptation_byte[i];
+					}
+				}
+			}
+			else
+			{
+				if(payload_field == 1)
+				{
+					int i = 0;
+					for (i=0; i < 184; i++)
+					{
+						payload_byte[i] = rhs.payload_byte[i];
+					}
+				}
+			}
+			
+			return *this;
+		}
+		
+		//copy constructor
+		Transport_Packet(Transport_Packet &rhs)
+		{
+		    operator=(rhs);
+		}
+		
+		
+	%}
+
+}
+
+//%pragma trace
+
+class SequenceExtension
+{
+	
+	unsigned int(32) extension_start_code = 0x000001b5;
+	unsigned int(4) extension_start_code_identifier = 0b0001;
+	
+	bit(8) profile_and_level_indication;
+	bit(1) progressive_sequence;
+	bit(2) chroma_format;
+	bit(2) horizontal_size_extension;
+	bit(2) vertical_size_extension;
+	bit(12) bit_rate_extension;
+	bit(1) marker_bit;
+	bit(8) vbv_buffer_size_extension;
+	bit(1) low_delay;
+	bit(2) frame_rate_extension_n;
+	bit(5) frame_rate_extension_d;
+}
+
+class SequenceHeader
+{
+	unsigned int(24) packet_start_code_prefix = 0x000001;
+    unsigned int(8)  stream_id = 0xB3;
+
+	unsigned int(12) horizontal_size_value;
+	unsigned int(12) vertical_size_value;
+	bit(4) aspect_ratio_information;
+	bit(4) frame_rate_code;
+	unsigned int(18) bit_rate_value;
+	bit(1) marker_bit = 1;
+	unsigned int(10) vbv_buffer_size_value;
+	bit(1) constrained_parameters_flag;
+	bit(1) load_intra_quantiser_matrix;
+	if(1 == load_intra_quantiser_matrix)
+	{
+	    char(8) intra_quantiser_matrix[64];
+	}
+	bit(1) load_non_intra_quantiser_matrix;
+	if(1 ==load_non_intra_quantiser_matrix)
+	{
+		char(8) non_intra_quantiser_matrix[64];
+	}
+
+	if(nextbits(32) == extension_start_code)
+	{
+		SequenceExtension sequenceextension;
+	}
+
+	%{
+		SequenceHeader():sequenceextension(0){}
+
+		SequenceHeader(SequenceHeader &rhs)
+		{
+			operator=(rhs);
+		}
+
+	    SequenceHeader& operator=(SequenceHeader &rhs)
+		{
+			packet_start_code_prefix = rhs.packet_start_code_prefix;
+            stream_id = rhs.stream_id;
+            horizontal_size_value = rhs.horizontal_size_value;
+            vertical_size_value = rhs.vertical_size_value;
+            aspect_ratio_information = rhs.aspect_ratio_information;
+            frame_rate_code = rhs.frame_rate_code;
+            bit_rate_value = rhs.bit_rate_value;
+            marker_bit  = rhs.marker_bit;
+            vbv_buffer_size_value = rhs.vbv_buffer_size_value;
+            constrained_parameters_flag = rhs.constrained_parameters_flag;
+             load_intra_quantiser_matrix = 0;//rhs.load_intra_quantiser_matrix;
+			//if(1 == load_intra_quantiser_matrix)
+			//{
+			//	intra_quantiser_matrix = rhs.intra_quantiser_matrix;
+			//}
+			load_non_intra_quantiser_matrix = 0;//rhs.load_non_intra_quantiser_matrix;
+			//if(1 ==load_non_intra_quantiser_matrix)
+			//{
+			//	non_intra_quantiser_matrix = rhs.non_intra_quantiser_matrix;
+			//}
+
+			if(rhs.sequenceextension)
+			{
+				sequenceextension = new SequenceExtension(*rhs.sequenceextension);
+			}
+			else
+			{
+				if(sequenceextension)
+				{
+					delete sequenceextension;
+				}
+				sequenceextension = 0;
+			}
+
+			return *this;
+		}
+
+
+		virtual ~SequenceHeader()
+		{
+			if(sequenceextension)
+			{
+				delete sequenceextension;
+			}
+		}
+		unsigned int getBitRate() const
+		{
+			unsigned int bit_rate = bit_rate_value;
+
+			if(sequenceextension)
+			{
+				bit_rate += (sequenceextension->bit_rate_extension << 18);
+			}
+
+			return bit_rate*400;
+		}
+        unsigned int getByteRate() const 
+		{
+			return getBitRate()/8;
+		}
+
+		unsigned int getHorizontal_size() const 
+		{
+			unsigned int h = horizontal_size_value;
+			if(sequenceextension)
+			{
+				h += (sequenceextension->horizontal_size_extension << 12);
+			}
+
+			return h;
+		}
+		unsigned int getVertical_size() const 
+		{
+			unsigned int v = vertical_size_value;
+			if(sequenceextension)
+			{
+				v += (sequenceextension->vertical_size_extension << 12);
+			}
+
+			return v;
+		}
+		float getFrame_rate() const 
+		{
+			unsigned int f = 0;
+
+			switch(frame_rate_code)
+			{
+			case 1:
+					 f = 23.976;
+				break;
+			case 2:
+				     f = 24;
+				 break;
+			case 3: 
+				f = 25;
+				break;
+			case 4:
+				f = 29.97;
+				break;
+			case 5:
+				f = 30;
+				break;
+			case 6:
+				f = 50;
+				break;
+			case 7:
+				f = 59.94;
+			   break;
+			case 8:
+				f = 60;
+				break;
+			}
+
+			if(sequenceextension)
+			{
+				if(0 != sequenceextension->frame_rate_extension_n ||
+					0 != sequenceextension->frame_rate_extension_d )
+				{
+					return frame_rate_code * 
+					(sequenceextension->frame_rate_extension_n + 1) / 
+					(sequenceextension->frame_rate_extension_d + 1);
+				}
+			}
+
+			return f;
+
+		}
+		
+		const unsigned __int64 get_frame_duration() const {return (1000ULL * 10000ULL) / getFrame_rate();}
+	%}
+}
+
+class MpegHeaderInfo
+{
+	nextcode(aligned(8), 0x000001);
+}
+
+class PitcureBase
+{
+	unsigned int(32) picture_start_code = 0x00000100;
+	bit(10) temporal_reference;
+	bit(3) picture_coding_type;
+	bit(16) vbv_delay;
+	
+}
+
+class PitcureInfo extends PitcureBase
+{
+	bit(3) garbage;
+}
+
+class Picture_Coding_Extension
+{
+	unsigned int(32) extension_start_code = 0x000001b5;
+	unsigned int(4) extension_start_code_identifier=0b1000;
+	bit(4) f_code1;
+	bit(4) f_code2;
+	bit(4) f_code3;
+	bit(4) f_code4;
+	bit(2) intra_dc_precision;
+	bit(2) picture_structure;
+	bit(1) top_field_first;
+	bit(1) frame_pred_frame_dct;
+	bit(1) concealment_motion_vectors;
+	bit(1) q_scale_type;
+	bit(1) intra_vlc_format;
+	bit(1) alternate_scan;
+	bit(1) repeat_first_field;
+	bit(1) chroma_420_type;
+	bit(1) progressive_frame;
+	bit(1) composite_display_flag;
+	if ( composite_display_flag ) 
+	{
+		bit(1) v_axis;
+		bit(3) field_sequence;
+		bit(1) sub_carrier;
+		bit(7) burst_amplitude;
+		bit(8) sub_carrier_phase;
+		skipbits(2);
+	}
+	else
+	{
+		skipbits(6);
+	}
+}
+
+class PitcureHeader extends PitcureBase
+{
+	int x = 29;
+
+	if ( picture_coding_type == 2 || picture_coding_type == 3) {
+		bit(1) full_pel_forward_vector;
+		bit(3) forward_f_code;
+		x += 4;
+	}
+	
+	if ( picture_coding_type == 3) 
+	{
+	  bit(1) full_pel_backward_vector;
+	  bit(3) backward_f_code;
+	  x += 4;
+	}
+
+	bit(1) extra_bit_picture;
+	x += 1;
+
+	while ( extra_bit_picture == 0b1 ) 
+	{
+		bit(8) extra_information_picture;
+		bit(1) extra_bit_picture;
+		x += 9;
+	}
+
+	skipbits(8 - (x%8));
+
+	if(nextbits(32) == extension_start_code)
+	{
+		Picture_Coding_Extension pictureextension;
+	}
+
+	%{
+		PitcureHeader():pictureextension(0){}
+
+		virtual void CleanUp()
+		{
+			if(pictureextension)
+			{
+				delete pictureextension;
+				pictureextension = 0;
+			}
+		}
+		virtual ~PitcureHeader()
+		{
+			CleanUp();
+		}
+	%}
+}
+
+class GroupOfPictureHeader
+{
+	unsigned int(32) gop_start_code = 0x000001B8;
+	bit(1)           drop_frame_flag;
+	unsigned int(5)  time_code_hours;
+	unsigned int(6)  time_code_minutes;
+	bit(1)           marker_bit = 0x1;
+	unsigned int(6)  time_code_seconds;
+	unsigned int(6)  time_code_pictures;
+	bit(1)           closed_gop;
+	bit(1)           broken_link;
+	bit(5)           filler = 0x0;
+}
+
+
+%{
+__ALX_END_NAMESPACE
+%}
