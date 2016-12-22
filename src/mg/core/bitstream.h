@@ -493,9 +493,7 @@ protected:
 		else return x;
 
 	}
-
 	
-
 	virtual uint32_t _align(int n)
 	{
 		int s = 0;
@@ -1117,7 +1115,7 @@ public:
 
 	virtual uint32_t nextcode(unsigned int code, int n, int alen)
 	{
-		bitstream_base<Type>::_nextcode(code, n, alen);
+		return bitstream_base<Type>::_nextcode(code, n, alen);
 	}
 
 };  

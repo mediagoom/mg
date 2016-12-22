@@ -32,6 +32,7 @@
 #include <mg/media/mp4edit.h>
 #include <mg/media/MOOFReader.h>
 #include <mg/media/mpd_renderer.h>
+#include <mg/media/tsinfo.h>
 
 
 

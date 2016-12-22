@@ -24,10 +24,10 @@
 #include <TBitstream.h>
 #include "TS.H"
 #include <map>
-#include <trcdbg.h>
 #include <iostream>
 #include "h264nal.h"
-#include "aac.h"
+#include "mp4/aac.h"
+#include "hnano.h"
 
 __ALX_BEGIN_NAMESPACE
 
@@ -217,7 +217,7 @@ protected:
 	}
 
 
-	virtual bool IsHim(TBitstream<CBufferRead*> &ms)
+	virtual bool IsHim(IBitstream &ms)
 	{
 		unsigned int nextbits =  ms.nextbits(12);
 		return nextbits == 0x000FFF;
@@ -245,8 +245,8 @@ public:
 		int frame_count(0);
 
 		//AAC STUFF
-		TBitstream<CBufferRead*> ms(&payload);
-		                         ms.set_throw_on_end(false);
+		fixed_memory_bitstream ms(payload.get(), payload.size());
+		                         //ms.set_throw_on_end(false);
 
 	    unsigned int start_position(0);//, end_position(0);
 
@@ -311,7 +311,7 @@ protected:
 		std::wcerr << L"Empty PES" << std::endl;
 	}
 
-	virtual void structure_get(TBitstream<CBufferRead*> &ms)
+	virtual void structure_get(IBitstream &ms)
 	{
 		_ASSERTE(IsHim(ms));
 		ms.skipbits(32);
@@ -331,7 +331,7 @@ protected:
 		}
 	}
 
-	virtual bool IsHim(TBitstream<CBufferRead*> &ms)
+	virtual bool IsHim(IBitstream &ms)
 	{
 		unsigned int nextbits =  ms.nextbits(32);
 		return (0xFFFFFF1F & nextbits) == 0x00000107;
@@ -363,8 +363,8 @@ public:
 			std::wcout << L"H264\t";
 
 		//H264 STUFF
-		TBitstream<CBufferRead*> ms(&payload);
-		                         ms.set_throw_on_end(false);
+		fixed_memory_bitstream ms(payload.get(), payload.size());
+		                         //ms.set_throw_on_end(false);
 
 	    unsigned int start_position(0);//, end_position(0);
 
@@ -458,7 +458,7 @@ class CTSProcessor: public ITSProcessor
 	std::map<int, ts_pes*>           _pes;
 		//TSProgramElementaryStreamAnalyze<SequenceHeader>
 
-	DECLARE_FILE_LOG;
+	
 
 protected:
 	virtual void on_base_stream(BaseProgramElementaryStreamData * stream)
@@ -539,7 +539,7 @@ public:
 
 	CTSProcessor()
 	{
-		INIT_FILE_LOG_SUBCAT(FOUNDATION, TS, L"PROCESSOR");
+		
 	}
 
 	
@@ -722,7 +722,7 @@ public:
 	unsigned __int64 get_position()
 	{
 		_ASSERTE(NULL != _p_f);
-		return _p_f->getposex() / 8ULL;
+		return _p_f->get_position();
 	}
 		
 	bool eof() const {return _p_f->eof();}
@@ -794,6 +794,13 @@ public:
 };
 
 
+
+typedef file_media_bitstream<CTS> CTSFile;
+//typedef sync_file_media_bitstream<CMP4> MP4File;
+typedef sync_file_media_bitstream<CTS> SYNCCTSFile;
+
+
+/*
 class CTSFile: public CTS
 {
 	FileBitstream * _p_ff;
@@ -823,6 +830,6 @@ public:
 	}
 
 };
-
+*/
 
 __ALX_END_NAMESPACE

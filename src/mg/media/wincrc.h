@@ -30,6 +30,10 @@ typedef unsigned int AVCRC;
 //#define AV_BSWAP32C(x) ( (AV_BSWAP16C(x) << 16) | AV_BSWAP16C((x) >> 16)
 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 typedef enum {
     AV_CRC_8_ATM,
     AV_CRC_16_ANSI,

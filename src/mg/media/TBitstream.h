@@ -279,14 +279,22 @@ public:
 
 };
 
+template<class T> 
+class base_file_midia_bitstream : public T
+{
+public:
+	virtual void open(const TCHAR * path) = 0;
+	virtual void close() = 0;
+};
 
 /*! 
 This class is a generic implementation for MP4File, TSFile etc..
 */
-template<class T>
-class file_media_bitstream : public T
+template<class T, int F = O_RDONLY | O_EXCL>
+class file_media_bitstream : public base_file_midia_bitstream<T>
 {
 	_file_bitstream _fb;
+	bool  _load;
 
 public:
 
@@ -296,46 +304,57 @@ public:
 
 	}
 
-	void open(const TCHAR * path, int flags = O_RDONLY | O_EXCL)
+	void open(const TCHAR * path, int flags)
 	{
+		_load = (F & O_WRONLY);
 		_fb.open(path, flags);
 
 		T::_p_f = &_fb;
 	}
 
-	void close()
+	virtual void open(const TCHAR * path)
 	{
+		open(path, F);
+	}
+
+	virtual void close()
+	{
+		if(_load)
+			_fb.flush();
 		_fb.close();
 	}
 
 };
 
-template<class T>
-class file_media_bitstream_write : public T
-{
-	_file_bitstream _fb;
+//
+//template<class T>
+//class file_media_bitstream_write : public T
+//{
+//	_file_bitstream _fb;
+//
+//public:
+//
+//	file_media_bitstream_write(::mg::uv::loopthread & loop, uint32_t size = DEFAULT_FILE_PAGE)
+//		: _fb(loop, size)
+//	{
+//
+//	}
+//
+//	void open(const TCHAR * path, int flags = O_CREAT | O_WRONLY | O_TRUNC)
+//	{
+//		_fb.open(path, flags);
+//
+//		T::_p_f = &_fb;
+//	}
+//
+//	void close() 
+//	{ 
+//		_fb.flush();
+//		_fb.close(); 
+//	}
+//};
 
-public:
 
-	file_media_bitstream_write(::mg::uv::loopthread & loop, uint32_t size = DEFAULT_FILE_PAGE)
-		: _fb(loop, size)
-	{
-
-	}
-
-	void open(const TCHAR * path, int flags = O_CREAT | O_WRONLY | O_TRUNC)
-	{
-		_fb.open(path, flags);
-
-		T::_p_f = &_fb;
-	}
-
-	void close() 
-	{ 
-	_fb.flush();
-	_fb.close(); 
-	}
-};
 
 template<class T>
 class memory_write_media_bitstream : public T
@@ -380,10 +399,11 @@ public:
 
 };
 
-template<class T>
-class sync_file_media_bitstream : public T
+template<class T, bool K = true>
+class sync_file_media_bitstream : public base_file_midia_bitstream<T>
 {
 	_sync_file_bitstream _fb;
+	bool _load;
 
 public:
 
@@ -400,15 +420,28 @@ public:
 
 	}
 
-	void open(const TCHAR * path, bool read = true)
+	void open(const TCHAR * path, bool read)
 	{
+		_load = (!read);
 		_fb.open(path, read);
 
 		T::_p_f = &_fb;
 	}
-
-	void close() { _fb.close(); }
-
+	
 	void flush() { _fb.flush(); }
+
+	virtual void open(const TCHAR * path)
+	{
+		open(path, K);
+	}
+
+	virtual void close() 
+	{
+		if (_load)
+			_fb.flush();
+		_fb.close(); 
+	}
+
+	
 };
 

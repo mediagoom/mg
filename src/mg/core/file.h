@@ -210,6 +210,13 @@ public:
 	{
 		open(pszName, read);
 	}
+
+
+	size_t read(uint32_t to_read, unsigned char * pbyte)
+	{
+		return ::fread(pbyte, 1, to_read, _f);
+	}
+
 	
 	virtual void read(uint32_t to_read, Ibitstream_cb * pcb)
 	{
@@ -224,9 +231,15 @@ public:
 		return (0 != feof(_f));
 	}
 
+	size_t write(const unsigned char * pbytes, uint32_t to_write)
+	{
+		return ::fwrite(pbytes, 1, to_write, _f);
+	}
+
 	virtual void write(const unsigned char * pbytes, uint32_t to_write, Ibitstream_cb * pcb)
 	{
-		size_t r = ::fwrite(pbytes, 1, to_write, _f);
+		//size_t r = ::fwrite(pbytes, 1, to_write, _f);
+		size_t r = write(pbytes, to_write);
 
 		pcb->write_cb(r);
 	}

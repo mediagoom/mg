@@ -245,8 +245,10 @@ protected:
 
 		payload.SetPosition(0);
 		{
-		TBitstream<CBufferRead*> ms;
-		ms.Create(&payload, BS_INPUT);
+		
+			fixed_memory_bitstream ms(payload.get()
+				, payload.size()
+			);
 
 		Pointer_Field f;
 		f.get(ms);
@@ -269,8 +271,9 @@ protected:
 
 			{		
 
-			TBitstream<CBufferRead*> ms;
-			ms.Create(&payload, BS_INPUT);
+				fixed_memory_bitstream ms(payload.get()
+					, payload.size()
+				);
 
 			Pointer_Field f;
 		    f.get(ms);
@@ -569,7 +572,7 @@ protected:
 				_data.get(ms);
 					
 				//reposition payload to the beginning of the pes packet after pes header
-				payload.SetPosition(ms.getpos()/8);
+				payload.SetPosition(ms.get_position());
 
 			}catch (EndOfData e) 
 			{return;}
@@ -607,8 +610,12 @@ protected:
 		payload.SetPosition(0);
 
 		{
-			TBitstream<CBufferRead*> ms;
-			ms.Create(&payload, BS_INPUT);
+			//TBitstream<CBufferRead*> ms;
+			//ms.Create(&payload, BS_INPUT);
+
+			fixed_memory_bitstream ms(payload.get()
+				, payload.size()
+			);
 
 			try{
 					skipped = ms.nextcode(0x000001, 24, 8);
@@ -635,8 +642,9 @@ protected:
 
 		try{
 				{
-					TBitstream<CBufferRead*> ms;
-					ms.Create(&payload, BS_INPUT);
+					fixed_memory_bitstream ms(payload.get()
+						, payload.size()
+					);
 
 					if(skipped > 0)
 						ms.skipbits(skipped);
@@ -796,16 +804,18 @@ protected:
 	/**
 	Identify the starting point of the stream
 	*/
-	virtual bool IsHim(TBitstream<CBufferRead*> &ms)
+	virtual bool IsHim(IBitstream &ms)
 	{
 		return (0x000001b3 == ms.nextbits(32));
 	}
 	/**
 	Position to the starting point of a stream
 	*/
-	virtual bool LookUp(CBufferRead &payload, TBitstream<CBufferRead*> &ms)
+	virtual bool LookUp(CBufferRead &payload, IBitstream &ms)
 	{
-		while(25 <= payload.ByteToRead() + ms.getUnreadBufferSize())
+		//payload.ByteToRead() + ms.getUnreadBufferSize())
+
+		while(25 <= payload.size() - ms.get_position())
 		{
 			if(IsHim(ms))
 				return true;
@@ -820,7 +830,7 @@ protected:
 	/**
 	Read the structure
 	*/
-	virtual void structure_get(TBitstream<CBufferRead*> &ms)
+	virtual void structure_get(IBitstream &ms)
 	{
 		_stru.get(ms);
 	}
@@ -830,10 +840,15 @@ protected:
 	*/
 	virtual bool UpdateLookUp(CBufferRead &payload)
 	{
-		TBitstream<CBufferRead*> ms(&payload);
+		//TBitstream<CBufferRead*> ms(&payload);
+
+		fixed_memory_bitstream ms(payload.get()
+			, payload.size()
+		);
+
 		if(LookUp(payload, ms))
 		{
-		   _offset = payload.GetPosition() - ms.getUnreadBufferSize();
+		   _offset = ms.get_position();//payload.GetPosition() - ms.getUnreadBufferSize();
 		   structure_get(ms);
 		   _HasStruct = true;
 
@@ -1152,7 +1167,7 @@ class CMpegAudioStream_old
     
 protected:
 	
-	virtual void process_left(MemoryBitstream & bit_stream, const BYTE* p_data, unsigned int processed)
+	virtual void process_left(IBitstream & bit_stream, const BYTE* p_data, unsigned int processed)
 	{
 		_to_do_certified = (0 == _remaining)?true:false;
 
@@ -1193,7 +1208,7 @@ protected:
 		             , unsigned int length)
 	{
 		
-        MemoryBitstream bit_stream(p_data, length);
+        fixed_memory_bitstream bit_stream(p_data, length);
 		MpegAudioAnalize analize(bit_stream);
 
 		unsigned __int64 position(0);
@@ -1248,7 +1263,7 @@ protected:
 		_ASSERTE(_to_do.size() == _remaining);
 		
 		bool ret = true;
-		MemoryBitstream bit_stream(p_data, length);
+		fixed_memory_bitstream bit_stream(p_data, length);
 		MpegAudioAnalize analize(bit_stream);
 
 		unsigned __int64 position(0);
@@ -1280,7 +1295,7 @@ protected:
 
 			if(0 == 
 				(byte_position + _remaining) % _ah.getFrameLength()
-			) //ok we are in bussiness
+			) //ok we are in business
 			{
 				frames(_to_do.get(), _ah.getFrameLength(), _to_do.size() / _ah.getFrameLength());
 			}
@@ -1374,13 +1389,13 @@ public:
 };
 
 
-
+/*
 class TSProgramElementaryStreamAnalyzeAudio: public TSProgramElementaryStreamAnalyze<AudioHeader>
 {
 protected:
-	virtual bool LookUp(CBufferRead &payload, TBitstream<CBufferRead*> &ms)
+	virtual bool LookUp(CBufferRead &payload, IBitstream &ms)
 	{
-		MemoryBitstream mem(payload.GetCurrentPosition() - ms.getUnreadBufferSize(), 
+		fixed_memory_bitstream mem(payload.GetCurrentPosition() - ms.getUnreadBufferSize(), 
 			                payload.ByteToRead() + ms.getUnreadBufferSize()
 							);
 		
@@ -1399,7 +1414,7 @@ protected:
 		return res;
 	}
 
-	virtual bool IsHim(TBitstream<CBufferRead*> &ms)
+	virtual bool IsHim(IBitstream &ms)
 	{
 		_ASSERTE(false);
 		//return (0x000007FF == ms.nextbits(11));
@@ -1410,6 +1425,7 @@ protected:
 
 
 typedef TSProgramElementaryStreamAnalyzeAudio PESAudio;
+*/
 class TransportPreprocess
 { 
 	IBitstream * _pBitstream;

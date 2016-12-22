@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "WinCrc.h"
 
+#include "stdint.h"
+
 
 struct CRC_TABLE_PARAM{
     unsigned char  le;

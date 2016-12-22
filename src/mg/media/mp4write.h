@@ -2356,8 +2356,11 @@ public:
 
 //typedef file_media_bitstream<CMP4> MP4File;
 typedef memory_write_media_bitstream<CMP4W> CMP4WriteMemory;
-typedef file_media_bitstream_write<CMP4W> CMP4WriteFile;
-typedef sync_file_media_bitstream<CMP4W> SYNCMP4WriteFile;
+typedef file_media_bitstream<CMP4W, O_CREAT | O_WRONLY | O_TRUNC> CMP4WriteFile;
+typedef sync_file_media_bitstream<CMP4W, false> SYNCMP4WriteFile;
+
+typedef base_file_midia_bitstream<CMP4W> BMP4W;
+
 /*
 class CMP4WriteMemory: public CMP4W
 {

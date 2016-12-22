@@ -21,10 +21,13 @@
  *****************************************************************************/
 #pragma once
 
+#include <mgcore.h>
 #include "MP4DynamicInfo.h"
-#include <splitter.h>
+//#include <splitter.h>
 
+#ifdef HAVE_LIBGYPAES
 #include <aes.h>
+#endif
 
 #ifndef BLOCK_SIZE
 #define BLOCK_SIZE 16
@@ -70,10 +73,10 @@ public:
 		, _body(10240)
 		, _begin_stream(false)
 		, _video_points(false)
-		, _prefix(L"video")
+		, _prefix(_T("video"))
 		, _use_stream_name(true)
 		, _encrypted(false)
-		, _key_file_name(L"hls3.key")
+		, _key_file_name(_T("hls3.key"))
 	{
 	}
 
@@ -86,10 +89,10 @@ public:
 
 	virtual void begin(unsigned __int64 duration)
 	{		
-		_audio_codec += L"mp4a.40.2";
+		_audio_codec += _T("mp4a.40.2");
 
-		_root_m3u += L"#EXTM3U\n";
-		_root_m3u += L"#EXT-X-VERSION:3\n";
+		_root_m3u += _T("#EXTM3U\n");
+		_root_m3u += _T("#EXT-X-VERSION:3\n");
 	}
 
 	virtual void begin_stream(LPCTSTR psz_name, int points, int bitrates, stream_type stype)
@@ -114,7 +117,7 @@ public:
 		_ASSERTE(size > 6);
 
 		_video_codec.Clear();
-		_video_codec += L"avc1.";
+		_video_codec += _T("avc1.");
 		//_video_codec.append_hex_buffer(codec_private_data + 3, 3);
 
 		_video_codec.append_hex_buffer(codec_private_data + 3, 1);
@@ -132,20 +135,20 @@ public:
 		_video_codec.append_hex_buffer(codec_private_data + 5, 1);
 	    
 
-		_root_m3u += L"#EXT-X-STREAM-INF:BANDWIDTH=";
+		_root_m3u += _T("#EXT-X-STREAM-INF:BANDWIDTH=");
 		_root_m3u += (bit_rate + _audio_bit_rate);
-		_root_m3u += L",RESOLUTION=";
+		_root_m3u += _T(",RESOLUTION=");
 		_root_m3u += Width;
-		_root_m3u += L"x";
+		_root_m3u += _T("x");
 		_root_m3u += Height;
-		_root_m3u += L",CODECS=\"";
+		_root_m3u += _T(",CODECS=\"");
 		_root_m3u += _video_codec; //TODO LOWER CASE?
-		_root_m3u += L",";
+		_root_m3u += _T(",");
 		_root_m3u += _audio_codec;
-		_root_m3u += L"\"\n";
+		_root_m3u += _T("\"\n");
 
 		Cstring file_name = _prefix.clone();
-				file_name += L"_";
+				file_name += _T("_");
 		        file_name += bit_rate;
 				file_name += ".m3u8";
 
@@ -154,7 +157,7 @@ public:
 		_bit_rate_m3u[bit_rate] = file_name;
 
 		_root_m3u += file_name;
-		_root_m3u += L"\n";
+		_root_m3u += _T("\n");
 
 	}
 	virtual void add_audio_bitrate(int bit_rate
@@ -180,20 +183,20 @@ public:
 		{
 			_begin_stream = false;
 			
-			_body += L"#EXTM3U\r\n";
-			_body += L"#EXT-X-VERSION:3\r\n";
-			_body += L"#EXT-X-ALLOW-CACHE:NO\r\n";
-			_body += L"#EXT-X-MEDIA-SEQUENCE:0\r\n";
-			_body += L"#EXT-X-TARGETDURATION:";
+			_body += _T("#EXTM3U\r\n");
+			_body += _T("#EXT-X-VERSION:3\r\n");
+			_body += _T("#EXT-X-ALLOW-CACHE:NO\r\n");
+			_body += _T("#EXT-X-MEDIA-SEQUENCE:0\r\n");
+			_body += _T("#EXT-X-TARGETDURATION:");
 			_body += duration / 10000000UL;
 			_body += "\r\n";
-			_body += L"#EXT-X-PROGRAM-DATE-TIME:1970-01-01T00:00:00Z\r\n";
+			_body += _T("#EXT-X-PROGRAM-DATE-TIME:1970-01-01T00:00:00Z\r\n");
 
 			if(_encrypted)
 			{
-				_body += L"#EXT-X-KEY:METHOD=AES-128,URI=\"";
+				_body += _T("#EXT-X-KEY:METHOD=AES-128,URI=\"");
 				_body += _key_file_name;
-				_body += L"\"\r\n";
+				_body += _T("\"\r\n");
 			}
 
 		}
@@ -202,17 +205,17 @@ public:
 
 		unsigned __int64 TNANO = duration % 1000000UL;
 
-		_body += L"#EXTINF:";
+		_body += _T("#EXTINF:");
 		_body += duration / 10000000UL;
-		_body += L".";
+		_body += _T(".");
 		_body += TNANO;
-		_body += L",no-desc\r\n";
+		_body += _T(",no-desc\r\n");
 		_body += _prefix;
-		_body += L"_";
-		_body += L"$(BITRATE)";
-		_body += L"_";
+		_body += _T("_");
+		_body += _T("$(BITRATE)");
+		_body += _T("_");
 		_body += computed_time;
-		_body += L".ts\r\n";
+		_body += _T(".ts\r\n");
 		
 	}
     virtual void add_point_info(LPCTSTR psz_path, unsigned __int64 composition, unsigned __int64 computed)
@@ -236,7 +239,7 @@ public:
 		if(!_video_points)
 			return;
 
-		_body += L"#EXT-X-ENDLIST\r\n";
+		_body += _T("#EXT-X-ENDLIST\r\n");
 
 	}
 
@@ -253,7 +256,7 @@ public:
 	{
 		Cstring body = _body.clone();
 
-		return replace(body, bit_rate, L"$(BITRATE)");
+		return replace(body, bit_rate, _T("$(BITRATE)"));
 
 	}
 	
@@ -279,7 +282,8 @@ public:
 
 //#pragma optimize( "", off )
 
-	static HRESULT hls3_encrypt_buffer(unsigned char * pdest
+#ifdef HAVE_LIBGYPAES
+	static long hls3_encrypt_buffer(unsigned char * pdest
 		, unsigned int * pdest_size
 		, const unsigned char * pclear
 		, unsigned int clear_size
@@ -318,13 +322,13 @@ public:
 #ifdef OPTERR
 
 
-		Cstring msg = L"hls3_encrypt_buffer:\t";
+		Cstring msg = _T("hls3_encrypt_buffer:\t");
 		        msg += clear_size;
-				msg += L"\t";
+				msg += _T("\t");
 				msg += dest_size;
-				msg += L"\t";
+				msg += _T("\t");
 				msg += missing;
-				msg += L"\t";
+				msg += _T("\t");
 				msg += sequence;
 
 
@@ -379,7 +383,7 @@ public:
 
 		return S_OK;
 	}
-
+#endif
 
 //#pragma optimize( "", on )
 

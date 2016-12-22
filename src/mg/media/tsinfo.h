@@ -20,3 +20,9 @@
 * For more information, contact us at info@mediagoom.com.
 *****************************************************************************/
 #pragma once
+
+#ifdef UNICODE
+#define STDTSTRING std::wstring
+#else
+#define STDTSTRING std::string
+#endif

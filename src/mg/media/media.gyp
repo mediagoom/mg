@@ -6,7 +6,10 @@
       'target_name': 'mgmedia',
       'type': 'static_library'
       , 'dependencies': [
-                '../core/core.gyp:mgcore'
+                  '../../../deps/AES/aes.gyp:gypaes'
+                , '../../../deps/libuv/uv.gyp:libuv'
+                , '../core/core.gyp:mgcore'
+                , '../../../deps/flavor/flavor.gyp:flavor'
               ]
 	, 'direct_dependent_settings': {
             'include_dirs': [ './' ]
@@ -22,10 +25,6 @@
            ]
       ]
       
-    , 'dependencies': [
-                  '../../../deps/libuv/uv.gyp:libuv'
-                , '../../../deps/flavor/flavor.gyp:flavor'
-              ]
       
     , 'rules': [
        {
@@ -100,6 +99,8 @@
         , 'wincrc.cpp'
         , 'mpeg.h'
         , 'ts.h'
+        , 'tsmux.h'
+        , 'tswrite.h'
         , 'tsparse.h'
         , 'tsinfo.h'
         , 'tsinfo.cpp'

@@ -112,19 +112,65 @@ public:
 	CMP4WriteMemory _headers;
 	Cstring         _file_out;
 	Cstring         _tmp_file_out;
-	CMP4WriteFile   _body;
+	
+
 	bool			_ctts_offset;
 
 	::mg::uv::loopthread _loop;
 	
+	
+	//CMP4WriteFile   _body;
+	BMP4W           * _pbody;
+	BMP4W           & _body;
+
+	void flush_all(uint64_t body_size, 
+		  Ibitstream_storage & body_read
+		, Ibitstream_storage & full)
+	{
+		_write.open_mdat(_headers, body_size);
+
+		_headers.flush();
+
+		uint64_t headers_size = _headers.get_size();
+
+		_write.rebase_streams(_headers, headers_size);
+
+		_headers.flush();
+
+		_write.end();
+
+
+		uint32_t uls(0);
+
+		unsigned int chunk_size = 102400;
+
+		copy_stream(_headers.storage(), full, chunk_size);
+
+		DBGC2(_T("HEADERS COPIED %llu %llu"), headers_size, full.get_position());
+
+		copy_stream(body_read, full, chunk_size);
+
+		DBGC2(_T("BODY COPIED %llu %llu"), body_read.size(), full.get_position());
+
+	}
 
 public:
 	virtual ~MP4Mux()
 	{
-		//_RPT0(_CRT_WARN, "~MP4Mux()");
+		if (_pbody)
+			delete _pbody;
 	};
 
-	MP4Mux(::mg::uv::loopthread & loop):_ctts_offset(false), _loop(loop), _body(loop)
+	MP4Mux(::mg::uv::loopthread & loop):_ctts_offset(false), _loop(loop)
+		, _pbody(new CMP4WriteFile(_loop))
+		, _body((*_pbody))
+	{
+
+	}
+
+	MP4Mux():_ctts_offset(false)
+		, _pbody(new SYNCMP4WriteFile())
+		, _body((*_pbody))
 	{
 
 	}
@@ -271,6 +317,8 @@ public:
 		*/
 	}
 
+	
+
 	virtual void end()
 	{
 		_body.close();
@@ -282,92 +330,49 @@ public:
 
 		//SHStream body_read(_tmp_file_out);
 
-#ifdef ASYNC
-		file_bitstream body_read(_loop);
-		               body_read.open_sync(_tmp_file_out);
-#else
+		uint64_t body_size(0);
 
-		sync_file_bitstream body_read;
-		                   body_read.open(_tmp_file_out);
-#endif
-           
-		_write.open_mdat(_headers, body_read.size());
-		
-		_headers.flush();
-			
-		uint64_t headers_size = _headers.get_size();
+		if (_loop)
+		{
+			file_bitstream body_read(_loop);
+						body_read.open_sync(_tmp_file_out);
+			body_size = body_read.size();
 
-		_write.rebase_streams(_headers, headers_size);
+			file_bitstream full(_loop);
+			full.open_sync(_file_out, O_CREAT | O_WRONLY | O_TRUNC);
 
-		_headers.flush();
-            
-		_write.end();
-
-		//SHStreamWrite full(_file_out);
-#ifdef ASYNC		
-		file_bitstream full(_loop);
-		               full.open_sync(_file_out, O_CREAT | O_WRONLY | O_TRUNC);
-
-#else
-		sync_file_bitstream full;
-		                   full.open(_file_out, false);
-#endif
-
-			uint32_t uls(0);
-
-			//full.Write(_headers.get_buffer(), _headers.get_size(), &uls);
-			
-			//_ASSERTE(uls == _headers.get_size());
-
-			unsigned int chunk_size = 102400;
-			
-			copy_stream(_headers.storage(), full, chunk_size);
-
-			DBGC2(_T("HEADERS COPIED %llu %llu"), headers_size, full.get_position());
-
-			copy_stream(body_read, full, chunk_size);
-
-			DBGC2(_T("BODY COPIED %llu %llu"), body_read.size(), full.get_position());
+			flush_all(body_size
+				, body_read
+				, full);
 
 			_loop->loop_now();
-			
-			//::Sleep(1000);
 
+	
 			body_read.close(CLOSEASYNC);
 			full.close(CLOSEASYNC);
+		}
+		else
+		{
+			sync_file_bitstream body_read;
+		                   body_read.open(_tmp_file_out);
+			body_size = body_read.size();
 
-			/*
+			sync_file_bitstream full;
+			full.open(_file_out, false);
 
-			CBuffer<BYTE> chunk(chunk_size);
+			flush_all(body_size
+				, body_read
+				, full);
 
-			for(uint64_t x = 0; x < body_read.size();x)
-			{
-				ULONG ucopy(0);
-				ULONG uwrite(0);
+			
+			body_read.close();
+			full.close();
+		}
+           
+		if (_pbody)
+			delete _pbody;
 
-				body_read.Read(chunk.get(), chunk_size, &ucopy);
-				if(ucopy)
-				{
-					full.Write(chunk.get(), ucopy, &uwrite);
-					_ASSERTE(uwrite == ucopy);
-				}
-
-				if(ucopy < chunk_size)
-					break;
-
-				x += ucopy;
-			}
-
-			body_read.Release();
-
-			*/
-
-
-
-			//if(!::DeleteFile(_tmp_file_out))
-			//	ALXTHROW_LASTERR;
-
-			delete_file(_tmp_file_out);
+		delete_file(_tmp_file_out);
 	}
 
 	Cstring & get_file_out(){return _file_out;}

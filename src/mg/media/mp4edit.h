@@ -24,7 +24,7 @@
 #include "mp4mux.h"
 #include "MediaJoin.h"
 
-#define MAX_STREAMS 64
+#define MAX_STREAMS 16
 
 __ALX_BEGIN_NAMESPACE
 
@@ -355,6 +355,8 @@ public:
 
 	CMP4Edit(::mg::uv::loopthread & loop):_mp4mux(loop)
 	{}
+	CMP4Edit()
+	{}
 
 	virtual void set_max_distance(uint64_t max_distance){get_mux().set_max_distance(max_distance);}
 	virtual void set_use_composition_in_distance(bool rhs){get_mux().set_use_composition_in_distance(rhs);}
@@ -463,6 +465,9 @@ public:
 	virtual ~CMP4EditConsole(){}
 
 	CMP4EditConsole(::mg::uv::loopthread & loop) :CMP4Edit(loop)
+	{}
+
+	CMP4EditConsole() 
 	{}
 };
 

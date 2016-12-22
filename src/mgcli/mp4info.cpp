@@ -35,11 +35,7 @@
 using namespace MGUV;
 using namespace MGCORE;
 
-#ifdef UNICODE
-#define STDTSTRING std::wstring
-#else
-#define STDTSTRING std::string
-#endif
+
 
 unsigned int _fragmented_default_duration;
 
@@ -3723,7 +3719,7 @@ int decrypt(CBuffer<unsigned char> & buffer, CBuffer<unsigned char> & decrypt, u
 }
 
 
-int do_moof_mux(console_command &c, MGUV::loopthread & loopt)
+int do_moof_mux(console_command &c)
 {
 	
 	std::vector<unsigned int> scount;
@@ -3782,7 +3778,7 @@ int do_moof_mux(console_command &c, MGUV::loopthread & loopt)
 		}
 	}	
 	
-	MP4Mux mp4mux(loopt);
+	MP4Mux mp4mux;
 
 	//add stream description
 	for(uint32_t i = 0; i < scount.size(); i++)
@@ -4609,7 +4605,7 @@ int _tmain(int argc, TCHAR* argv[])
 		}
 		*/
 		/////////////
-		/*
+		
 		
 		else if(kind == _T("mux"))
 		{
@@ -4624,7 +4620,6 @@ int _tmain(int argc, TCHAR* argv[])
 			
 			
 		}
-		
 		else if(kind == _T("moof"))
 		{
 			std::wcout << _T("Moof Operation ") << std::endl;
@@ -4634,7 +4629,7 @@ int _tmain(int argc, TCHAR* argv[])
 			if(0 != r)
 				return r;
 		}
-		*/
+		
 
 		/*
 		else if(kind == _T("aacrep"))
@@ -5094,12 +5089,11 @@ int _tmain(int argc, TCHAR* argv[])
 
 						         outfile.add(reinterpret_cast<const unsigned char *>(static_cast<const char *>(json)), json.size());
 					    */
-								sync_file_bitstream outfile; empty_bitstream_cb cb;
+								sync_file_bitstream outfile; 
 								outfile.open(json_file, false);
 
 								outfile.write(reinterpret_cast<const unsigned char *>(static_cast<const char *>(json))
 									, json.size()
-									, &cb
 								);
 
 								outfile.close();
@@ -5163,12 +5157,11 @@ int _tmain(int argc, TCHAR* argv[])
 				 if(kind != _T("dash")) //do not output ssf for dash
 				 {
 					
-					 sync_file_bitstream outfile; empty_bitstream_cb cb;
+					 sync_file_bitstream outfile;
 					 outfile.open(out_xml_file, false);
 
 					 outfile.write(reinterpret_cast<const unsigned char *>(static_cast<const char *>(r.xml()))
 						 , r.xml().size() * sizeof(TCHAR)
-						 , &cb
 					 );
 
 					 outfile.close();
@@ -5186,12 +5179,12 @@ int _tmain(int argc, TCHAR* argv[])
 
 					
 
-						sync_file_bitstream outfile; empty_bitstream_cb cb;
+						sync_file_bitstream outfile; 
+
 									outfile.open(out_xml_file, false);
 
 						outfile.write(reinterpret_cast<const unsigned char *>(static_cast<const char *>(mpd))
 										, mpd.size() * sizeof(TCHAR)
-										, &cb
 									);
 
 									outfile.close();
