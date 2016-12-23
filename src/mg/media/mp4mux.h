@@ -372,6 +372,8 @@ public:
 		if (_pbody)
 			delete _pbody;
 
+		_pbody = NULL;
+
 		delete_file(_tmp_file_out);
 	}
 

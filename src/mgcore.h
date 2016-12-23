@@ -28,5 +28,12 @@
 #include <mg/cmdline.h>
 #include <mg/splitter.h>
 
+#ifdef _WIN32
+#include <mg/core/win/console_color.h>
+#else
+#include <mg/core/nx/console_color.h>
+#endif
+
+
 
 

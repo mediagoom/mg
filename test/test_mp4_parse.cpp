@@ -213,7 +213,17 @@ int test_mp4_read(const Cstring & src)
 
 			std::cout << _T("pre buffer filled") << std::endl;
 
-			CResource<CBuffer<unsigned char> > pick_info = file_fill_buffer(pick, t);
+			CResource<CBuffer<unsigned char> > tk = file_fill_buffer(pick, t);
+
+			
+
+#ifdef _WIN32
+			CstringT<char> pick_info = replace(reinterpret_cast<char*>(tk->get()), "\r\n", "\n");
+#else
+			CstringT<char> pick_info(reinterpret_cast<char*>(tk->get()));
+			
+#endif
+
 
 
 			std::cout << _T("buffer filled") << std::endl;
@@ -248,21 +258,24 @@ int test_mp4_read(const Cstring & src)
 
 			uint32_t size = bo.length();
 
-			if (size > pick_info->size())
-				size = pick_info->size();
+			if (size > pick_info.size())
+				size = pick_info.size();
 
 			//std::cout << pick_output << std::endl;
 
 			CHECK(0, r, _T("PICK_SAMPLES_FAILED"));
+			CHECKNOT(0, size, _T("READ FILE FAILED"));
 
-			int comp = compare_buffer(reinterpret_cast<const unsigned char*>(bo.c_str()), pick_info->get(), size);
+			int comp = compare_buffer(reinterpret_cast<const unsigned char*>(bo.c_str())
+				, reinterpret_cast<const unsigned char*>(pick_info.GetBuffer(size))
+				, size);
 
 			if (0 != comp)
 			{
 				Cstring t1 = f1.clone();
 				t1 += _T("MP4PICK1.tmp");
 
-				std::string pickcontent(reinterpret_cast<char *>(pick_info->get()));
+				std::string pickcontent(reinterpret_cast<char *>(pick_info.GetBuffer(size)));
 
 				fileout(t1, pickcontent);
 

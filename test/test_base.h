@@ -26,7 +26,9 @@
 //#include <mgmedia.h>
 
 
-#define CHECK(expected, real, msg) if(expected != real){std::cout << "\t\tko\t" << msg << " expected: " << expected << " found: " << real << " [" << __FILE__ << "] " << __LINE__ << std::endl; return 1;}
+#define CHECK(expected, real, msg) if(expected != real){std::cout << RED << "\t\tko\t" << msg << " expected: " << expected << " found: " << real << " [" << __FILE__ << "] " << __LINE__ << std::endl; return 1;}
+#define CHECKNOT(expected, real, msg) if(expected == real){std::cout << RED << "\t\tko\t" << msg << " not expected: " << expected << " found: " << real << " [" << __FILE__ << "] " << __LINE__ << std::endl; return 1;}
+
 #define TEST_OK return 0;
 
 struct TEST_TIMING
@@ -120,28 +122,30 @@ inline void output_time(std::map<Cstring, TEST_TIMING> & hash)
 
 
 #define STARTCASE int res = 0; \
+				  MGCOLOR original = get_current_color(); \
                   ALX::Cstring test_section = _T("*"); if(argc > 1){test_section = argv[1];} \
 		  ALX::Cstring test_name   = _T("*");  if(argc > 2){test_name = argv[2];}  \
 		  std::cout << "\tSTART TESTING: " << test_section << _T("\t") << test_name << std::endl; \
 		  int tests(0), successed(0), failed(0), lastfailed(0);\
-		  STARTCLOCK; std::map<Cstring, TEST_TIMING> timehash;
+		  STARTCLOCK; std::map<Cstring, TEST_TIMING> timehash; 
+		  
 
 
 #define TESTCASE(FUNC) if(test_name == _T( #FUNC )  || test_name == _T("*")){\
-				std::cout << "\t----------------------\t" #FUNC "\t----------------------\t" << std::endl; \
+				std::cout << GREEN << "\t----------------------\t" #FUNC "\t----------------------\t" << original << std::endl; \
 				try{  tests++; \
-						res = FUNC(); if(res){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << std::endl; failed++;}else{std::cout << "\tOK\t" #FUNC "\t" << std::endl; successed++;} \
-					 }catch(mgexception & mgex){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << mgex.toString() << std::endl; failed++; } \
-					  catch(mgexceptionbase & mgex){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << mgex.get_error_number() << std::endl; failed++;} \
+						res = FUNC(); if(res){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << std::endl; failed++;}else{std::cout << "\tOK\t" #FUNC "\t" << std::endl; successed++;} \
+					 }catch(mgexception & mgex){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << mgex.toString() << std::endl; failed++; } \
+					  catch(mgexceptionbase & mgex){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << mgex.get_error_number() << std::endl; failed++;} \
 				FUNCTIME( _T( #FUNC ) )} 
 
 
 #define TESTCASE1(FUNC, P) if(test_name == _T( #FUNC ) || test_name == _T("*")){\
-				std::cout << "\t----------------------\t" #FUNC "\t----------------------\t" << std::endl; \
+				std::cout << GREEN << "\t----------------------\t" #FUNC "\t----------------------\t" << original << std::endl; \
 				try{  tests++; \
-						res = FUNC(P); if(res){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << std::endl; failed++;}else{std::cout << "\tOK\t" #FUNC "\t" << std::endl; successed++;} \
-					 }catch(mgexception & mgex){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << mgex.toString() << std::endl; failed++; } \
-					  catch(mgexceptionbase & mgex){std::cout << "\tTEST-FAILED\t" #FUNC "\t" << mgex.get_error_number() << std::endl; failed++;} \
+						res = FUNC(P); if(res){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << std::endl; failed++;}else{std::cout << "\tOK\t" #FUNC "\t" << std::endl; successed++;} \
+					 }catch(mgexception & mgex){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << mgex.toString() << std::endl; failed++; } \
+					  catch(mgexceptionbase & mgex){std::cout << RED << "\tTEST-FAILED\t" #FUNC "\t" << mgex.get_error_number() << std::endl; failed++;} \
 				FUNCTIME( _T( #FUNC ) )} 
 
 
@@ -150,7 +154,8 @@ inline void output_time(std::map<Cstring, TEST_TIMING> & hash)
 			        std::cout << "======" << #SECNAME << "======" << std::endl;
 #define ENDSECTION } 
 
-#define ENDCASE std::cout << "SUMMARY:\t" << tests << "\tSUCCEEDED:\t" << successed << "\tFAILED:\t" << failed << std::endl \
+#define ENDCASE  if(failed){std::cout << RED;}else{std::cout << GREEN;} \
+                 std::cout << "SUMMARY:\t" << tests << "\tSUCCEEDED:\t" << successed << "\tFAILED:\t" << failed << original << std::endl \
 			     ; output_time(timehash) \
                 ;return failed;
 

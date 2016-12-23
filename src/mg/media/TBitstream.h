@@ -285,6 +285,9 @@ class base_file_midia_bitstream : public T
 public:
 	virtual void open(const TCHAR * path) = 0;
 	virtual void close() = 0;
+
+	virtual ~base_file_midia_bitstream()
+	{}
 };
 
 /*! 
@@ -303,6 +306,9 @@ public:
 	{
 
 	}
+
+	virtual ~file_media_bitstream() 
+	{}
 
 	void open(const TCHAR * path, int flags)
 	{
@@ -419,6 +425,9 @@ public:
 	{
 
 	}
+
+	virtual ~sync_file_media_bitstream()
+	{}
 
 	void open(const TCHAR * path, bool read)
 	{

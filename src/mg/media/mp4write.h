@@ -86,6 +86,9 @@ protected:
 	{}
 
 public:
+	virtual ~CMP4W()
+	{}
+
 	virtual uint64_t get_position()
 	{
 		_ASSERTE(NULL != _p_f);
