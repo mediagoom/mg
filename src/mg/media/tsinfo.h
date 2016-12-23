@@ -26,3 +26,5 @@
 #else
 #define STDTSTRING std::string
 #endif
+
+int tsinfo(console_command & c, std::ostream & ost);

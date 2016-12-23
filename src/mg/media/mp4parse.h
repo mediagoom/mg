@@ -2522,7 +2522,7 @@ protected:
 
 	virtual void unknown_box(CMP4 &mp4)
 	{
-		_ASSERTE(false);
+		//_ASSERTE(false);
 		mp4.skip_current();
 	}
 

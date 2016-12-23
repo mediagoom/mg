@@ -4439,6 +4439,11 @@ int _tmain(int argc, TCHAR* argv[])
 			return auto_test(test, c);
 		}
 
+		if (kind == _T("hls"))
+		{
+			return tsinfo(c, std::cout);
+		}
+
 		//CResource<uvloopthread> t; t.Create(); t->start();
 
 		SYNCMP4File mp4;

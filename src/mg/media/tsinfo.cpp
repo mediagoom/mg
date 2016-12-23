@@ -61,7 +61,8 @@ protected:
 			stream->set_pes_detail(true);
 	}
 	
-	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position)
+	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position
+	, std::ostream & ost)
 	{
 		int pid = ts.PID;
 
@@ -74,7 +75,7 @@ protected:
 			{
 				if(0 == pid)
 				{
-					std::wcout << "PAT\tGOT Program Association Table " << position << "\t" << _packet 
+					ost << "PAT\tGOT Program Association Table " << position << "\t" << _packet 
 						<< "\tcontinuity:\t" << ts.continuity_counter << std::endl;
 
 					for(int i = 0; i < pat()->Count(); i++)
@@ -92,7 +93,7 @@ protected:
 				}
 				else if(pat()->CanWork() && pat()->IsProgramPid(pid))
 				{
-					std::wcout << _T("PMT\tGot Program Map Table PIN TABLE ")  
+					ost << _T("PMT\tGot Program Map Table PIN TABLE ")  
 						<< position << _T("\t") << _packet 
 						<< _T("\tcontinuity:\t") << ts.continuity_counter << std::endl;
 
@@ -113,7 +114,7 @@ protected:
 				{
 					if(_flags & PES)
 					{
-						std::wcout << _T("PES\tGot PES ") << pid  
+						ost << _T("PES\tGot PES ") << pid  
 							<< _T("\t") << position 
 							<< _T("\t") 
 							<< _packet 
@@ -132,7 +133,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::NOT_FOUND)
 			{
-				std::wcout << _T("U\tUNKNOWN PID ") << pid 
+				ost << _T("U\tUNKNOWN PID ") << pid 
 					<< _T("\t")  << position 
 					<< "\t" << _packet << std::endl;
 			}
@@ -143,7 +144,7 @@ protected:
 				int size = this->get_pes(pid)->payload_current_size();
 
 				
-				std::wcout << _T("INFO\tMORE INPUT PID ") << pid 
+				ost << _T("INFO\tMORE INPUT PID ") << pid 
 					<< _T("\tsize\t")  << size 
 					<< _T("\t")  << position 
 					<< _T("\t") << _packet 
@@ -152,7 +153,7 @@ protected:
 					<< _T("\tpayload flag:\t") << ts.payload_field;
 
 				if(ts.adaptation_flag)
-					std::wcout << _T("\tadaptation size:\t") << ts.adaptation_field->adaptation_field_length;
+					ost << _T("\tadaptation size:\t") << ts.adaptation_field->adaptation_field_length;
 
 				std::wcout
 					<< std::endl;
@@ -160,7 +161,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::LATE)
 			{
-				std::wcout << _T("LATE INPUT PID ") << pid 
+				ost << _T("LATE INPUT PID ") << pid 
 					<< _T("\t")  << position 
 					<< "\t" << _packet 
 					<< _T("\t")  << _packet 
@@ -169,7 +170,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::NO_PAT)
 			{
-				std::wcout << _T("NO_PAT INPUT PID ") << pid 
+				ost << _T("NO_PAT INPUT PID ") << pid 
 					<< _T("\t")  << position
 					<< _T("\t")  << _packet << std::endl;
 			}
@@ -458,7 +459,7 @@ protected:
 		/*
 		for(int i = 0; i < reader.stream_count(); i++)
 		{		
-				std::wcout << i
+				ost << i
 				<< _T(") offset: ")
 				<< HNS(reader.get_stream_offset(i))
 				<< _T(" duration: ") 
@@ -487,7 +488,7 @@ protected:
 		/*
 		if(ms.sample_number < 2)
 			{
-				std::wcout << ms.stream
+				ost << ms.stream
 				<< _T("\t")
 				<< ms.sample_number
 				<< _T("\t")
@@ -701,7 +702,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 
 #endif
 
-int do_ts_mux(console_command &c, MP42TS & mp4edit)
+int do_ts_mux(console_command &c, MP42TS & mp4edit, std::ostream & ost)
 {
 	unsigned int cnt = c.get_command_count(_T("input"));
 			if(cnt != c.get_command_count(_T("starttime")) ||
@@ -711,7 +712,7 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit)
 					_T("ee: input start and end must be specified for every input")
 					<< std::endl;
 
-				std::wcout << static_cast<const TCHAR*>(c.get_help())
+				ost << static_cast<const TCHAR*>(c.get_help())
 					<< std::endl;
 
 				return 2020;
@@ -739,13 +740,13 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit)
 
 			mp4edit.start(c.get_value(_T("output")));
  			
-			std::wcout << _T("Process Body") << std::endl;
+			ost << _T("Process Body") << std::endl;
 	        			
 			for(unsigned int idx = 0; idx < cnt; idx++)
 			{
 								
 
-				std::wcout << _T("Add File ") 
+				ost << _T("Add File ") 
 					<< c.get_value(_T("input"), idx)
 					<< _T(" ") 
 					<< c.get_integer64_value(_T("starttime"), idx)
@@ -764,7 +765,7 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit)
 
 				unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
 
-				std::wcout << _T("Edit add time ") 
+				ost << _T("Edit add time ") 
 					<< HNS(total_time)
 					<< std::endl;
 			}
@@ -777,7 +778,7 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit)
 
 
 
-int do_hls_mux(console_command &c)
+int do_hls_mux(console_command &c, std::ostream & ost)
 {
 			unsigned int cnt = c.get_command_count(_T("input"));
 			if(cnt != c.get_command_count(_T("starttime")) ||
@@ -787,7 +788,7 @@ int do_hls_mux(console_command &c)
 					_T("ee: input start and end must be specified for every input")
 					<< std::endl;
 
-				std::wcout << static_cast<const TCHAR*>(c.get_help())
+				ost << static_cast<const TCHAR*>(c.get_help())
 					<< std::endl;
 
 				return 2020;
@@ -802,7 +803,7 @@ int do_hls_mux(console_command &c)
 					_T("ee: input path and bitrates do not match")
 					<< std::endl;
 
-				std::wcout << static_cast<const TCHAR*>(c.get_help())
+				ost << static_cast<const TCHAR*>(c.get_help())
 					<< std::endl;
 
 				return 2021;
@@ -814,13 +815,13 @@ int do_hls_mux(console_command &c)
 					_T("ee: input and path not in proportion")
 					<< std::endl;
 
-				std::wcout << static_cast<const TCHAR*>(c.get_help())
+				ost << static_cast<const TCHAR*>(c.get_help())
 					<< std::endl;
 
 				return 2022;
 			}
 
-			std::wcout << _T("hls Operation ") << std::endl;
+			ost << _T("hls Operation ") << std::endl;
 
 			CMP4DynamicInfo mp4edit;
 			
@@ -835,7 +836,7 @@ int do_hls_mux(console_command &c)
 				mp4edit.set_fragment_tolerance(fragment_tolerance);
 			
  			
-			std::wcout << _T("Process Body") << std::endl;
+			ost << _T("Process Body") << std::endl;
 
 			int path_for_input = npaths / cnt;
 
@@ -847,7 +848,7 @@ int do_hls_mux(console_command &c)
 			{
 								
 
-				std::wcout << _T("Add File ") 
+				ost << _T("Add File ") 
 					<< c.get_value(_T("input"), idx)
 					<< _T(" ") 
 					<< c.get_integer64_value(_T("starttime"), idx)
@@ -886,7 +887,7 @@ int do_hls_mux(console_command &c)
 
 				unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
 
-				std::wcout << _T("Edit add time ") 
+				ost << _T("Edit add time ") 
 					<< HNS(total_time)
 					<< std::endl;
 			}
@@ -922,10 +923,10 @@ int do_hls_mux(console_command &c)
 			mp4edit.render(&r);
 
 			/*
-			std::wcout << static_cast<const TCHAR*>(r.main()) 
+			ost << static_cast<const TCHAR*>(r.main()) 
 				<< std::endl;
 			*/
-			std::wcout << "==========================HLS============================" << std::endl;
+			ost << "==========================HLS============================" << std::endl;
 
 			Cstring out_dir;
 
@@ -1108,7 +1109,7 @@ int do_hls_mux(console_command &c)
 										ts4edit.set_composition_start_time(s->id, computed_time);
 										ts4edit.set_composition_end_time(s->id, end_time);
 
-										std::wcout << "HLS: \t\t\t" 
+										ost << "HLS: \t\t\t" 
 												   << HNS(computed_time) 
 												   << "\t"
 												   << HNS(end_computed)
@@ -1135,7 +1136,7 @@ int do_hls_mux(console_command &c)
 
 											
 
-											std::wcout << "HLS: \t" 
+											ost << "HLS: \t" 
 												       << HNS(computed_time) 
 													   << "\t"
 													   << HNS(end_time)
@@ -1164,7 +1165,7 @@ int do_hls_mux(console_command &c)
 										ts4edit.End();
 
 										/*
-										std::wcout << "HLS END: \t" 
+										ost << "HLS END: \t" 
 											<< HNS(ts4edit.get_last(0)) 
 											<< "\t"
 											<< HNS(ts4edit.get_last(1)) 
@@ -1211,11 +1212,11 @@ int do_hls_mux(console_command &c)
 }
 
 
-int _tmain(int argc, _TCHAR* argv[])
+int tsinfo(console_command & c, std::ostream & ost)
 {
 	
-	console_command c;
-
+	
+	/*
 	c.add(_T("input")
 		, console_command::type_string , false, _T("input file name"), 'i');
 	c.add(_T("kind")
@@ -1261,23 +1262,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	c.add(_T("path")   
 		, console_command::type_string , false, _T("path"), 'j');
 
-	bool r = c.process(argc, argv);
-
-	if(!r)
-	{
-		std::wcerr << 
-			static_cast<const TCHAR*>(c.get_error_message())
-			<< std::endl;
-
-		std::wcout << static_cast<const TCHAR*>(c.get_help())
-			<< std::endl;
-
-		return 1;
-	}
+	*/
 
 	if(c.command_specified(_T("help")))
 	{
-		std::wcout << static_cast<const TCHAR*>(c.get_help())
+		ost << static_cast<const TCHAR*>(c.get_help())
 			<< std::endl;
 
 		return 0;
@@ -1291,7 +1280,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			kind = c.get_value(_T("kind"));
 
 
-		std::wcout << _T("WORKING TYPE: ") << kind.c_str() << std::endl;
+		ost << _T("WORKING TYPE: ") << kind.c_str() << std::endl;
 
 
 		if(kind == _T("test"))
@@ -1301,20 +1290,16 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 
 
-
-
-		
-
 		Ctime start_time;
 
 
 		if(kind == _T("MP42TS"))
 		{
-			std::wcout << _T("Mux Operation ") << std::endl;
+			ost << _T("Mux Operation ") << std::endl;
 			
 			CTSEditConsole mp4edit;
 
-			int r = do_ts_mux(c, mp4edit);
+			int r = do_ts_mux(c, mp4edit, ost);
 
 			if(0 != r)
 				return r;
@@ -1322,7 +1307,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		else if(kind == _T("hls"))
 		{
 			
-			int r = do_hls_mux(c);
+			int r = do_hls_mux(c, ost);
 
 			if(0 != r)
 				return r;
@@ -1335,15 +1320,15 @@ int _tmain(int argc, _TCHAR* argv[])
 
 				if(!c.command_specified(_T("input")))
 				{
-					std::wcout << "Missing Input File " << std::endl;
+					ost << "Missing Input File " << std::endl;
 
-					std::wcout << static_cast<const TCHAR*>(c.get_help())
+					ost << static_cast<const TCHAR*>(c.get_help())
 					<< std::endl;
 
 					return 2;
 				}
 
-				std::wcout << _T("Opening File ") << c.get_value(_T("input")) << std::endl;
+				ost << _T("Opening File ") << c.get_value(_T("input")) << std::endl;
 
 				ts.open(c.get_value(_T("input")));
 				//nt argc, _TCHAR* argv[])
@@ -1441,7 +1426,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
 
-		std::wcout << _T("Edit add time ") 
+		ost << _T("Edit add time ") 
 					<< HNS(total_time)
 					<< std::endl;
 	

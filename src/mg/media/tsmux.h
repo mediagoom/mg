@@ -115,6 +115,9 @@ class TSMuxH264Stream:public TSMuxStream
 		_header.write_uint(0x00000001);
 		_header.write_bytes(pps_nal_source, pps_nal_size);
 
+		_header.flush();
+		_body.flush();
+
 		_header_start_position = _header.get_position();
 
 		_ASSERTE(6 == _body.get_position());
@@ -217,9 +220,9 @@ public:
 			):_nal_lengthSize(4)
 	{
 
-		_pes.open(1024);
-		_header.open(1024);
-		_body.open(1024);
+		//_pes.open(1024);
+		//_header.open(1024);
+		//_body.open(1024);
 
 		init(sps_nal_source
             ,sps_nal_size

@@ -58,7 +58,7 @@ public:
 	virtual unsigned __int64 get_position()
 	{
 		_ASSERTE(NULL != _p_f);
-		return _p_f->get_position() / 8ULL;
+		return _p_f->get_position();
 	}
 		
 
@@ -245,7 +245,20 @@ public:
 
 };
 
-typedef memory_write_media_bitstream<CTSW> CTSWriteMemory;
+//typedef memory_write_media_bitstream<CTSW> CTSWriteMemory;
+class CTSWriteMemory : public memory_write_media_bitstream<CTSW>
+{
+public:
+	CTSWriteMemory()
+	{
+		this->open(1024);
+	}
+
+	virtual ~CTSWriteMemory()
+	{}
+
+};
+
 typedef file_media_bitstream<CTSW, O_CREAT | O_WRONLY | O_TRUNC > CTSWriteFile;
 typedef sync_file_media_bitstream<CTSW, false> SYNCTSWriteFile;
 
@@ -375,8 +388,8 @@ public:
 
 		init_pam();
 
-		_memory_pas.open(1024);
-		_memory_pam.open(1024);
+		//_memory_pas.open(1024);
+		//_memory_pam.open(1024);
 	}
 
 	void output_ts(
