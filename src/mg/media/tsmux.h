@@ -257,8 +257,8 @@ public:
 	, const unsigned int target_bit_rate
 	):_pes_frames(1), _pes_current_frame(0)
 	{
-		_body.open(1024);
-		_pes.open(1024);
+		//_body.open(1024);
+		//_pes.open(1024);
 		
 		_adts.set_mpeg_4_audio_object(object_type);
 		_adts.mpeg_4_sampling_frequency = sample_rate;

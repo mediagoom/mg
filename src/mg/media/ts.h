@@ -782,8 +782,8 @@ public:
 };
 
 /**
-This class perform the analisys of the paiload of the pes inside a pes.
-The payload is delivered to tye IProgramElementaryStreamData pointer.
+This class perform the analysis of the payload of the pes inside a pes.
+The payload is delivered to the IProgramElementaryStreamData pointer.
 It identify the starting point and get the correct structure describing the stream.
 */
 template<typename T, typename I=IProgramElementaryStreamData*>

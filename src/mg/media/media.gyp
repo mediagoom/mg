@@ -3,8 +3,9 @@
    'includes': ['../../../mg.gypi']
  , 'targets': [
     {
-      'target_name': 'mgmedia',
-      'type': 'static_library'
+        'target_name': 'mgmedia'
+      , 'type': 'static_library'
+	  , 'defines' : ['MG_ERRROR_LOG']
       , 'dependencies': [
                   '../../../deps/AES/aes.gyp:gypaes'
                 , '../../../deps/libuv/uv.gyp:libuv'
@@ -13,6 +14,7 @@
               ]
 	, 'direct_dependent_settings': {
             'include_dirs': [ './' ]
+		    , 'defines' : ['MG_ERRROR_LOG']
 	    }
       ,'conditions': [
        		 ['OS == "win"', {
@@ -52,11 +54,7 @@
          , 'process_outputs_as_sources': 1,
        },
      ]
-      
-      , 'defines': [
-        
-      ],
-      'include_dirs': [
+      , 'include_dirs': [
           './'
         , '../..'
       ],

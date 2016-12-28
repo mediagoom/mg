@@ -114,9 +114,10 @@ class fixed_memory_write :public Ibitstream_storage
 {
 
 private:
-	CBuffer<unsigned char> _buffer;
-	uint64_t	           _current_pos;
-	uint64_t	           _size;
+	CBuffer<unsigned char>      _buffer;
+	ResetBuffer<unsigned char>  _reset;
+	uint64_t	                _current_pos;
+	uint64_t	                _size;
 
 	void align_size()
 	{
@@ -128,6 +129,7 @@ private:
 public:
 
 	fixed_memory_write(uint32_t init_size) : _buffer(init_size)
+		, _reset(_buffer)
 		, _current_pos(0), _size(0)
 	{}
 
@@ -168,6 +170,11 @@ public:
 
 		pcb->write_cb(to_write);
 
+
+
+		_buffer.updatePosition(to_write);
+		_ASSERTE(_buffer.getFull() == _current_pos);
+
 		
 	}
 
@@ -184,6 +191,14 @@ public:
 	virtual void     set_position(uint64_t rhs) {
 		_ASSERTE(rhs < _buffer.getSize());
 		_current_pos = rhs;
+
+		if (_current_pos < _buffer.getFull())
+			_reset.Back(_buffer.getFull() - _current_pos);
+		else
+			_buffer.updatePosition(_current_pos - _buffer.getFull());
+
+		_ASSERTE(_buffer.getFull() == _current_pos);
+	    
 	}
 
 	unsigned char * get_buffer() {
@@ -374,9 +389,19 @@ public:
 
 	}
 
+	void close()
+	{
+		if (NULL != _write)
+			delete _write;
+
+		_write = NULL;
+	}
+
 	void open(uint32_t initial_size)
 	{
 		_ASSERTE(NULL == _write);
+		close();
+
 		_write = new write_memory_bitstream(initial_size);
 
 		T::_p_f = _write;
@@ -386,13 +411,7 @@ public:
 	uint64_t get_size() const { return _write->get_size(); }
 	const unsigned char * get_buffer() const { return _write->get_buffer(); }
 
-	void close()
-	{
-		if (NULL != _write)
-			delete _write;
-
-		_write = NULL;
-	}
+	
 
 	virtual ~memory_write_media_bitstream()
 	{

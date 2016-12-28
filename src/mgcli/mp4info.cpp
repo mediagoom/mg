@@ -4439,7 +4439,10 @@ int _tmain(int argc, TCHAR* argv[])
 			return auto_test(test, c);
 		}
 
-		if (kind == _T("hls"))
+		if (kind == _T("hls") 
+		 || kind == _T("PES")
+		 || kind == _T("all")
+		)
 		{
 			return tsinfo(c, std::cout);
 		}
@@ -5650,7 +5653,8 @@ int _tmain(int argc, TCHAR* argv[])
 		}
 		else
 		{
-			std::wcout << _T("the specified kind is invalid")
+			std::cout << _T("the specified kind is invalid: ")
+				<< kind.c_str()
 			<< std::endl;
 
 			return 9;

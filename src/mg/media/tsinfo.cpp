@@ -46,11 +46,13 @@ class CTSProcessConsole: public CTSProcessor
 	unsigned __int64 _previus_position;
 	unsigned __int64 _packet;
 	int _flags;
+	std::ostream & _ost;
 	public:
 
-	CTSProcessConsole(int flags):_previus_position(0)
+	CTSProcessConsole(int flags, std::ostream & ost):_previus_position(0)
 		, _packet(0)
 		, _flags(flags)
+		, _ost(ost)
 	{}
 
 protected:
@@ -62,7 +64,7 @@ protected:
 	}
 	
 	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position
-	, std::ostream & ost)
+	)
 	{
 		int pid = ts.PID;
 
@@ -75,14 +77,14 @@ protected:
 			{
 				if(0 == pid)
 				{
-					ost << "PAT\tGOT Program Association Table " << position << "\t" << _packet 
+					_ost << "PAT\tGOT Program Association Table " << position << "\t" << _packet 
 						<< "\tcontinuity:\t" << ts.continuity_counter << std::endl;
 
 					for(int i = 0; i < pat()->Count(); i++)
 					{
 						if(0 != pat()->GetProgramNumber(i))
 						{
-							std::wcout 
+							_ost 
 								<< _T("\t\tProgram Number: ") << 
 									pat()->GetProgramNumber(i)
 								<< _T("\tProgram Pid: ") << 
@@ -93,13 +95,13 @@ protected:
 				}
 				else if(pat()->CanWork() && pat()->IsProgramPid(pid))
 				{
-					ost << _T("PMT\tGot Program Map Table PIN TABLE ")  
+					_ost << _T("PMT\tGot Program Map Table PIN TABLE ")  
 						<< position << _T("\t") << _packet 
 						<< _T("\tcontinuity:\t") << ts.continuity_counter << std::endl;
 
 					for(int i = 0; i < pmt(pid)->Count(); i++)
 					{
-						std::wcout 
+						_ost
 							<< _T("\t\t") << 
 								pmt(pid)->GetPid(i)
 							<< _T("\t") <<
@@ -114,7 +116,7 @@ protected:
 				{
 					if(_flags & PES)
 					{
-						ost << _T("PES\tGot PES ") << pid  
+						_ost << _T("PES\tGot PES ") << pid  
 							<< _T("\t") << position 
 							<< _T("\t") 
 							<< _packet 
@@ -133,7 +135,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::NOT_FOUND)
 			{
-				ost << _T("U\tUNKNOWN PID ") << pid 
+				_ost << _T("U\tUNKNOWN PID ") << pid 
 					<< _T("\t")  << position 
 					<< "\t" << _packet << std::endl;
 			}
@@ -144,7 +146,7 @@ protected:
 				int size = this->get_pes(pid)->payload_current_size();
 
 				
-				ost << _T("INFO\tMORE INPUT PID ") << pid 
+				_ost << _T("INFO\tMORE INPUT PID ") << pid 
 					<< _T("\tsize\t")  << size 
 					<< _T("\t")  << position 
 					<< _T("\t") << _packet 
@@ -153,7 +155,7 @@ protected:
 					<< _T("\tpayload flag:\t") << ts.payload_field;
 
 				if(ts.adaptation_flag)
-					ost << _T("\tadaptation size:\t") << ts.adaptation_field->adaptation_field_length;
+					_ost << _T("\tadaptation size:\t") << ts.adaptation_field->adaptation_field_length;
 
 				std::wcout
 					<< std::endl;
@@ -161,7 +163,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::LATE)
 			{
-				ost << _T("LATE INPUT PID ") << pid 
+				_ost << _T("LATE INPUT PID ") << pid 
 					<< _T("\t")  << position 
 					<< "\t" << _packet 
 					<< _T("\t")  << _packet 
@@ -170,7 +172,7 @@ protected:
 
 			if(res == TSPROCESSRESULT::NO_PAT)
 			{
-				ost << _T("NO_PAT INPUT PID ") << pid 
+				_ost << _T("NO_PAT INPUT PID ") << pid 
 					<< _T("\t")  << position
 					<< _T("\t")  << _packet << std::endl;
 			}
@@ -377,7 +379,7 @@ public:
 		cleanup();
 	}
 
-	CTSProcessConsoleMP4():_p_mux(NULL), CTSProcessConsole(true)
+	CTSProcessConsoleMP4(std::ostream & ost):_p_mux(NULL), CTSProcessConsole(true, ost)
 	{
 
 	}
@@ -698,6 +700,9 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 			 outf.close();
 
 
+	return 0;
+
+
 }
 
 #endif
@@ -770,7 +775,9 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit, std::ostream & ost)
 					<< std::endl;
 			}
 
-			mp4edit.End();			
+			mp4edit.End();	
+
+			return 0;
 }
 
 
@@ -1336,8 +1343,8 @@ int tsinfo(console_command & c, std::ostream & ost)
 
 
 				if(kind == _T("auto") || kind == _T("pick") 
-										|| kind == _T("PES") 
-										|| kind == _T("all"))
+									  || kind == _T("PES") 
+									  || kind == _T("all"))
 				{
 					bool pick = false;
 
@@ -1353,7 +1360,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 						stop = true;
 					}
 
-					if(kind == _T("pick") 
+					if(kind     == _T("pick") 
 						|| kind == _T("PES") 
 						|| kind == _T("all"))
 					{
@@ -1386,7 +1393,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 							<< std::endl;
 					}								
 					
-					CTSProcessConsole processor(flags);
+					CTSProcessConsole processor(flags, std::cout);
 
 					if(stop)
 						ts.process_packets(processor, size);
@@ -1397,7 +1404,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 				else if(kind == _T("ts2mp4"))
 				{
 
-					CTSProcessConsoleMP4 processor;
+					CTSProcessConsoleMP4 processor(std::cout);
 
 					if(!c.command_specified(_T("output")))
 					{
@@ -1411,7 +1418,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 					
 					if(c.command_specified(_T("size")))
 					{
-						size = c.get_integer64_value(_T("size"));
+						size = static_cast<int>(c.get_integer64_value(_T("size")));
 					}
 
 					while(TSPROCESSRESULT::TSEOF != ts.process_packets(processor, size))

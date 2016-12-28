@@ -245,7 +245,8 @@ public:
 		int frame_count(0);
 
 		//AAC STUFF
-		fixed_memory_bitstream ms(payload.get(), payload.size());
+		fixed_memory_bitstream ms(payload.get() + payload.GetPosition()
+			, payload.size() - payload.GetPosition());
 		                         //ms.set_throw_on_end(false);
 
 	    unsigned int start_position(0);//, end_position(0);
@@ -363,7 +364,8 @@ public:
 			std::wcout << L"H264\t";
 
 		//H264 STUFF
-		fixed_memory_bitstream ms(payload.get(), payload.size());
+		fixed_memory_bitstream ms(payload.get() + payload.GetPosition()
+			, payload.size() - payload.GetPosition());
 		                         //ms.set_throw_on_end(false);
 
 	    unsigned int start_position(0);//, end_position(0);
@@ -421,6 +423,7 @@ public:
 				{
 					while(!ms.atend())
 					{
+						_ASSERTE(ms.has_bits(8));
 						 b = ms.getbits(8);
 					    _payload.add(&b, 1);
 					}
@@ -733,6 +736,8 @@ public:
 	   
 	   INT64 packet_read = 0;
 
+	   TSPROCESSRESULT result = TSPROCESSRESULT::MORE_INPUT;
+
 	   //_p_f->set
 
 	   //unsigned __int64 total_packet = p_input->get_file_size() / 188;
@@ -767,7 +772,7 @@ public:
 		   }
 		   */
 
-		   TSPROCESSRESULT result = processor.process(ts, get_position());
+		    result = processor.process(ts, get_position());
 		   	
 	       /*
 		   if(!(packet_read + 1 == _p_f->getpos() / 8 / 188))
@@ -788,6 +793,8 @@ public:
 
 	   if(eof())
 		   return TSPROCESSRESULT::TSEOF;
+
+	   return result;
 	}
 
 	
