@@ -290,7 +290,10 @@ public:
 	}
 
 	void close() { _stream->close(); }
-	void flush() { _stream->flush(); }
+	void flush() { 
+		bitstream<sync_file_bitstream>::flush();
+		_stream->flush(); 
+	}
 
 };
 

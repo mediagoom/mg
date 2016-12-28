@@ -1050,7 +1050,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 						track_id++;
 						unsigned char sequence(0);
 
-						//*****Inizialization Segment//
+						//*****Initialization Segment//
 
 						//**************************//
 
@@ -1086,7 +1086,6 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 								if(s->is_video())
 										out_chunk_file += _T("\\video_");
 								
-								
 
 								out_chunk_file += bitrate->first;
 								out_chunk_file += _T("_");
@@ -1114,7 +1113,8 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 										CTSEditConsoleHls ts4edit;
 			                           
 										ts4edit.set_composition_start_time(s->id, computed_time);
-										ts4edit.set_composition_end_time(s->id, end_time);
+										ts4edit.set_composition_end_time(s->id
+											, s->get_end_computed_time(computed_time));
 
 										ost << "HLS: \t\t\t" 
 												   << HNS(computed_time) 
@@ -1157,14 +1157,16 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 										}
 
-
+										/*
 										for(int i = 0; i < p.Count(); i++)
 										{
 											ts4edit.set_end(i, end[i]);
-										}										
+										}
+										*/
 										
 										ts4edit.Add(s->get_path(bitrate->first, computed_time)
-											, composition_time, end_time /*+ end_overflow*/
+											, composition_time
+											, end_time /*+ end_overflow*/
 										);
 
 										ts4edit.stuff_streams();

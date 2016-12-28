@@ -349,6 +349,8 @@ class TSMux: public IMP4Mux2
 			delete _streams[i];
 
 		_streams.clear();
+
+		
 	}
 public:
 
