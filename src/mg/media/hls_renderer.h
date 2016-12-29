@@ -87,7 +87,7 @@ public:
 		_prefix = psz_prefix;
 	}
 
-	virtual void begin(unsigned __int64 duration)
+	virtual void begin(uint64_t duration)
 	{		
 		_audio_codec += _T("mp4a.40.2");
 
@@ -174,7 +174,7 @@ public:
 
 		
 	}
-	virtual void add_point(unsigned __int64 computed_time, unsigned __int64 duration)
+	virtual void add_point(uint64_t computed_time, uint64_t duration)
 	{
 		if(!_video_points)
 			return;
@@ -203,7 +203,7 @@ public:
 
 		//duration = duration / 10UL;
 
-		unsigned __int64 TNANO = duration % 1000000UL;
+		uint64_t TNANO = duration % 1000000UL;
 
 		_body += _T("#EXTINF:");
 		_body += duration / 10000000UL;
@@ -218,11 +218,11 @@ public:
 		_body += _T(".ts\r\n");
 		
 	}
-    virtual void add_point_info(LPCTSTR psz_path, unsigned __int64 composition, unsigned __int64 computed)
+    virtual void add_point_info(LPCTSTR psz_path, uint64_t composition, uint64_t computed)
 	{
 		
 	}
-	virtual void add_point_info_cross(LPCTSTR psz_path, unsigned __int64 composition, unsigned __int64 computed)
+	virtual void add_point_info_cross(LPCTSTR psz_path, uint64_t composition, uint64_t computed)
 	{
 		
 	}

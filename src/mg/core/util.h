@@ -36,6 +36,7 @@ __MGCORE_BEGIN_NAMESPACE
 
 Cstring get_env_variable(const TCHAR* pszname);
 void delete_file(const TCHAR* pszname);
+void create_directory(const TCHAR* pszname);
 
 
 

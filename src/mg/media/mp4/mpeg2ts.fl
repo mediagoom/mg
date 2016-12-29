@@ -99,7 +99,7 @@ class MpegTime{
 	%{
 		static uint64_t Time(unsigned int t32_30, unsigned int t29_15, unsigned int t14_0, unsigned int ext)
 		{
-			unsigned __int64 SCR;
+			uint64_t SCR;
 			double scr_val(0);
 	
 			SCR = t32_30; //SCR 32..30
@@ -265,7 +265,7 @@ class PackHeader
 //    void print_error() { System.out.println("Error in PackHeader! The program_mux_rate = 0!"); } %.j}
 
 
-	%{ unsigned __int64 GetTime() const {return MpegTime::Time(system_clock_ref_1, system_clock_ref_2, system_clock_ref_3, system_clock_ref_extension);}
+	%{ uint64_t GetTime() const {return MpegTime::Time(system_clock_ref_1, system_clock_ref_2, system_clock_ref_3, system_clock_ref_extension);}
 	%}
 
 }
@@ -867,8 +867,8 @@ class PesData extends PesBase
 			return bytes;
 		}
 
-		unsigned __int64 GetTime() const {return MpegTime::Time(PTS_32_30, PTS_29_15, PTS_14_0);}
-		unsigned __int64 GetDTSTime() const {return MpegTime::Time(DTS_32_30, DTS_29_15, DTS_14_0);}
+		uint64_t GetTime() const {return MpegTime::Time(PTS_32_30, PTS_29_15, PTS_14_0);}
+		uint64_t GetDTSTime() const {return MpegTime::Time(DTS_32_30, DTS_29_15, DTS_14_0);}
 		bool IsVideo() const {return (stream_id >= 0xE0 && stream_id <= 0xEF);}
 		bool IsAudio() const {return (stream_id >= 0xC0 && stream_id <= 0xDF);}
 	%}
@@ -1042,7 +1042,7 @@ class Adaptation_Field
 		operator=(rhs);
 	}
 	
-	unsigned __int64 get_pcr()
+	uint64_t get_pcr()
 	{
 	   return 
 	   MpegTime::Time
@@ -1287,7 +1287,7 @@ class Transport_Packet
 	
 	%{
 	  
-	  unsigned __int64 _packet_count;
+	  uint64_t _packet_count;
 	%}
 	
 	%g{_packet_count++;%g}

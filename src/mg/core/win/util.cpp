@@ -61,5 +61,15 @@ void delete_file(const TCHAR* pszname)
 		ALXTHROW_LASTERR;
 }
 
+void create_directory(const TCHAR* pszname)
+{
+    if (!::CreateDirectory(pszname, NULL))
+    {
+        uint32_t num = ::GetLastError();
+        if(ERROR_ALREADY_EXISTS != num)
+            ALXTHROW_LASTERR1(num);
+    }
+}
+
 __MGCORE_END_NAMESPACE
 

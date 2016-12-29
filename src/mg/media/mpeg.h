@@ -122,7 +122,7 @@ class CBufferRead: public CBuffer<unsigned char>
 
 
 
-	unsigned __int64 _position;
+	uint64_t _position;
 	ResetBuffer<BYTE> _r;
 	
 
@@ -164,24 +164,24 @@ public:
 		_position = 0;
 	}
 
-	unsigned __int64 ByteRead()
+	uint64_t ByteRead()
 	{
 		return _position;
 	}
 
-	unsigned __int64 ByteToRead()
+	uint64_t ByteToRead()
 	{
 		return this->getFull() - _position;
 	}
 
-	virtual void Seek(unsigned __int64 cb)
+	virtual void Seek(uint64_t cb)
 	{
 		_ASSERTE((_position + cb) <= this->getSize());
 		_position += cb;
 	}
 
-	virtual void SetPosition(unsigned __int64 cb) { _position = cb; }
-	virtual unsigned __int64 GetPosition() { return _position; }
+	virtual void SetPosition(uint64_t cb) { _position = cb; }
+	virtual uint64_t GetPosition() { return _position; }
 
 	virtual void SeekBack(ULONG cb)
 	{
@@ -284,25 +284,25 @@ class CMPEG2FILE_PROGRAMSTREAM: protected SHStream
 {
 private:
 	CBufferRead       _buffer; //Current Buffer used for Retaining data
-	unsigned __int64  _read;   //Bytes Read in the file
-	unsigned __int64  _duration;
+	uint64_t  _read;   //Bytes Read in the file
+	uint64_t  _duration;
 
 	CResource<SequenceHeader> _sequence;
 	CResource<AudioHeader>    _audioHeader;
 
-	unsigned __int64 _audio_stream_id;
-	unsigned __int64 _video_stream_id;
+	uint64_t _audio_stream_id;
+	uint64_t _video_stream_id;
 
 	PackHeader   _packHeader;
 	SystemHeader _systemHeader;
 	PesData      _pesHeader;
 
-	unsigned __int64 ToReadInFile()
+	uint64_t ToReadInFile()
 	{
 		return size() - _read;
 	}
 
-	unsigned __int64 ReverseToReadInFile()
+	uint64_t ReverseToReadInFile()
 	{
 		return _read;
 	}
@@ -412,7 +412,7 @@ private:
 
 public:
 
-	unsigned __int64 size(){return SHStream::size();}
+	uint64_t size(){return SHStream::size();}
 	
 	bool PositionToAudioHeader(ULONG &lookMax, bool StopAtMPEGHeader = false){return _PositionToAudioHeader(lookMax, StopAtMPEGHeader);}
 	
@@ -437,7 +437,7 @@ public:
 		
 		ULONG max = 0;
         
-		unsigned __int64 pos  = 0;
+		uint64_t pos  = 0;
 		if(PositionToAudioHeaderReload())
 		{
 			pos  = CurrentPosition();
@@ -448,7 +448,7 @@ public:
 
 
 				
-		unsigned __int64 next = pos + _audioHeader->getFrameLength();
+		uint64_t next = pos + _audioHeader->getFrameLength();
 		p = pos;
 
 		while(valid < checks)
@@ -505,12 +505,12 @@ public:
 		//_RPTW3(_CRT_WARN, L"READING BYTES\t%d\t%d\t%d\t", size, _buffer.getSize(), _read);
 		
 //#if _DEBUG
-//		unsigned __int64 xpos = CurrentPosition();
+//		uint64_t xpos = CurrentPosition();
 //#endif
 		if(0 == size)
 			size = _buffer.getSize();
 
-		    unsigned __int64 toread(0);
+		    uint64_t toread(0);
 			toread = _buffer.ByteToRead();
 					
 			ULONG read = 0;
@@ -521,7 +521,7 @@ public:
 
 			_ASSERTE(toread <= _read);
 
-			unsigned __int64 position = _read - toread;
+			uint64_t position = _read - toread;
 			 this->SetPosition(position);
 
 				this->Read(_buffer.get(), _buffer.getFree(), &read);
@@ -547,12 +547,12 @@ public:
 	void ReverseReadBytes(ULONG size = 0)
 	{
 //#if _DEBUG
-//		unsigned __int64 xpos = CurrentPosition();
+//		uint64_t xpos = CurrentPosition();
 //#endif
 		if(0 == size)
 			size = _buffer.getSize();
 
-		    unsigned __int64 toread = _buffer.ByteRead();
+		    uint64_t toread = _buffer.ByteRead();
 					
 			ULONG read = 0;
 			_buffer.Reset();
@@ -562,7 +562,7 @@ public:
 			_ASSERTE((toread + _read) >= size);
 			_ASSERTE((toread + _read - size) <= this->size());
 
-			//unsigned __int64 position = _read + toread - size;
+			//uint64_t position = _read + toread - size;
 
 			//this->SetPosition(position);
 
@@ -575,7 +575,7 @@ public:
 
 			//_buffer.SetPosition(_buffer.size());
 
-			unsigned __int64 position = CurrentPosition() - size;
+			uint64_t position = CurrentPosition() - size;
 
 			this->SetPosition(position);
 
@@ -1048,7 +1048,7 @@ public:
 		return _buffer.GetCurrentPosition();
 	}
 
-	unsigned __int64 CurrentPosition()
+	uint64_t CurrentPosition()
 	{
 		if(0 == _read)
 			return 0;
@@ -1059,7 +1059,7 @@ public:
 		return _read + _buffer.ByteRead() - _buffer.getSize();
 	}
 
-	unsigned __int64 AvailableBuffer()
+	uint64_t AvailableBuffer()
 	{
 		return _buffer.ByteToRead();
 	}
@@ -1073,10 +1073,10 @@ public:
 	    ReadBytes();
 	}
 
-	unsigned __int64 GetPositionForTime(unsigned __int64 duration, unsigned __int64 time)
+	uint64_t GetPositionForTime(uint64_t duration, uint64_t time)
 	{
-		unsigned __int64 packsize = PESPACKSIZE;
-		unsigned __int64 size = this->size();
+		uint64_t packsize = PESPACKSIZE;
+		uint64_t size = this->size();
 		
 		double r = (double)size*(double)time;
 		       r = r/(duration);
@@ -1084,7 +1084,7 @@ public:
 		return (r/packsize)*packsize;
 	}
 
-	void MoveToPosition(unsigned __int64 position)
+	void MoveToPosition(uint64_t position)
 	{
 		//_ASSERTE(position >= _read);
 
@@ -1094,7 +1094,7 @@ public:
 	    ReadBytes();
 	}
 
-	void MovePositionBack(unsigned __int64 bytes)
+	void MovePositionBack(uint64_t bytes)
 	{
 		if(bytes <= _buffer.ByteRead())
 			_buffer.SeekBack(bytes);
@@ -1104,7 +1104,7 @@ public:
 			MoveToPosition(CurrentPosition() - bytes);
 		}
 	}
-	void MovePositionForward(unsigned __int64 bytes)
+	void MovePositionForward(uint64_t bytes)
 	{
 		if(bytes <= _buffer.ByteToRead())
 			_buffer.Seek(bytes);
@@ -1160,7 +1160,7 @@ public:
 				}
 
 #if _DEBUG
-		unsigned __int64 xpos = CurrentPosition();
+		uint64_t xpos = CurrentPosition();
 		xpos += ReadPesHeaderSize();
 #endif
 		        
@@ -1175,7 +1175,7 @@ public:
 		{
 			_ASSERTE(FALSE);
 #if _DEBUG
-			unsigned __int64 xpos = CurrentPosition();
+			uint64_t xpos = CurrentPosition();
 			Cstring  err(_T("FOUNDATION: INVALID FILE STRUCT AT "));
 			         err += xpos;
 			 
@@ -1198,7 +1198,7 @@ public:
 		if(_sequence)
 			return _sequence;
 
-		unsigned __int64 p = _buffer.GetPosition();
+		uint64_t p = _buffer.GetPosition();
 
 		if((_pesHeader.stream_id >= MPEG2_START_VIDEO_STREAM && _pesHeader.stream_id <= MPEG2_END_VIDEO_STREAM) &&
 				!_sequence)
@@ -1284,7 +1284,7 @@ public:
 			return _audioHeader;
 
 
-		unsigned __int64 p = _buffer.GetPosition();
+		uint64_t p = _buffer.GetPosition();
 
 		if((_pesHeader.stream_id >= MPEG2_START_AUDIO_STREAM && _pesHeader.stream_id <= MPEG2_END_AUDIO_STREAM) &&
 				! _audioHeader)
@@ -1304,7 +1304,7 @@ public:
 		return _audioHeader;
 
 	}
-    unsigned __int64 GetDurationEx()
+    uint64_t GetDurationEx()
 	{
 		this->MoveToBeginning();
 		
@@ -1341,7 +1341,7 @@ public:
 
 		UINT id = _pesHeader.stream_id;
 
-		unsigned __int64 start = MpegTime::Time(
+		uint64_t start = MpegTime::Time(
 			_pesHeader.PTS_32_30,
 			_pesHeader.PTS_29_15,
 			_pesHeader.PTS_14_0);
@@ -1372,7 +1372,7 @@ public:
 
 		_ASSERTE(_pesHeader.PTS_flags);
 
-		unsigned __int64 end = MpegTime::Time(
+		uint64_t end = MpegTime::Time(
 			_pesHeader.PTS_32_30,
 			_pesHeader.PTS_29_15,
 			_pesHeader.PTS_14_0);
@@ -1381,7 +1381,7 @@ public:
 		{
 			double sbr = _sequence->getByteRate();
 			double br = videoessize / sbr;
-			unsigned __int64 q = (10000 * 1000)*br;
+			uint64_t q = (10000 * 1000)*br;
 
 			end += q;
 		}
@@ -1389,11 +1389,11 @@ public:
 		return end - start;
 	}
 
-	unsigned __int64 GetDuration()
+	uint64_t GetDuration()
 	{
 		if(0 == _duration)
 		{
-			unsigned __int64 r = 0;
+			uint64_t r = 0;
 	
 			if(0 < _read)
 			{
@@ -1425,7 +1425,7 @@ public:
 		return _duration;
 	}
 
-	bool MoveToTime(unsigned __int64 time)
+	bool MoveToTime(uint64_t time)
 	{
 		if(0 == _duration)
 		{
@@ -1440,7 +1440,7 @@ public:
 			return false;
 		}
 
-		unsigned __int64 t = this->GetPackHeader()->GetTime();
+		uint64_t t = this->GetPackHeader()->GetTime();
 		//_ASSERTE(t <= time);
 		
 		//while(t < time)
@@ -1476,8 +1476,8 @@ public:
 
 	CBufferRead * GetBufferPointer(){return &_buffer;}
 
-	unsigned __int64 AudioId(){return _audio_stream_id;}
-	unsigned __int64 VideoId(){return _video_stream_id;}
+	uint64_t AudioId(){return _audio_stream_id;}
+	uint64_t VideoId(){return _video_stream_id;}
 
 };
 */

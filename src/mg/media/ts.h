@@ -63,12 +63,12 @@ class tspacket
 	Adaptation_Field _Adaptation;
 	Adaptation_Field _FirstAdaptation;
 
-	unsigned __int64 _begin_payload_packet_count;
-	unsigned __int64 _last_packet_count;
+	uint64_t _begin_payload_packet_count;
+	uint64_t _last_packet_count;
 
-	unsigned __int64 _packet_count;
+	uint64_t _packet_count;
 
-	unsigned __int64 _adaptation_packet;
+	uint64_t _adaptation_packet;
 
 	bool _HasAdaptation;
 	bool _HasFirstAdaptation;
@@ -178,7 +178,7 @@ public:
 	bool HasAdaptation(){return _HasAdaptation;}
 
 	bool HasPCR(){return HasAdaptation() && _Adaptation.PCR_flag;}
-	unsigned __int64 PCR()
+	uint64_t PCR()
 	{
 		_ASSERTE(HasAdaptation());
 		_ASSERT(_Adaptation.PCR_flag);
@@ -194,8 +194,8 @@ public:
 		BeforeUnitStart(_payload);
 	}
 
-	unsigned __int64 get_begin_payload_packet_count(){return _begin_payload_packet_count;}
-	unsigned __int64 get_last_packet_count(){return _last_packet_count;}
+	uint64_t get_begin_payload_packet_count(){return _begin_payload_packet_count;}
+	uint64_t get_last_packet_count(){return _last_packet_count;}
 
 	Adaptation_Field * adaptation(){return &_Adaptation;}
 
@@ -203,7 +203,7 @@ public:
 
 	bool HasFirstAdaptation(){return _HasFirstAdaptation;}
     bool HasFirstPCR(){return HasFirstAdaptation() && _FirstAdaptation.PCR_flag;}
-	unsigned __int64 FirstPCR()
+	uint64_t FirstPCR()
 	{
 		_ASSERTE(HasFirstAdaptation());
 		_ASSERT(_FirstAdaptation.PCR_flag);
@@ -704,7 +704,7 @@ public:
 	      bool      HasDTS()  const {return _data.DTS_flags;}
 	unsigned int    StreamID()const {return _streamid;}
 
-	unsigned __int64 DTS() const
+	uint64_t DTS() const
 	{
 		//_ASSERTE(_hasData);
 		_ASSERTE(_data.DTS_flags);
@@ -713,7 +713,7 @@ public:
 		
 	}
 
-	unsigned __int64 PTS() const
+	uint64_t PTS() const
 	{
 		//_ASSERTE(_hasData);
 		_ASSERTE(_data.PTS_flags);
@@ -738,7 +738,7 @@ protected:
 class IProgramElementaryStreamData
 {
 public:
-	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, unsigned __int64 offset)
+	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, uint64_t offset)
 	{return false;}
 };
 
@@ -754,7 +754,7 @@ class TSProgramElementaryStream:public ts_pes
 
 protected:
 
-	unsigned __int64 _offset;
+	uint64_t _offset;
 	bool _receiver_written;
 
 	virtual void Receive(CBufferRead &payload)
@@ -800,7 +800,7 @@ protected:
 		_ASSERTE(!_IsDirty);
 		_HasStruct = false;
 	};
-	virtual unsigned __int64 getMinAnalyzeSize(){return 100;}
+	virtual uint64_t getMinAnalyzeSize(){return 100;}
 	/**
 	Identify the starting point of the stream
 	*/
@@ -1049,9 +1049,9 @@ public:
 //						first_match = true;
 //#ifdef _DEBUG
 //					unsigned int bit_rate = ah.getBitRate();
-//					unsigned __int64 ft = ah.getFrameTime();
-//					unsigned __int64 ff = ah.getFrequency();
-//					unsigned __int64 ff1 = ah.getFrequency();
+//					uint64_t ft = ah.getFrameTime();
+//					uint64_t ff = ah.getFrequency();
+//					uint64_t ff1 = ah.getFrequency();
 //#endif
 //				}	
 //				
@@ -1124,9 +1124,9 @@ public:
 						first_match = true;
 #ifdef _DEBUG
 					unsigned int bit_rate = ah.getBitRate();
-					unsigned __int64 ft = ah.getFrameTime();
-					unsigned __int64 ff = ah.getFrequency();
-					unsigned __int64 ff1 = ah.getFrequency();
+					uint64_t ft = ah.getFrameTime();
+					uint64_t ff = ah.getFrequency();
+					uint64_t ff1 = ah.getFrequency();
 #endif
 
 					possible_positions[position] = _frame_lenght;
@@ -1160,7 +1160,7 @@ public:
 class CMpegAudioStream_old
 {
 	AudioHeader      _ah;               ///The current audio header
-	unsigned __int64 _remaining;
+	uint64_t _remaining;
 	CBufferRead      _to_do;
 	unsigned int     _min_buffer_size; ///do not process unless the buffer is at least this big
     bool             _to_do_certified; ///does the buffer start with a valid header
@@ -1211,7 +1211,7 @@ protected:
         fixed_memory_bitstream bit_stream(p_data, length);
 		MpegAudioAnalize analize(bit_stream);
 
-		unsigned __int64 position(0);
+		uint64_t position(0);
 		bool t = analize.Analize(position, length);
 
 		if(!t)
@@ -1220,7 +1220,7 @@ protected:
 			return false;
 		}
 		
-		unsigned __int64 throw_away = position / 8;
+		uint64_t throw_away = position / 8;
 		bit_stream.set_position(throw_away);
 		_ah.get(bit_stream);
 		_ASSERTE(analize.get_frame_lenght_byte() == _ah.getFrameLength());
@@ -1228,7 +1228,7 @@ protected:
 		//inform we got header
 		got_header(_ah);
 
-		unsigned __int64 send = analize.get_frame_lenght_byte() * analize.get_last_count();
+		uint64_t send = analize.get_frame_lenght_byte() * analize.get_last_count();
 		
 		_remaining = length - throw_away - send;
 		
@@ -1266,7 +1266,7 @@ protected:
 		fixed_memory_bitstream bit_stream(p_data, length);
 		MpegAudioAnalize analize(bit_stream);
 
-		unsigned __int64 position(0);
+		uint64_t position(0);
 		bool t = analize.Analize(position, length);
 
 		if(!t)
@@ -1281,8 +1281,8 @@ protected:
 		_ASSERTE(_ah.getFrameLength() == analize.get_frame_lenght_byte());
 #endif
 
-		unsigned __int64 send = analize.get_frame_lenght_byte() * analize.get_last_count();
-		unsigned __int64 byte_position = position / 8;
+		uint64_t send = analize.get_frame_lenght_byte() * analize.get_last_count();
+		uint64_t byte_position = position / 8;
 		if(0 == position && 0 == _to_do.size())
 		{	
 			pre_buffer_process();

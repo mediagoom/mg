@@ -55,7 +55,7 @@ public:
 		_p_f->write(pByte, size);
 	}
 
-	virtual unsigned __int64 get_position()
+	virtual uint64_t get_position()
 	{
 		_ASSERTE(NULL != _p_f);
 		return _p_f->get_position();
@@ -108,7 +108,7 @@ public:
 		_last_position = _UI64_MAX;
 	}
 	*/
-	void set_position(unsigned __int64 position)
+	void set_position(uint64_t position)
 	{
 		_p_f->set_position(position);
 	}
@@ -130,7 +130,7 @@ class CPESWrite
 protected:
 
 
-	void init_pes(PesData & pes , unsigned __int64 stream_id)
+	void init_pes(PesData & pes , uint64_t stream_id)
 	{
 		pes.stream_id = stream_id;
 		
@@ -154,7 +154,7 @@ protected:
 
 	}
 
-	void close_pes(PesData & pes, unsigned __int64 body_size)
+	void close_pes(PesData & pes, uint64_t body_size)
 	{
 		pes.PES_packet_length += pes.PES_header_data_length;
 		pes.PES_packet_length += body_size;
@@ -221,11 +221,11 @@ protected:
 
 public:
 
-	void WritePesHeader(unsigned __int64 stream_id
+	void WritePesHeader(uint64_t stream_id
 		,  __int64 timePTS
 		,  __int64 timeDTS
 		,  __int64 timePCR
-		, unsigned __int64 body_size
+		, uint64_t body_size
 		, CTSW &TSW
 	)
 	{
@@ -694,7 +694,7 @@ _p_m = new MemoryBitstream(size, 1024);
 _p_f = _p_m;
 }
 
-unsigned __int64 get_size() const {return _p_m->get_size();}
+uint64_t get_size() const {return _p_m->get_size();}
 const BYTE * get_buffer() const {return _p_m->get_buffer();}
 
 void flush(){_p_m->flushbits();}

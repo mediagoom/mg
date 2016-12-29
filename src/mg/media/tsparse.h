@@ -45,12 +45,12 @@ enum TSPROCESSRESULT
 class ITSProcessor
 {
 public:
-	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position) = 0;
+	virtual TSPROCESSRESULT process(Transport_Packet &ts, uint64_t position) = 0;
 };
 
 class BaseProgramElementaryStreamData: public IProgramElementaryStreamData
 {
-	unsigned __int64 _sample;
+	uint64_t _sample;
 	bool _pes_detail;
 
 protected:
@@ -67,7 +67,7 @@ public:
 	void set_pes_detail(bool d){_pes_detail = d;}
 	bool get_pes_detail(){return _pes_detail;}
 
-	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, unsigned __int64 offset)
+	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, uint64_t offset)
 	{
 
 		/*
@@ -236,7 +236,7 @@ public:
 
 	
 
-	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, unsigned __int64 offset)
+	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, uint64_t offset)
 	{
 		bool ret = BaseProgramElementaryStreamData::ReceiveElementaryStreamData(Packet, pesdata, payload, offset);
 
@@ -356,7 +356,7 @@ public:
 
 	
 
-	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, unsigned __int64 offset)
+	virtual bool ReceiveElementaryStreamData(tspacket &Packet, const PesData &pesdata, CBufferRead &payload, uint64_t offset)
 	{
 		bool ret = BaseProgramElementaryStreamData::ReceiveElementaryStreamData(Packet, pesdata, payload, offset);
 
@@ -546,7 +546,7 @@ public:
 	}
 
 	
-	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position)
+	virtual TSPROCESSRESULT process(Transport_Packet &ts, uint64_t position)
 	{		
 
 		if(ts.PID == 0)
@@ -686,9 +686,9 @@ protected:
 		_p_f->skipbits(bits);
 	}
 	
-	void skipbytes(unsigned __int64 bits)
+	void skipbytes(uint64_t bits)
 	{
-		unsigned __int64 to_do_bits = bits * 8ULL;
+		uint64_t to_do_bits = bits * 8ULL;
 		unsigned int max = 	INT_MAX / 1024;
 		while((to_do_bits ) > max )
 		{
@@ -699,7 +699,7 @@ protected:
 		skip(to_do_bits);
 	}
 
-	void set_position(unsigned __int64 position)
+	void set_position(uint64_t position)
 	{
 		_ASSERTE(NULL != _p_f);
 		return _p_f->set_position(position);
@@ -712,9 +712,9 @@ protected:
 		return _p_f->getbits(bits);
 	}
 
-	void read_bytes(BYTE * pbyte, const unsigned __int64 size)
+	void read_bytes(BYTE * pbyte, const uint64_t size)
 	{
-		for(unsigned __int64 i = 0; i < size; i++)
+		for(uint64_t i = 0; i < size; i++)
 		{
 			pbyte[i] = _p_f->sgetbits(8);
 		}
@@ -722,7 +722,7 @@ protected:
 	
 public:
 
-	unsigned __int64 get_position()
+	uint64_t get_position()
 	{
 		_ASSERTE(NULL != _p_f);
 		return _p_f->get_position();
@@ -740,7 +740,7 @@ public:
 
 	   //_p_f->set
 
-	   //unsigned __int64 total_packet = p_input->get_file_size() / 188;
+	   //uint64_t total_packet = p_input->get_file_size() / 188;
 
 	   __int64 init_pos = get_position();
 
@@ -777,7 +777,7 @@ public:
 	       /*
 		   if(!(packet_read + 1 == _p_f->getpos() / 8 / 188))
 		   {
-			   unsigned __int64 should = _p_f->getpos() / 8 / 188;
+			   uint64_t should = _p_f->getpos() / 8 / 188;
 			   fprintf(stdout, "PACKET BOUND DISCONTINUITY %I32u %I64u %I64\n" 
 				   , p_input->getpos()
 				   , should

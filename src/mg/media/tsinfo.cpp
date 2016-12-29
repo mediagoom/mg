@@ -43,8 +43,8 @@ enum TSINFOFLAG
 class CTSProcessConsole: public CTSProcessor
 {
 
-	unsigned __int64 _previus_position;
-	unsigned __int64 _packet;
+	uint64_t _previus_position;
+	uint64_t _packet;
 	int _flags;
 	std::ostream & _ost;
 	public:
@@ -63,7 +63,7 @@ protected:
 			stream->set_pes_detail(true);
 	}
 	
-	virtual TSPROCESSRESULT process(Transport_Packet &ts, unsigned __int64 position
+	virtual TSPROCESSRESULT process(Transport_Packet &ts, uint64_t position
 	)
 	{
 		int pid = ts.PID;
@@ -304,7 +304,7 @@ protected:
 	
 		bool iframe = true;
 
-		unsigned __int64 frame_time = 10000000ULL / adts.mpeg_4_sampling_frequency * 1024;
+		uint64_t frame_time = 10000000ULL / adts.mpeg_4_sampling_frequency * 1024;
 
 		_mux.add_sample(_stream_idx
 			, payload.get()
@@ -401,10 +401,10 @@ public:
 struct LL
 	{
 		sample_stream_info ms;
-		unsigned __int64   composition;
-		unsigned __int64   decoding;
-		unsigned __int64   stream_offset;
-		unsigned __int64   total_stream_samples;
+		uint64_t   composition;
+		uint64_t   decoding;
+		uint64_t   stream_offset;
+		uint64_t   total_stream_samples;
 	};
 
 template<typename T> 
@@ -423,95 +423,23 @@ class CTSEditConsoleT: public T
 
 	void output_composition(const TCHAR * pmsg, const int stream_id, stream_edit_info * ps) const
 	{
-		/*
-		    std::wcout 
-				
-				   << pmsg
-			       << _T("\t")
-			       << stream_id
-
-				   << _T(" start comp\t")
-				   << HNS(ps->next_composition)
-				   << _T(" start dur\t")
-				   << HNS(ps->next_duration)
-				   << _T(" start dec\t")
-				   << HNS(ps->next_decoding)
-				   << _T(" prev comp\t")
-				   << HNS(ps->stream_composition)
-				   << _T(" prev dur \t")
-				   << HNS(ps->stream_duration)
-				   << _T(" prev dec\t")
-				   << HNS(ps->stream_decoding)
-
-				   << std::endl;
-
-	   */
-
-				  //<< _T("last_composition\t")
-				  //<< HNS(ps->last_composition)
-				  //<< _T("last_duration\t")
-				  //<< HNS(ps->last_duration)
-				  //<< _T("last_decoding\t")
-				  //<< HNS(ps->last_decoding)
+		
 	}
 
 protected:
 	virtual void info_input_stream(const MP4Reader &reader) const
 	{
-		/*
-		for(int i = 0; i < reader.stream_count(); i++)
-		{		
-				ost << i
-				<< _T(") offset: ")
-				<< HNS(reader.get_stream_offset(i))
-				<< _T(" duration: ") 
-				<< HNS(reader.get_duration(i))
-				<< _T(" sample duration: ")
-				<< HNS(reader.get_sample_duration(i))
-				<< _T(" [")
-				<< reader.get_sample_duration(i)
-				<< _T("]")
-				<< _T(" samples count: ")
-				<< reader.get_sample_count(i)
-				<< std::endl;
-		}
-		*/
+		
 	}
 
 	virtual void info_process_sample(const sample_stream_info & ms
-		, unsigned __int64 composition
-		, unsigned __int64 decoding
-		, unsigned __int64 stream_offset
-		, unsigned __int64 total_stream_samples) const 
+		, uint64_t composition
+		, uint64_t decoding
+		, uint64_t stream_offset
+		, uint64_t total_stream_samples) const 
 	{
 		
-		//if(ms.sample_number < 5 
-		//		|| (total_stream_samples - ms.sample_number) < 5)
-		/*
-		if(ms.sample_number < 2)
-			{
-				ost << ms.stream
-				<< _T("\t")
-				<< ms.sample_number
-				<< _T("\t")
-				<< HNS(ms.composition_time + stream_offset)
-				<< _T("\t")
-				<< HNS(composition)
-				<< _T("\t")
-				<< HNS(ms.decoding_time)
-				<< _T("\t")
-				<< HNS(decoding)
-				<< _T("\t")
-				<< HNS(ms.duration)
-				<< _T("\t")
-				<< ms.bIsSyncPoint
-				<< _T("\t")
-				<< ms.offset
-				<< _T("\t")
-				<< ms.size
-				<< std::endl;
-			}
-		*/
+		
 
 		if(_begin[ms.stream])
 		{
@@ -651,8 +579,8 @@ typedef CTSEditConsoleT<MP42HLS> CTSEditConsoleHls;
 int mp4_to_ts_segment(  MP42TS & mp4edit
 					  , const TCHAR* mp4_input_file
 					  , const TCHAR* ts_output_file //NULL TO USE MEMORY
-					  , unsigned __int64 start_time
-					  , unsigned __int64 end_time
+					  , uint64_t start_time
+					  , uint64_t end_time
 					  )
 {
 		mp4edit.start(ts_output_file);
@@ -768,7 +696,7 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit, std::ostream & ost)
 
 				Ctime now;
 
-				unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
+				uint64_t total_time = now.TotalHNano() - start_time.TotalHNano();
 
 				ost << _T("Edit add time ") 
 					<< HNS(total_time)
@@ -892,7 +820,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 				Ctime now;
 
-				unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
+				uint64_t total_time = now.TotalHNano() - start_time.TotalHNano();
 
 				ost << _T("Edit add time ") 
 					<< HNS(total_time)
@@ -1032,7 +960,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				 for(int i = 0; i < p.Count(); i++)
 				 {
 					const DynamicStream      * s = p.get_by_index(i);
-					std::map<unsigned __int64, DynamicBitrate *>::const_iterator bitrate = s->begin();
+					std::map<uint64_t, DynamicBitrate *>::const_iterator bitrate = s->begin();
 
 					int track_id(-1);
 
@@ -1063,8 +991,8 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 						std::map<__int64, __int64>::const_iterator point = s->get_point_begin();
 						while(point != s->get_point_end())
 						{
-							unsigned __int64 computed_time    = point->first;
-							unsigned __int64 composition_time = point->second;
+							uint64_t computed_time    = point->first;
+							uint64_t composition_time = point->second;
 
 							_ASSERTE(composition_time == s->get_original_time(computed_time));
 
@@ -1072,8 +1000,8 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 							if(point != s->get_point_end())
 							{
-								unsigned __int64 end_time     = s->get_end_original_time(computed_time);//(composition_time);
-								unsigned __int64 end_computed = point->first - computed_time;
+								uint64_t end_time     = s->get_end_original_time(computed_time);//(composition_time);
+								uint64_t end_computed = point->first - computed_time;
 
 								_ASSERTE(end_time == point->second || cnt > 1); //only for single files
 								
@@ -1157,12 +1085,12 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 										}
 
-										/*
+										
 										for(int i = 0; i < p.Count(); i++)
 										{
 											ts4edit.set_end(i, end[i]);
 										}
-										*/
+										
 										
 										ts4edit.Add(s->get_path(bitrate->first, computed_time)
 											, composition_time
@@ -1433,7 +1361,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 
 		Ctime now;
 
-		unsigned __int64 total_time = now.TotalHNano() - start_time.TotalHNano();
+		uint64_t total_time = now.TotalHNano() - start_time.TotalHNano();
 
 		ost << _T("Edit add time ") 
 					<< HNS(total_time)

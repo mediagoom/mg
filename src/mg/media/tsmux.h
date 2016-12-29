@@ -43,8 +43,8 @@ public:
 		  const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
+		, uint64_t composition_time
+		, uint64_t decoding_time
 		, CTSWrite & tswrite
 		, CTSW & TSW
 		) = 0;
@@ -64,8 +64,8 @@ public:
 		  const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
+		, uint64_t composition_time
+		, uint64_t decoding_time
 		, CTSWrite & tswrite
 		, CTSW & TSW
 		){}
@@ -128,8 +128,8 @@ class TSMuxH264Stream:public TSMuxStream
 		  const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
+		, uint64_t composition_time
+		, uint64_t decoding_time
 		)
 	{
 		unsigned int nal_size(0);
@@ -161,8 +161,8 @@ public:
 		  const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
+		, uint64_t composition_time
+		, uint64_t decoding_time
 		, CTSWrite & tswrite
 		, CTSW & TSW
 		)
@@ -270,8 +270,8 @@ public:
 		  const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
+		, uint64_t composition_time
+		, uint64_t decoding_time
 		, CTSWrite & tswrite
 		, CTSW & TSW
 		)
@@ -330,8 +330,8 @@ class TSMux: public IMP4Mux2
 
 	bool _is_first_sample;
 	
-	unsigned __int64 _presentation_offset;
-	unsigned __int64 _decoding_offset;
+	uint64_t _presentation_offset;
+	uint64_t _decoding_offset;
 
 	void end_processesing()
 	{
@@ -368,7 +368,7 @@ public:
         , const unsigned sps_nal_size
 		, const BYTE*	 pps_nal_source
         , const unsigned pps_nal_size
-		, const unsigned __int64 time_scale = 0
+		, const uint64_t time_scale = 0
 		, const unsigned int width  = 0
         , const unsigned int height = 0
 		)
@@ -402,7 +402,7 @@ public:
 	, const unsigned int sample_rate
     , const unsigned int channels
 	, const unsigned int target_bit_rate
-	, const unsigned __int64 time_scale = 0)
+	, const uint64_t time_scale = 0)
 	{
 		TSMuxAACStream * p = new TSMuxAACStream(
 				  object_type
@@ -424,7 +424,7 @@ public:
 	}
 
 	virtual int add_extension_ltc_stream( const unsigned int avg_frame_rate = 400000
-		, const unsigned __int64 time_scale = 0)
+		, const uint64_t time_scale = 0)
 	{	
 			TSEmptyStream * p = new TSEmptyStream();
 
@@ -486,7 +486,7 @@ public:
 		  const int stream_id
 		, const TCHAR*   lang
 		, const DWORD	 bitrate
-		, const unsigned __int64 idr
+		, const uint64_t idr
 		)
 	{
 	}
@@ -496,9 +496,9 @@ public:
 		, const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
-		, unsigned __int64 duration
+		, uint64_t composition_time
+		, uint64_t decoding_time
+		, uint64_t duration
 		)
 	{
 
@@ -535,10 +535,10 @@ public:
 
 	virtual void set_auto_decoding_time(const int stream_id, const bool rhs){}
 
-	void set_presentation_offset(const unsigned __int64 presentation_offset)
+	void set_presentation_offset(const uint64_t presentation_offset)
 	{_presentation_offset = presentation_offset;}
 
-	virtual unsigned __int64 get_memory_size()
+	virtual uint64_t get_memory_size()
 	{
 		_ASSERTE(_use_memory == true);
 
@@ -569,7 +569,7 @@ class HLSMux: public TSMux
 {
 	struct HLSSTREAM
 	{
-		unsigned __int64 base_time;
+		uint64_t base_time;
 		         __int64 computed_offset;
 	};
 
@@ -577,7 +577,7 @@ class HLSMux: public TSMux
 
 
 	std::map<int, HLSSTREAM> _composition_start_time;
-	std::map<int, unsigned __int64> _composition_end_time;
+	std::map<int, uint64_t> _composition_end_time;
 
 
 
@@ -585,7 +585,7 @@ public:
 
 
 #if _DEBUG
-	unsigned __int64 _last[64];
+	uint64_t _last[64];
 	HLSMux()
 	{
 		for(int i = 0; i < 64; i++)
@@ -602,9 +602,9 @@ public:
 		, const BYTE * body
 		, const unsigned int body_size
 		, bool IFrame
-		, unsigned __int64 composition_time
-		, unsigned __int64 decoding_time
-		, unsigned __int64 duration
+		, uint64_t composition_time
+		, uint64_t decoding_time
+		, uint64_t duration
 		)
 	{
 
@@ -663,7 +663,7 @@ public:
 		
 	}
 
-	void set_composition_start_time(int stream_id, unsigned __int64 composition_time)
+	void set_composition_start_time(int stream_id, uint64_t composition_time)
 	{
 		int t_stream_id = stream_id;
 		//ONLY USE ONE STREAM
@@ -675,7 +675,7 @@ public:
 		//set_presentation_offset(0);
 	}
 
-	void set_composition_end_time(int stream_id, unsigned __int64 composition_time)
+	void set_composition_end_time(int stream_id, uint64_t composition_time)
 	{
 		_composition_end_time[stream_id] = composition_time;
 	}
@@ -702,17 +702,17 @@ public:
 	{
 		 set_discard_pre_start(true);
 	}
-	void set_composition_start_time(int stream_id, unsigned __int64 composition_time)
+	void set_composition_start_time(int stream_id, uint64_t composition_time)
 	{
 		_mp4mux.set_composition_start_time(stream_id, composition_time);
 	}
 
-	void set_composition_end_time(int stream_id, unsigned __int64 composition_time)
+	void set_composition_end_time(int stream_id, uint64_t composition_time)
 	{
 		_mp4mux.set_composition_end_time(stream_id, composition_time);
 	}
 
-	virtual unsigned __int64 get_memory_size()
+	virtual uint64_t get_memory_size()
 	{
 		return _mp4mux.get_memory_size();
 	}

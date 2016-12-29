@@ -307,6 +307,17 @@ void CMP4EditBase::do_edit_mux(
 			
 			if(!reader.next_file_chunks(ms))
 				ALXTHROW_T(_T("cannot check first sample info."));
+
+            if ((ms.composition_time + static_cast<int64_t>(reader.get_stream_offset(ms.stream))) < start && discard_pre_start) //<-- loose gop position
+            {
+                if (reader.has_random_access_point(ms.stream))
+                {
+                    _ASSERTE(false);
+                    ALXTHROW_T(_T("CANNOT DISCARD RANDOM ACCESS POINT STREAM. WOULD LOOSE STARTING GOP"));
+                }
+
+                continue;
+            }
 	        
 			work = false;
 
@@ -357,13 +368,13 @@ void CMP4EditBase::do_edit_mux(
 					{
 						if(info.map[i].video)
 						{
-							if(info.video_info[info.map[i].internal_index].next_composition == UINT64_MAX ||
+							if(info.video_info[info.map[i].internal_index].next_composition == INT64_MAX ||
 								current_look_head < _look_head)
 								work = true;
 						}
 						else
 						{
-							if(info.audio_info[info.map[i].internal_index].next_composition == UINT64_MAX||
+							if(info.audio_info[info.map[i].internal_index].next_composition == INT64_MAX||
 								current_look_head < _look_head)
 								work = true;
 						}
@@ -585,9 +596,9 @@ void CMP4EditBase::do_edit_mux(
 		if(0 < end)
 		{
 			streams[ms.stream] = (ms.decoding_time < end);
-
+            work = false;
 			for(uint32_t i = 0; i < streams.size(); i++)
-				work &= streams[i];
+				work |= streams[i];
 		}
 
 		
@@ -630,6 +641,13 @@ void CMP4EditBase::do_edit_mux(
 
 		
 		uint64_t stream_offset = reader.get_stream_offset(ms.stream);
+
+        
+        //check next sample is not less than one second away
+        _ASSERTE(
+            10000000ULL + ps->stream_composition + (ms.composition_time + stream_offset - ps->next_composition) >= ps->last_composition
+        );
+        
 
 		ps->last_composition = ps->stream_composition + (ms.composition_time + stream_offset - ps->next_composition);
 		ps->last_decoding    = ps->stream_decoding    + (ms.decoding_time    + stream_offset - ps->next_decoding);

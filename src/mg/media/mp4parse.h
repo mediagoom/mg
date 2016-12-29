@@ -2950,6 +2950,8 @@ public:
 			}
 		}
 
+        _last_offset = 0;
+
 	}
 	///move keeping sample in the same order as they are stored
 	///in the file

@@ -51,5 +51,12 @@ void delete_file(const TCHAR* pszname)
 	MGCHECK(r);
 }
 
+void create_directory(const TCHAR* pszname)
+{
+    int r = mkdir(pszname , S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if(EEXIST != r)
+        MGCHECK(r);
+}
+
 __MGCORE_END_NAMESPACE
 

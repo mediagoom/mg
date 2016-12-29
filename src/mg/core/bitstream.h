@@ -1214,6 +1214,13 @@ template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_
 
 			if (read)
 			{
+				
+				if (_shadow_len)
+				{
+					//copy end to beginning
+					memcpy(_shadow_buf, _shadow_buf + (_buf_size - _shadow_len), _shadow_len);
+				}
+
 				memcpy(_shadow_buf + _shadow_len, p_val, read);
 
 				_shadow_len += read;
