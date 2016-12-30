@@ -45,6 +45,10 @@ trevis=False
 if trb != None:
         trevis=True
 
+print '---------'
+print appv
+print '---------'
+
 lversion=os.environ.get('VERSION')
 if None == lversion:
         lversion='0.0.x'
