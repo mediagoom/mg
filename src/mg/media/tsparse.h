@@ -246,7 +246,8 @@ public:
 
 		//AAC STUFF
 		fixed_memory_bitstream ms(payload.get() + payload.GetPosition()
-			, payload.size() - payload.GetPosition());
+			, U64_ST(payload.size() - payload.GetPosition())
+		);
 		                         //ms.set_throw_on_end(false);
 
 	    unsigned int start_position(0);//, end_position(0);
@@ -270,7 +271,7 @@ public:
 
 				BYTE b = 0;
 
-				for(int i = 0; i < _adts.get_body_length(); i++)
+				for(uint32_t i = 0; i < _adts.get_body_length(); i++)
 				{
 					b = ms.getbits(8);
 					_payload.add(&b, 1);
@@ -365,10 +366,11 @@ public:
 
 		//H264 STUFF
 		fixed_memory_bitstream ms(payload.get() + payload.GetPosition()
-			, payload.size() - payload.GetPosition());
+			, U64_ST(payload.size() - payload.GetPosition())
+		);
 		                         //ms.set_throw_on_end(false);
 
-	    unsigned int start_position(0);//, end_position(0);
+	    uint64_t start_position(0);//, end_position(0);
 
 		while(!ms.atend())
 		{
@@ -430,7 +432,9 @@ public:
 				}
 
 
-				NalPayload(static_cast<NALTYPE>(nal_type), Packet, pesdata, _payload, ((ms.getpos() - start_position)/8));
+				NalPayload(static_cast<NALTYPE>(nal_type), Packet, pesdata, _payload
+					, static_cast<uint32_t>((ms.getpos() - start_position)/8)
+				);
 
 			}
 
@@ -557,9 +561,9 @@ public:
 
 				if(_pat.CanWork())
 				{
-					for(int idx = 0; idx < _pat.Count(); idx++)
+					for(uint32_t idx = 0; idx < _pat.Count(); idx++)
 					{
-						int pid = _pat.GetProgramPid(idx);
+						uint32_t pid = _pat.GetProgramPid(idx);
 
 						_pmts[pid] = new ProgramMapTable;
 					}
@@ -590,10 +594,10 @@ public:
 
 				if(iter->second->CanWork())
 				{
-					for(int idx = 0; idx < iter->second->Count(); idx++)
+					for(uint32_t idx = 0; idx < iter->second->Count(); idx++)
 					{
-						int pid  = iter->second->GetPid(idx);
-						int type = iter->second->GetType(idx);
+						uint32_t pid  = iter->second->GetPid(idx);
+						uint32_t type = iter->second->GetType(idx);
 
 						ts_pes * ppes = get_ts_pes(type);
 
@@ -696,7 +700,7 @@ protected:
 			to_do_bits -= max;
 		}
 		
-		skip(to_do_bits);
+		skip(static_cast<uint32_t>(to_do_bits));
 	}
 
 	void set_position(uint64_t position)

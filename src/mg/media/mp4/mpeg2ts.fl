@@ -827,7 +827,7 @@ class PesData extends PesBase
 		{
 			bit(1) marker_bit;
 			bit(7) PES_extension_field_length;
-			int PES_extension_field_count = 0;
+			unsigned int PES_extension_field_count = 0;
 			for(PES_extension_field_count=0;PES_extension_field_count<PES_extension_field_length;PES_extension_field_count++) 
 			{
 				bit(8) reserved;
@@ -910,7 +910,7 @@ class Adaptation_Field
 		bit(1) transport_private_data_flag;
 		bit(1) adaptation_field_extension_flag;
 
-		int total_bits = 8;
+		unsigned int total_bits = 8;
 
 		if(PCR_flag == 0x1) 
 		{
@@ -1089,7 +1089,7 @@ class Program_Association_Section extends BaseSection
 	
 	//40bit after section_length 5 bytes + CRC 4 bytes
 
-	int i = 0;
+	unsigned int i = 0;
 
 	for (i = 0; i < ( (section_length - (5 + 4))/ 4 ); i++) 
 	{
@@ -1177,8 +1177,8 @@ public:
 	   %g}
 	}
 
-	int program_byte_count = 0;
-	int stream_count = 0;
+	unsigned int program_byte_count = 0;
+	unsigned int stream_count = 0;
 	
 	for (program_byte_count=0; program_byte_count < (section_length - (9 + 4) - program_info_length); program_byte_count) 
 	{
@@ -1193,9 +1193,9 @@ public:
 		//}
 		//skipbits(ES_info_length*8);
 		
-		int stream_info_descriptor = 0;
+		unsigned int stream_info_descriptor = 0;
 		%p{ 
-			int stream_descriptor_count = 0;
+			unsigned int stream_descriptor_count = 0;
 		%p}
 		
 		%g{

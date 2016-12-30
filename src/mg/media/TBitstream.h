@@ -54,7 +54,7 @@ private:
 public:
 
 	fixed_memory_read(const unsigned char * pbuf
-		, uint32_t buf_len) :_buf(pbuf), _buf_len(buf_len)
+		, size_t buf_len) :_buf(pbuf), _buf_len(buf_len)
 		, _current_pos(0)
 	{}
 
@@ -101,7 +101,7 @@ class fixed_memory_bitstream : public bitstream<fixed_memory_read>
 
 public:
 
-	fixed_memory_bitstream(const unsigned char * pbuf, uint32_t buf_len)
+	fixed_memory_bitstream(const unsigned char * pbuf, size_t buf_len)
 		: _read(new fixed_memory_read(pbuf, buf_len))
 	{
 		bitstream<fixed_memory_read>::create(_read, buf_len);
@@ -156,7 +156,10 @@ public:
 
 		if (can_write <= to_write)
 		{
-			_buffer.prepare(static_cast<uint32_t>((to_write - can_write) + _buffer.getSize() + 100));
+			//_buffer.prepare(static_cast<uint32_t>((to_write - can_write) + _buffer.getSize() + 100));
+			_ASSERTE(_buffer.getFull() == _current_pos);
+			//_buffer.prepare(static_cast<uint32_t>((to_write - can_write) + _buffer.getSize() + 100));
+			_buffer.prepare(to_write);
 		}
 
 		can_write = _buffer.getSize() - _current_pos;
@@ -193,9 +196,9 @@ public:
 		_current_pos = rhs;
 
 		if (_current_pos < _buffer.getFull())
-			_reset.Back(_buffer.getFull() - _current_pos);
+			_reset.Back(_buffer.getFull() - U64_ST(_current_pos));
 		else
-			_buffer.updatePosition(_current_pos - _buffer.getFull());
+			_buffer.updatePosition(U64_ST(_current_pos) - _buffer.getFull());
 
 		_ASSERTE(_buffer.getFull() == _current_pos);
 	    

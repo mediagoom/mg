@@ -577,7 +577,7 @@ public:
 	{
 		if (_p_cb->eof())
 		{
-			uint32_t available = (_buf_len << 3) - _cur_bit;
+			uint64_t available = (_buf_len << 3) - _cur_bit;
 			//if (((_buf_len * 8 - _cur_bit) - nbit) >= 0)
 			if(available >= nbit)
 				return true;

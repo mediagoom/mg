@@ -80,7 +80,7 @@ protected:
 					_ost << "PAT\tGOT Program Association Table " << position << "\t" << _packet 
 						<< "\tcontinuity:\t" << ts.continuity_counter << std::endl;
 
-					for(int i = 0; i < pat()->Count(); i++)
+					for(uint32_t i = 0; i < pat()->Count(); i++)
 					{
 						if(0 != pat()->GetProgramNumber(i))
 						{
@@ -99,7 +99,7 @@ protected:
 						<< position << _T("\t") << _packet 
 						<< _T("\tcontinuity:\t") << ts.continuity_counter << std::endl;
 
-					for(int i = 0; i < pmt(pid)->Count(); i++)
+					for(uint32_t i = 0; i < pmt(pid)->Count(); i++)
 					{
 						_ost
 							<< _T("\t\t") << 
@@ -203,7 +203,7 @@ protected:
 		bool iframe = false;
 
 		if(Packet.HasFirstAdaptation())
-				iframe = Packet.first_adaptation()->random_access_indicator;
+				iframe = (Packet.first_adaptation()->random_access_indicator)?true:false;
 		
 		_mux.add_sample(_stream_idx
 			, _sample_payload.get()
@@ -596,17 +596,17 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 	sync_file_bitstream inf;
 	                    inf.open(ts_file);
 
-	unsigned int size = ENC_SIZE(inf.size());
+	uint64_t size = ENC_SIZE(U64_ST(inf.size()));
 
-	CBuffer<unsigned char> clear(inf.size());
+	CBuffer<unsigned char> clear(U64_ST(inf.size()));
 
-	size_t fr = inf.read(size, clear.get());
+	size_t fr = inf.read(static_cast<uint32_t>(size), clear.get());
 
 	inf.close();
 
 	_ASSERTE(fr == size);
 
-	CBuffer<unsigned char> encrypted(size);
+	CBuffer<unsigned char> encrypted(U64_ST(size));
 
 	long hr = HLSRenderer::hls3_encrypt_buffer(
 		  encrypted.get()
@@ -623,7 +623,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 
 	sync_file_bitstream outf;
 	                    outf.open(ts_file, false);
-	         outf.write(encrypted.get(), size);
+	         outf.write(encrypted.get(), static_cast<uint32_t>(size));
 			 outf.flush();
 			 outf.close();
 
@@ -666,7 +666,7 @@ int do_ts_mux(console_command &c, MP42TS & mp4edit, std::ostream & ost)
 			if(c.command_specified(_T("ctts")))
 			{
 				bool use_ctts = false;
-				use_ctts = c.get_integer64_value(_T("ctts"));
+				use_ctts = (c.get_integer64_value(_T("ctts"))?true:false);
 
 				mp4edit.set_ctts_offset(use_ctts);
 			}
@@ -1286,7 +1286,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 
 					if(c.command_specified(_T("size")))
 					{
-						size = c.get_integer64_value(_T("size"));
+						size = static_cast<int32_t>(c.get_integer64_value(_T("size")));
 						stop = true;
 					}
 

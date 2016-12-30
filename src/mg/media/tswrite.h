@@ -130,7 +130,7 @@ class CPESWrite
 protected:
 
 
-	void init_pes(PesData & pes , uint64_t stream_id)
+	void init_pes(PesData & pes , uint32_t stream_id)
 	{
 		pes.stream_id = stream_id;
 		
@@ -154,7 +154,7 @@ protected:
 
 	}
 
-	void close_pes(PesData & pes, uint64_t body_size)
+	void close_pes(PesData & pes, uint32_t body_size)
 	{
 		pes.PES_packet_length += pes.PES_header_data_length;
 		pes.PES_packet_length += body_size;
@@ -221,11 +221,11 @@ protected:
 
 public:
 
-	void WritePesHeader(uint64_t stream_id
+	void WritePesHeader(uint32_t stream_id
 		,  __int64 timePTS
 		,  __int64 timeDTS
 		,  __int64 timePCR
-		, uint64_t body_size
+		, uint32_t body_size
 		, CTSW &TSW
 	)
 	{
@@ -395,10 +395,10 @@ public:
 	void output_ts(
 		  unsigned int pid
 		, const unsigned char * pbytes
-		, int size
+		, int32_t size
 		, CTSW &TSW
 		, unsigned int random_access_indicator = 0
-		, __int64 timePCR = -1
+		, int64_t      timePCR = -1
 		, unsigned int discontinuity_indicator = 0
 		)
 	{
@@ -438,7 +438,7 @@ public:
 		init_tp(packet);
 		packet.PID = pid;
 
-		int first_ts_packet = 184;
+		int32_t first_ts_packet = 184;
 
 		bool first_adaptation = false;
 
@@ -602,9 +602,13 @@ public:
 
 		}
 
-		output_ts(0, _memory_pas.get_buffer(), _memory_pas.get_size(), TSW);
+		output_ts(0, _memory_pas.get_buffer()
+			, static_cast<uint32_t>(_memory_pas.get_size())
+			, TSW);
 		//TODO: HANDLE MULTIPLE PROGRAM
-		output_ts(_pas.program_map_PID[0], _memory_pam.get_buffer(), _memory_pam.get_size(), TSW);
+		output_ts(_pas.program_map_PID[0], _memory_pam.get_buffer()
+			, static_cast<uint32_t>(_memory_pam.get_size())
+			, TSW);
 	};
 
 	void set_sections_tables_continuity(unsigned char continuity)

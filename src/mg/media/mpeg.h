@@ -116,8 +116,8 @@ extern int mpegbitmask[];
 class CBufferRead: public CBuffer<unsigned char>
 {
 		
-    short        _availablebits;
-	unsigned int _bits;
+    int _availablebits;
+	size_t _bits;
 	
 
 
@@ -139,7 +139,7 @@ public:
 
 	virtual void Read(/*[out]*/  void* pv, /*[in]*/ULONG cb, /*[out]*/ULONG* pcbRead)
 	{
-		bool b = CBuffer<BYTE>::ReadBuffer(reinterpret_cast<BYTE*>(pv), cb, *pcbRead, _position);
+		bool b = CBuffer<BYTE>::ReadBuffer(reinterpret_cast<BYTE*>(pv), cb, *pcbRead, U64_ST(_position));
 		_ASSERTE(b);
 		_position += *pcbRead;
 	}
@@ -242,8 +242,8 @@ public:
 	int PeekBits(int num)                     
 	{
 		_ASSERTE(16 >= num);
-		int size    = sizeof(unsigned short)*8;
-		int sizeall = sizeof(_bits)*8;
+		size_t size    = sizeof(unsigned short)*8;
+		size_t sizeall = sizeof(_bits)*8;
 		_ASSERTE((size + sizeof(BYTE)*8) <= sizeall);
 
 		while(_availablebits < num)

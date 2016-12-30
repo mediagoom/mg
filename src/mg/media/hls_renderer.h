@@ -284,9 +284,9 @@ public:
 
 #ifdef HAVE_LIBGYPAES
 	static long hls3_encrypt_buffer(unsigned char * pdest
-		, unsigned int * pdest_size
+		, uint64_t * pdest_size
 		, const unsigned char * pclear
-		, unsigned int clear_size
+		, uint64_t clear_size
 		, int sequence
 		, unsigned char * pkey
 		)
@@ -309,7 +309,7 @@ public:
 			return E_OUTOFMEMORY;
 		}
 
-		unsigned int dest_size = ENC_SIZE(clear_size);
+		uint64_t dest_size = ENC_SIZE(clear_size);
 		
 		int missing = ENC_MISSING_SIZE(clear_size);
 
@@ -340,7 +340,7 @@ public:
 		//pcks7
 		_ASSERTE((clear_size + missing) == dest_size);
 
-		unsigned int full_block = (clear_size / BLOCK_SIZE) * BLOCK_SIZE;
+		uint64_t full_block = (clear_size / BLOCK_SIZE) * BLOCK_SIZE;
 
 		_ASSERTE(0 == (full_block % BLOCK_SIZE));
 
@@ -368,7 +368,8 @@ public:
 		AES_RETURN ret = aes_encrypt_key(pkey, BLOCK_SIZE, ctx);
 		_ASSERTE(0 == ret);
 
-		ret = aes_cbc_encrypt(pclear, pdest, full_block, iv, ctx);
+		ret = aes_cbc_encrypt(pclear, pdest, 
+			static_cast<uint32_t>(full_block), iv, ctx);
 		_ASSERTE(0 == ret);
 
 		if(BLOCK_SIZE >= missing)

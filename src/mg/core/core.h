@@ -29,6 +29,7 @@
 
 #include <exception>
 #include <type_traits>
+#include <stdint.h>
 
 #ifndef _ASSERTE
 #if _DEBUG
@@ -78,11 +79,13 @@ public:
 
 };
 
-inline void MGBASECHECK(int num){ if (num < 0){ throw mgexceptionbase(num); } }
+inline void MGBASECHECK(int num){ if (num < 0){ throw MGCORE::mgexceptionbase(num); } }
 
 #ifndef E_BASE_CUSTOM
 #define E_BASE_CUSTOM -10000
 #endif
+
+#define E_OVERFLOW (E_BASE_CUSTOM - 9)
 
 __MGCORE_END_NAMESPACE
 
@@ -137,3 +140,39 @@ __MGCORE_END_NAMESPACE
 #define FDBGC0(B, L)
 #endif
 
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+#ifdef ENVIROMENT64
+
+
+#define U64_ST
+
+#else
+inline size_t u64_ST(uint64_t rhs)
+{
+	_ASSERTE(rhs <= UINT32_MAX);
+	if (rhs > UINT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<size_t>(rhs);
+}
+#define U64_ST(K) u64_ST(K)
+#endif

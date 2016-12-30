@@ -147,7 +147,7 @@ public:
 		
 	    if(ts.payload_field)
 		{
-			_HasAdaptation = ts.adaptation_flag;
+			_HasAdaptation = (ts.adaptation_flag)?true:false;
 			if(ts.adaptation_flag)
 			{
 				_Adaptation = *ts.adaptation_field;
@@ -316,7 +316,7 @@ public:
 
 	bool HasNetworkPID(unsigned int & pid)
 	{
-		for(int i = 0; i < _pas.i; i++)
+		for(uint32_t i = 0; i < _pas.i; i++)
 		{
 			if(_pas.program_number[i] == 0)
 			{
@@ -328,7 +328,7 @@ public:
 
 	bool IsProgramPid(unsigned int pid)
 	{
-		for(int i = 0; i < _pas.i; i++)
+		for(uint32_t i = 0; i < _pas.i; i++)
 		{
 			if(_pas.program_map_PID[i] == pid)
 			{
@@ -354,7 +354,7 @@ public:
 
 	bool IsProgramMapPID(unsigned int pid, unsigned int & programid)
 	{
-		for(int i = 0; i < _pas.i; i++)
+		for(uint32_t i = 0; i < _pas.i; i++)
 		{
 			if(_pas.program_map_PID[i] == pid)
 			{
@@ -412,7 +412,7 @@ public:
     //</summary>
 	bool GetElementaryType(unsigned int PID, unsigned int &stream_type)
 	{
-		for(int i = 0; i < _pms.stream_count; ++i)
+		for(uint32_t i = 0; i < _pms.stream_count; ++i)
 		{
 			if(_pms.elementary_PID[i] == PID)
 			{
@@ -424,7 +424,7 @@ public:
 		return false;
 	}
 
-	bool IsElementary(unsigned int PID)
+	bool IsElementary(uint32_t PID)
 	{
 		unsigned int stream_type(0);
 		if(!GetElementaryType(PID, stream_type))
@@ -479,7 +479,7 @@ public:
 
 	bool GetFirstAudio(unsigned int & PID)
 	{
-		for(int i = 0; i < _pms.stream_count; ++i)
+		for(uint32_t i = 0; i < _pms.stream_count; ++i)
 		{
 			if(IsAudioType(_pms.stream_type[i]))
 			{
@@ -493,7 +493,7 @@ public:
 
 	bool GetFirstVideo(unsigned int & PID)
 	{
-		for(int i = 0; i < _pms.stream_count; ++i)
+		for(uint32_t i = 0; i < _pms.stream_count; ++i)
 		{
 			if(IsVideoType(_pms.stream_type[i]))
 			{
@@ -700,8 +700,8 @@ public:
 
 	      bool      HasData() const {return _hasData;}
 	const PesData & Data()    const {return _data;}
-	      bool      HasPTS()  const {return _data.PTS_flags;}
-	      bool      HasDTS()  const {return _data.DTS_flags;}
+	      bool      HasPTS()  const {return (_data.PTS_flags)?true:false;}
+	      bool      HasDTS()  const {return (_data.DTS_flags)?true:false;}
 	unsigned int    StreamID()const {return _streamid;}
 
 	uint64_t DTS() const
@@ -913,8 +913,8 @@ class MpegAudioAnalize
 {
 	IBitstream & _bs;
 	UINT _frame_lenght;
-	UINT64 _last_good_frame_lenght;
-	UINT64 _last_count;
+	uint64_t _last_good_frame_lenght;
+	uint64_t _last_count;
 	
 public:
 	MpegAudioAnalize(IBitstream & bs):_bs(bs)
@@ -923,10 +923,10 @@ public:
 	}
 
 	static bool find_audio_stream(
-		std::map<UINT64, UINT64> & possible_positions
-		, UINT64 & start
-		, UINT64 & count
-		, UINT64 & frame_length)
+		std::map<uint64_t, uint64_t> & possible_positions
+		, uint64_t & start
+		, uint64_t & count
+		, uint64_t & frame_length)
 	{
 		bool return_value = false;
 		
@@ -937,17 +937,17 @@ public:
 		if(!possible_positions.size())
 			return false;
 
-		std::set<UINT64> candidates;
+		std::set<uint64_t> candidates;
 		
-		UINT64 certified = UINT64_MAX;
+		uint64_t certified = UINT64_MAX;
 
-		std::map<UINT64, UINT64>::const_iterator it = possible_positions.end();
+		std::map<uint64_t, uint64_t>::const_iterator it = possible_positions.end();
 
 		while(it != possible_positions.begin() && UINT64_MAX == certified)
 		{
 			it--;
 
-			UINT64 p = it->first + it->second;
+			uint64_t p = it->first + it->second;
 
 			if(candidates.find(p) != candidates.end())
 			{
@@ -968,7 +968,7 @@ public:
 		{
 			it--;
 
-			UINT64 p = it->first + it->second;
+			uint64_t p = it->first + it->second;
 
 			if(p == certified)
 			{
@@ -987,14 +987,14 @@ public:
 
 
 	///only RAI MUX
-//	bool Analize(UINT64 & start, UINT64 max_byte = UINT64_MAX)
+//	bool Analize(uint64_t & start, uint64_t max_byte = UINT64_MAX)
 //	{
-//		UINT64 start_position = _bs.getpos();
+//		uint64_t start_position = _bs.getpos();
 //		int count     = 0;
-//		UINT64 byte_read = 0;
-//		UINT64 last_position  = _bs.getpos();
-//		UINT64 last_good_position = last_position;
-//		UINT64      position  = 0;
+//		uint64_t byte_read = 0;
+//		uint64_t last_position  = _bs.getpos();
+//		uint64_t last_good_position = last_position;
+//		uint64_t      position  = 0;
 //
 //		bool first_match = false;
 //		
@@ -1085,18 +1085,18 @@ public:
 //	}
 
 
-	bool Analize(UINT64 & start, UINT64 max_byte = UINT64_MAX)
+	bool Analize(uint64_t & start, uint64_t max_byte = UINT64_MAX)
 	{
-		UINT64 start_position = _bs.getpos();
+		uint64_t start_position = _bs.getpos();
 		int count     = 0;
-		UINT64 byte_read = 0;
-		UINT64 last_position  = _bs.getpos();
-		UINT64 last_good_position = last_position;
-		UINT64      position  = 0;
+		uint64_t byte_read = 0;
+		uint64_t last_position  = _bs.getpos();
+		uint64_t last_good_position = last_position;
+		uint64_t      position  = 0;
 
 		bool first_match = false;
 		
-		std::map<UINT64, UINT64> possible_positions;
+		std::map<uint64_t, uint64_t> possible_positions;
 		AudioHeader ah;
 		
 	    _frame_lenght = 0;
@@ -1148,9 +1148,9 @@ public:
 								, _last_good_frame_lenght);
 	}
 
-    UINT get_last_count(){return _last_count;}
-	UINT64 get_frame_lenght(){return _last_good_frame_lenght;}
-	UINT64 get_frame_lenght_byte(){return _last_good_frame_lenght / 8;}
+    uint64_t get_last_count(){return _last_count;}
+	uint64_t get_frame_lenght(){return _last_good_frame_lenght;}
+	uint64_t get_frame_lenght_byte(){return _last_good_frame_lenght / 8;}
 };
 
 /** 
@@ -1185,7 +1185,7 @@ protected:
 			
 		}
 
-		_to_do.add(p_data + processed, _remaining);	
+		_to_do.add(p_data + processed, U64_ST(_remaining));
 
 	}
 	///huston we got frames
@@ -1236,9 +1236,9 @@ protected:
 			discontinuity();
 
 		pre_buffer_process();
-		frames(p_data + throw_away, _ah.getFrameLength(), send / _ah.getFrameLength());
+		frames(p_data + throw_away, _ah.getFrameLength(), U64_ST(send / _ah.getFrameLength()));
 		
-		process_left(bit_stream, p_data, throw_away + send);
+		process_left(bit_stream, p_data, U64_ST(throw_away + send));
 		return true;
 		
 	}
@@ -1276,7 +1276,7 @@ protected:
 
 #ifdef _DEBUG
 		unsigned int frame_lenght = _ah.getFrameLength();
-		unsigned int f2 = analize.get_frame_lenght_byte();
+		unsigned int f2 = static_cast<uint32_t>(analize.get_frame_lenght_byte());
 		_ASSERTE(frame_lenght == f2);
 		_ASSERTE(_ah.getFrameLength() == analize.get_frame_lenght_byte());
 #endif
@@ -1286,12 +1286,12 @@ protected:
 		if(0 == position && 0 == _to_do.size())
 		{	
 			pre_buffer_process();
-		    frames(p_data, _ah.getFrameLength(), send / _ah.getFrameLength());
+		    frames(p_data, _ah.getFrameLength(), static_cast<uint32_t>(send / _ah.getFrameLength()));
 		}
 		else
 		{
 			if(byte_position)
-				_to_do.add(p_data, byte_position);
+				_to_do.add(p_data, U64_ST(byte_position));
 
 			if(0 == 
 				(byte_position + _remaining) % _ah.getFrameLength()
@@ -1315,10 +1315,10 @@ protected:
 			_to_do.Reset();
 
 			pre_buffer_process();
-            frames(p_data + byte_position, _ah.getFrameLength(), send / _ah.getFrameLength());
+            frames(p_data + byte_position, _ah.getFrameLength(), static_cast<uint32_t>(send / _ah.getFrameLength()));
 			_remaining = length - byte_position - send;
 
-			process_left(bit_stream, p_data, byte_position + send);
+			process_left(bit_stream, p_data, static_cast<uint32_t>(byte_position + send));
 			return ret;
 		}
 	}
@@ -1401,7 +1401,7 @@ protected:
 		
 		MpegAudioAnalize a(mem);
 
-		UINT64 start(99);
+		uint64_t start(99);
 
 		bool res = a.Analize(start);
 

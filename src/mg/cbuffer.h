@@ -33,10 +33,10 @@
 
 __ALX_BEGIN_NAMESPACE
 
-template <typename type, typename sizetype = uint32_t>
+template <typename type, typename sizetype = size_t>
 class ResetBuffer;
 
-template <typename type, typename sizetype = uint32_t>
+template <typename type, typename sizetype = size_t>
 class CBuffer{
 private:
 	//avoid usage 

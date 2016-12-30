@@ -118,7 +118,7 @@ class TSMuxH264Stream:public TSMuxStream
 		_header.flush();
 		_body.flush();
 
-		_header_start_position = _header.get_position();
+		_header_start_position = static_cast<uint32_t>(_header.get_position());
 
 		_ASSERTE(6 == _body.get_position());
 
@@ -134,7 +134,7 @@ class TSMuxH264Stream:public TSMuxStream
 	{
 		unsigned int nal_size(0);
 
-		int x(0);
+		uint32_t x(0);
 
 		for(x = 0; x < _nal_lengthSize; x++)
 		{
@@ -185,30 +185,40 @@ public:
 
 		_pes.set_position(0);
 
-		__int64 PCR = -1;
+		int64_t PCR = -1;
 
 		if(IFrame)
 		{
 			WritePesHeader(224
-			, composition_time, decoding_time, -1, _header.get_position(), _pes);
+			, composition_time, decoding_time, -1
+				, static_cast<uint32_t>(_header.get_position())
+				, _pes);
 
 			PCR = decoding_time;
 
-			_pes.write_bytes(_header.get_buffer(), _header.get_position());
+			_pes.write_bytes(_header.get_buffer()
+				, static_cast<uint32_t>(_header.get_position())
+			);
 		}
 		else
 		{
 			WritePesHeader(224
-			, composition_time, decoding_time, -1, _body.get_position(), _pes);
+			, composition_time, decoding_time, -1, 
+				static_cast<uint32_t>(_body.get_position())
+				, _pes);
 
-			_pes.write_bytes(_body.get_buffer(), _body.get_position());
+			_pes.write_bytes(_body.get_buffer()
+				, static_cast<uint32_t>(_body.get_position())
+			);
 		}
 
-		int size = _pes.get_position();
+		uint64_t size = _pes.get_position();
 
 		_pes.flush();
 
-		tswrite.output_ts(get_pid(), _pes.get_buffer(), size, TSW, IFrame, PCR); 
+		tswrite.output_ts(get_pid(), _pes.get_buffer()
+			, static_cast<uint32_t>(size)
+			, TSW, IFrame, PCR); 
 	}
 public:
 	
@@ -294,15 +304,21 @@ public:
 			_pes.set_position(0);
 
 			WritePesHeader(192
-			, _body_presentation_time, -1, -1, _body.get_position(), _pes);
+			, _body_presentation_time, -1, -1, 
+				static_cast<uint32_t>(_body.get_position())
+				, _pes);
 
-			_pes.write_bytes(_body.get_buffer(), _body.get_position());
+			_pes.write_bytes(_body.get_buffer()
+				, static_cast<uint32_t>(_body.get_position())
+			);
 
-			int size = _pes.get_position();
+			uint64_t size = _pes.get_position();
 
 			_pes.flush();
 
-			tswrite.output_ts(get_pid(), _pes.get_buffer(), size, TSW, IFrame); 
+			tswrite.output_ts(get_pid(), _pes.get_buffer()
+				, static_cast<uint32_t>(size)
+				, TSW, IFrame);
 
 			_body.set_position(0);
 			_pes_current_frame = 0;
@@ -345,7 +361,7 @@ class TSMux: public IMP4Mux2
 
 		_pctsw = NULL;
 
-		for(int i = 0; i < _streams.size(); i++)
+		for(uint32_t i = 0; i < _streams.size(); i++)
 			delete _streams[i];
 
 		_streams.clear();
@@ -450,7 +466,7 @@ public:
 
 	void stuff_streams()
 	{
-		for(int i = 0; i < _streams.size(); i++)
+		for(uint32_t i = 0; i < _streams.size(); i++)
 			_tswrite.fill_pid(_streams[i]->get_pid(), *_pctsw);
 	}
 
