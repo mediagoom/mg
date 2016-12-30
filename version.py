@@ -45,9 +45,9 @@ trevis=False
 if trb != None:
         trevis=True
 
-print '---------'
+print '---------*'
 print appv
-print '---------'
+print '---------*'
 
 lversion=os.environ.get('VERSION')
 if None == lversion:
