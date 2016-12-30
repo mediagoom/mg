@@ -141,7 +141,7 @@ aligned(8) class TrackRunBox extends FullBox
 %}
      
      %p{
-		    sample_count = _samples.size();
+		    sample_count = ST_U32(_samples.size());
 	  %p}
 	  
      unsigned int(32)          sample_count; 

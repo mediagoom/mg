@@ -166,9 +166,9 @@ protected:
 
 	void set_pts_dts(
 		  PesData & pes
-		, __int64 timePTS = -1
-		, __int64 timeDTS = -1
-		, __int64 timePCR = -1
+		, uint64_t timePTS = -1
+		, uint64_t timeDTS = -1
+		, uint64_t timePCR = -1
 		)
 	{
 		 pes.PTS_flags = 0; 
@@ -222,9 +222,9 @@ protected:
 public:
 
 	void WritePesHeader(uint32_t stream_id
-		,  __int64 timePTS
-		,  __int64 timeDTS
-		,  __int64 timePCR
+		,  uint64_t timePTS
+		,  uint64_t timeDTS
+		,  uint64_t timePCR
 		, uint32_t body_size
 		, CTSW &TSW
 	)

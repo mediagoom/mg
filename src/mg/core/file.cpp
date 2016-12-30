@@ -137,11 +137,11 @@ void cfile::uv_file_cb(uv_fs_t* req)
 	if(0 > req->result)
 	{
 
-		std::cout << "!!!file async error " << uv_strerror(req->result)
+		std::cout << "!!!file async error " << uv_strerror(ST_U32(req->result))
 			<< _T("\t")
 			<< std::endl;
 
-		fcb->call_er(std::make_exception_ptr(MGCORE::mgexception(req->result, uv_strerror(req->result), _T(__FILE__), __LINE__)));
+		fcb->call_er(std::make_exception_ptr(MGCORE::mgexception(ST_U32(req->result), uv_strerror(ST_U32(req->result)), _T(__FILE__), __LINE__)));
 	}
 	else
 	{
@@ -211,7 +211,7 @@ CResource<CPromise<uv_fs_t> > cfile::open(const TCHAR * path, int flags, bool as
 			CResource<CPromise<uv_fs_t> > prom;
 			                              prom.Create();
 
-										  prom->call_er(std::make_exception_ptr(::mg::core::mgexception(req.result, uv_strerror(req.result), _T(__FILE__), __LINE__)));
+										  prom->call_er(std::make_exception_ptr(::mg::core::mgexception(ST_U32(req.result), uv_strerror(ST_U32(req.result)), _T(__FILE__), __LINE__)));
 
 										  return prom;
 
@@ -239,7 +239,7 @@ CResource<CPromise<uv_fs_t> > cfile::open(const TCHAR * path, int flags, bool as
 		cfile * myself = this;
 
 		cb->set_cb([myself](CResource<uv_fs_t> & req) {
-			myself->_file = req->result;
+			myself->_file = ST_U32(req->result);
 		}
 		);
 
@@ -268,7 +268,7 @@ CResource<CPromise<uv_fs_t> > cfile::open(const TCHAR * path, int flags, bool as
 
 		UVCHECK(req.result);
 
-		_file = req.result;
+		_file = ST_U32(req.result);
 
 		return CResource<CPromise<uv_fs_t> >();
 	}

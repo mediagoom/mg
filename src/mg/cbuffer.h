@@ -64,7 +64,7 @@ protected:
 		prepare(size);
 	}
 
-	//The pointer the the beginnig of the buffer. This can 
+	//The pointer the beginning of the buffer. This can 
 	//change during the life of the class!. Do not store it.
 		type *m_p;
 	//The next available position in the buffer.
@@ -88,7 +88,7 @@ public:
 
 	virtual ~CBuffer(){delete[] (m_p);}
 	//Return the address of the next available space in  the 
-	//memory managed by this clas.
+	//memory managed by this class.
 	type *getCurrent(){return &m_p[m_iCurrent];};
 	void add(const type *source, sizetype size)
 	{
@@ -106,10 +106,10 @@ public:
 			m_iCurrent += size;
 	};
 	//Simply return the address of the buffer. Remember that 
-	//the address is not garanteed to stay the same.
+	//the address is not guaranteed to stay the same.
 	type *get(){return m_p;};
 	//Call this function after accessing directly the buffer. 
-	//This make sure that the Current position is uptodate 
+	//This make sure that the Current position is update 
 	//and that no data is overwritten.
 	void updatePosition(sizetype size)
 	{
@@ -118,7 +118,7 @@ public:
 		m_iCurrent += size;
 	};
 	//Tells the class how many space is needed before 
-	//accesing the buffer directly. Calling this function 
+	//accessing the buffer directly. Calling this function 
 	//make sure that the space is available. You do not need 
 	//to call prepare if you call add.
 	void prepare(sizetype size)
@@ -130,11 +130,11 @@ public:
 	//Return the size of the buffer.
 	sizetype getSize() const
 	{return m_iSize;};
-	//Return the ammount of free storage available in the 
+	//Return the amount of free storage available in the 
 	//buffer
 	sizetype getFree() const
 	{return m_iSize - m_iCurrent;}
-	//Return the ammount of the buffer that has been commited.
+	//Return the amount of the buffer that has been committed.
 	sizetype getFull() const
 	{return m_iCurrent;}
 	//The same as above

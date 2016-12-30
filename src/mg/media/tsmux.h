@@ -253,7 +253,7 @@ class TSMuxAACStream:public TSMuxStream
 	CTSWriteMemory _body;
 	CTSWriteMemory _pes;
 
-	__int64        _body_presentation_time;
+	uint64_t        _body_presentation_time;
 
 	int _pes_frames;
 	int _pes_current_frame;
@@ -586,7 +586,7 @@ class HLSMux: public TSMux
 	struct HLSSTREAM
 	{
 		uint64_t base_time;
-		         __int64 computed_offset;
+		         uint64_t computed_offset;
 	};
 
 
@@ -631,7 +631,7 @@ public:
 		HLSSTREAM s = _composition_start_time[t_stream_id];
 
 		//_ASSERTE(composition_time >= decoding_time);
-		__int64 decoding_offset = composition_time - decoding_time;
+		uint64_t decoding_offset = composition_time - decoding_time;
 
         
 		if(_I64_MAX == s.computed_offset)
@@ -754,6 +754,6 @@ public:
 	}
 
 #if _DEBUG
-	__int64 get_last(int idx){return _mp4mux._last[idx];}
+	uint64_t get_last(int idx){return _mp4mux._last[idx];}
 #endif
 };

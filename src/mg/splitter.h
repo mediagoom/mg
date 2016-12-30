@@ -31,8 +31,8 @@ class Csplitter{
 
 struct locator
 {
-     uint32_t nBegin;
-	 uint32_t nLen;
+     size_t nBegin;
+	 size_t nLen;
 };
 protected:
 	
@@ -57,7 +57,7 @@ public:
 		m_str = scontent;
 
 		TCHAR *pszbegin = scontent;
-		int nLen = _tcslen(sseparator);
+		size_t nLen = _tcslen(sseparator);
 			
 		while(true)
 		{
@@ -89,7 +89,7 @@ public:
 
 	}
 
-	int getCount()
+	size_t getCount()
 	{
 		return m_locator.size();
 	}
@@ -118,7 +118,7 @@ inline Cstring replace(const TCHAR *str, const TCHAR *in, const TCHAR *out)
 
 		
 		
-		for(int i = 1; i < split.getCount(); ++i)
+		for(size_t i = 1; i < split.getCount(); ++i)
 		{
 			retVal += in;
 			retVal += split[i];

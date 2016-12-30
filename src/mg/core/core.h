@@ -51,7 +51,7 @@
 #ifndef WSTDINT
 #define WSTDINT
 #include <stdint.h>
-//#define __int64 int64_t
+//#define uint64_t int64_t
 #define DWORD uint32_t
 #endif
 #endif
@@ -158,10 +158,22 @@ __MGCORE_END_NAMESPACE
 #endif
 #endif
 
-#ifdef ENVIROMENT64
+#ifdef ENVIRONMENT64
 
 
 #define U64_ST
+
+inline uint32_t ST_u32(size_t rhs)
+{
+	_ASSERT(rhs <= UINT32_MAX);
+	if (rhs > UINT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<uint32_t>(rhs);
+}
+#define ST_U32(K) ST_u32(K)
 
 #else
 inline size_t u64_ST(uint64_t rhs)
@@ -175,4 +187,6 @@ inline size_t u64_ST(uint64_t rhs)
 	return static_cast<size_t>(rhs);
 }
 #define U64_ST(K) u64_ST(K)
+#define ST_U32
+
 #endif

@@ -267,7 +267,7 @@ aligned(8) class DecoderConfigDescriptor extends descriptor
               unsigned int __c = 0;
               unsigned int __i = 0;
 
-		%p{__c = _extension_descriptors.size();%p}
+		%p{__c = ST_U32(_extension_descriptors.size());%p}
 
 	      for(__i = 0; __i < __c; __i++)
 	      {

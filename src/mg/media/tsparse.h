@@ -746,7 +746,7 @@ public:
 
 	   //uint64_t total_packet = p_input->get_file_size() / 188;
 
-	   __int64 init_pos = get_position();
+	   uint64_t init_pos = get_position();
 
 	   while((0 == npacket && !eof()) || npacket > packet_read)
 	   {

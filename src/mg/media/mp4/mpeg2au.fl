@@ -96,7 +96,7 @@ class AudioHeader {
 
 						return l;
 		}
-		uint64_t getFrameTime() const{return static_cast<__int64>(((double)getFrameLength()/(double)getByteRate())*10000000);}
+		uint64_t getFrameTime() const{return static_cast<uint64_t>(((double)getFrameLength()/(double)getByteRate())*10000000);}
 		unsigned int getLayer() const
 		{
 			if(LAYER1==layer)

@@ -33,7 +33,7 @@
 __UV_BEGIN_NAMESPACE
 
 
-#define UVCHECK(num){ if (num < 0){ throw MGCORE::mgexception(num, uv_strerror(num), _T(__FILE__), __LINE__); } }
+#define UVCHECK(num){ if (num < 0){ throw MGCORE::mgexception(ST_U32(num), uv_strerror(ST_U32(num)), _T(__FILE__), __LINE__); } }
 
 
 

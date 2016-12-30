@@ -546,7 +546,7 @@ public:
 	uint32_t get_command_count(const TCHAR * pszname)
 	{
 		//_ASSERTE(_commands.find(pszname) != _commands.end());
-		return _commands[pszname].psz_value.size();
+		return ST_U32(_commands[pszname].psz_value.size());
 	}
 
 	Cstring get_help()

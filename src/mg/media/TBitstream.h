@@ -104,7 +104,7 @@ public:
 	fixed_memory_bitstream(const unsigned char * pbuf, size_t buf_len)
 		: _read(new fixed_memory_read(pbuf, buf_len))
 	{
-		bitstream<fixed_memory_read>::create(_read, buf_len);
+		bitstream<fixed_memory_read>::create(_read, ST_U32(buf_len));
 	}
 };
 

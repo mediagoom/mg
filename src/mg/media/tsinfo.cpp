@@ -413,7 +413,7 @@ class CTSEditConsoleT: public T
 
 	
 	bool    _begin[MAX_STREAMS];
-	__int64 _end[MAX_STREAMS];
+	uint64_t _end[MAX_STREAMS];
 
 			
 	
@@ -531,7 +531,7 @@ public:
 		}
 	}
 
-	void set_end(int idx, __int64 t)
+	void set_end(int idx, uint64_t t)
 	{
 		_end[idx] = t;
 	}
@@ -760,9 +760,9 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 			CMP4DynamicInfo mp4edit;
 			
-			__int64 segment_size = 100000000;
-			__int64 end_overflow =  20000000;
-			__int64 fragment_tolerance = 660000;
+			uint64_t segment_size = 100000000;
+			uint64_t end_overflow =  20000000;
+			uint64_t fragment_tolerance = 660000;
 
 			if(c.command_specified(_T("segment")))
 				segment_size = c.get_integer64_value(_T("segment"));
@@ -982,13 +982,13 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 						//**************************//
 
-						__int64 end[MAX_STREAMS];
+						uint64_t end[MAX_STREAMS];
 						for(int i = 0; i < p.Count(); i++)
 						{
 							end[i] = 0;
 						}
 
-						std::map<__int64, __int64>::const_iterator point = s->get_point_begin();
+						std::map<int64_t, int64_t>::const_iterator point = s->get_point_begin();
 						while(point != s->get_point_end())
 						{
 							uint64_t computed_time    = point->first;
@@ -1063,8 +1063,8 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 										{
 											const DynamicStream      * as = p.get(joined_audio_stream_id);
 											
-											__int64 audio_computed = as->get_closest(computed_time);
-											__int64 audio_end      = as->get_end_original_time(audio_computed);
+											uint64_t audio_computed = as->get_closest(computed_time);
+											uint64_t audio_end      = as->get_end_original_time(audio_computed);
 
 											ts4edit.set_composition_start_time(joined_audio_stream_id, audio_computed);
 											ts4edit.set_composition_end_time(joined_audio_stream_id, audio_end);

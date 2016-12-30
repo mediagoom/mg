@@ -147,7 +147,7 @@ public:
 		cfile::read(to_read)->set_er().set_cb(
 			[pcb](CResource<CBuffer<unsigned char> > & buf) mutable
 		{
-			pcb->read_cb(buf->get(), buf->size());
+			pcb->read_cb(buf->get(), ST_U32(buf->size()));
 		});
 	}
 
@@ -160,7 +160,7 @@ public:
 		cfile::write(pbytes, to_write)->set_er().set_cb(
 			[pcb](CResource<uv_fs_t> & r)
 		{
-			pcb->write_cb(r->result);
+			pcb->write_cb(ST_U32(r->result));
 		}
 		);
 	}
@@ -224,7 +224,7 @@ public:
 
 		size_t r = ::fread(_buffer.get(), 1, to_read, _f);
 
-		pcb->read_cb(_buffer.get(), r);
+		pcb->read_cb(_buffer.get(), ST_U32(r));
 	}
 
 	virtual bool eof() {
@@ -241,7 +241,7 @@ public:
 		//size_t r = ::fwrite(pbytes, 1, to_write, _f);
 		size_t r = write(pbytes, to_write);
 
-		pcb->write_cb(r);
+		pcb->write_cb(ST_U32(r));
 	}
 
 	virtual void flush()

@@ -254,7 +254,7 @@ public:
 			_availablebits += (sizeof(BYTE)*8);
 		}
 
-		int bitCount = (size - num);
+		int bitCount = ST_U32(size - num);
 		int ret = (_bits >> (sizeall - size)) & 0x0000ffff;
 		return ret >> bitCount & mpegbitmask[num]; 
 	}
@@ -427,12 +427,12 @@ public:
 		return (3 < ToReadInFile())?true:false;
 	}
 	
-	__int64 FirstCheckedAudioOnlyHeaderPosition(int checks = 10)
+	uint64_t FirstCheckedAudioOnlyHeaderPosition(int checks = 10)
 	{
 		MoveToBeginning();
 
 		int valid = 0;
-		__int64 p = -1;
+		uint64_t p = -1;
 
 		
 		ULONG max = 0;

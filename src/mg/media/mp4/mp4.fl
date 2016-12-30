@@ -702,7 +702,7 @@ private:
 	
 	%p{ 
 	_ASSERTE(_items.size());
-	__entry_count = (_items.size());
+	__entry_count = (ST_U32(_items.size()));
 	%p}
 	
 	unsigned int(32) __entry_count;
@@ -749,8 +749,8 @@ private:
       S64(media_time);
       void cleanup()
       {
-          for(unsigned int i = 0; i <  _items.size(); i++)
-	    delete  _items[i];
+          for(size_t i = 0; i <  _items.size(); i++)
+			delete  _items[i];
 	 
 	   _items.clear();
       }
@@ -760,7 +760,7 @@ public:
         cleanup();
       }
 
-      unsigned int count() const {_ASSERTE(__entry_count == _items.size());return _items.size();}
+      size_t count() const {_ASSERTE(__entry_count == _items.size());return _items.size();}
       const EditListBoxItem& entry(uint32_t idx) const{_ASSERTE(idx < _items.size());return *_items[idx];}
       
       void add_item(
@@ -796,7 +796,7 @@ private:
 
      unsigned int __size = 0;
      %g{__size = _size;%g}
-     %p{__size = _items.size() * 4;int c = 0;%p}
+     %p{__size = ST_U32(_items.size() * 4);int c = 0;%p}
 
      while(__size > 0)
      {
@@ -816,7 +816,7 @@ public:
     V32(major_brand);
     V32(minor_version);
 
-    unsigned int count() const {return _items.size();}
+    size_t count() const {return _items.size();}
     unsigned int get_brand(unsigned int idx) const {_ASSERTE(_items.size() > idx); return _items[idx];}
     void add_brand(unsigned int brand){_items.push_back(brand);}
     
@@ -902,14 +902,14 @@ aligned(8) class XmlBox extends FullBox
      
    %{
       TCHAR *       _p_xml;
-      unsigned int __body_size;
+      size_t        __body_size;
 private:
     %}
     unsigned int __x = 0;
     unsigned int __max = 0;
 
-    %g{__max = __body_size;%g}
-    %p{__max = __body_size;%p}
+    %g{__max = ST_U32(__body_size);%g}
+    %p{__max = ST_U32(__body_size);%p}
     
     while(__x < __max)
     {

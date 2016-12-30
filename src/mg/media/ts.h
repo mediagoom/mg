@@ -214,7 +214,7 @@ public:
 			_FirstAdaptation.program_clock_reference_extension);
 	}
 
-	int payload_current_size()
+	size_t payload_current_size()
 	{
 		return _payload.size();
 	}

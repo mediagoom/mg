@@ -91,7 +91,7 @@ class CstringT{
 	friend Cstring operator+(const TCHAR *ch, const Cstring &str);
 
 	//delegate all the work to CResource
-	CResource<CBuffer<T> > m_str;
+	CResource<CBuffer<T, size_t> > m_str;
 
 
 	//conversions
@@ -273,7 +273,7 @@ public:
 
 #ifdef _WIN32
 			//CP_ACP
-			int c_res = ::WideCharToMultiByte(0, NULL, str, size, pw, size + 1, NULL, NULL);
+			int c_res = ::WideCharToMultiByte(0, NULL, str, ST_U32(size), pw, size + 1, NULL, NULL);
 			if (0 == c_res) //{ALXTHROW("cannot convert WCHAR* to char*");}
 				MGBASECHECK(E_BASE_CUSTOM);
 
@@ -606,7 +606,7 @@ public:
 	{
 		const TCHAR *sz = CstringT<T>::operator TCHAR*();
 		const TCHAR *f = _tcsstr(&sz[nBegin], str);
-			if(f) return f - sz;
+			if(f) return ST_U32(f - sz);
 
 			return npos;
 	}
@@ -633,11 +633,11 @@ public:
 	//}
 
 	//Return a sub string
-	CstringT subString(const uint32_t nbegin, uint32_t nLen) const
+	CstringT subString(const size_t nbegin, size_t nLen) const
 	{
 		CstringT &s = const_cast<CstringT&>(*this);
-		//let see if the source buffer is big enouth
-		nLen = (s.m_str->getSize() - nbegin) < nLen?s.m_str->getSize():nLen;
+		//let see if the source buffer is big enough
+		nLen = ST_U32((s.m_str->getSize() - nbegin) < nLen?s.m_str->getSize():nLen);
 			CResource<CBuffer<TCHAR> > tmp(new CBuffer<TCHAR>(nLen + 1));
 			const TCHAR *sz = s;
 			tmp->add(sz + nbegin, nLen);
@@ -652,7 +652,7 @@ public:
 		return s.m_str->getFull();
 	}
 
-	const uint32_t len() const
+	const size_t len() const
 	{
 		CstringT &s = const_cast<CstringT&>(*this);
 		return _tcslen(s.m_str->get());
@@ -733,7 +733,7 @@ public:
         return false;
   	}
 
-	T* GetBuffer(uint32_t size, bool AutoCommit = true)
+	T* GetBuffer(size_t size, bool AutoCommit = true)
 	{
 		m_str->prepare(size);
 		T* t = m_str->getCurrent();
@@ -744,7 +744,7 @@ public:
 		return t;
 	}
 
-	void CommitBuffer(uint32_t size)
+	void CommitBuffer(size_t size)
 	{
 		//NEVER COMMIT A NULL SIZE
 		if(0 >= size)
