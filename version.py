@@ -44,10 +44,10 @@ else:
             line += appbuild 
         else:
             line += apptag
-    line += ' '
-    line += appm
-    line += ' '
-    line += appb
+        line += ' '
+        line += appm
+        line += ' '
+        line += appb
 
 
 line += '")'
