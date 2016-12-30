@@ -19,9 +19,6 @@
  *
  * For more information, contact us at info@mediagoom.com.
  *****************************************************************************/
-// mp4info.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
 
 #include "auto_test.h"
@@ -31,6 +28,8 @@
 #endif
 
 #include <string>
+
+#include "version.h"
 
 using namespace MGUV;
 using namespace MGCORE;
@@ -4432,6 +4431,12 @@ int _tmain(int argc, TCHAR* argv[])
 
 		if(c.command_specified(_T("kind")))
 			kind = static_cast<const TCHAR*>(c.get_value(_T("kind")));
+
+		if (kind == _T("version"))
+		{
+			version();
+			return 0;
+		}
 
 		if(kind == _T("test"))
 		{

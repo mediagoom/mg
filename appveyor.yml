@@ -129,6 +129,7 @@ install:
   - git submodule update --init --recursive
   - ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - ps: ls;$l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
+  - ps: python ./version.py
   - ps: echo "--> $($env:APPVEYOR_REPO_TAG_NAME) -- $($env:APPVEYOR_REPO_TAG)";
 
 
