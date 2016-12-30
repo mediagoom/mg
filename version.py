@@ -33,21 +33,47 @@ appm=os.getenv('APPVEYOR_REPO_COMMIT_MESSAGE', '===')
 appb=os.getenv('APPVEYOR_REPO_BRANCH', '---')
 apptag=os.getenv('APPVEYOR_REPO_TAG_NAME', 'no tag')
 
+
+trevistag=os.environ.get('TRAVIS_TAG')
+
+trbn=os.getenv('TRAVIS_BUILD_NUMBER')
+trc=os.getenv('TRAVIS_COMMIT', '===')
+trb=os.environ.get('TRAVIS_BRANCH')
+
+trevis=False
+
+if trb != None:
+        trevis=True
+
 lversion=os.environ.get('VERSION')
 if None == lversion:
         lversion='0.0.x'
 if None == appv:
         #not in appveyor
-        line += lversion
+        if trevis:
+                if trevistag != None:
+                        line += trevistag
+                else:
+                        line += trbn
+                line += ' ['
+                line += trc
+                line += ' on: '
+                line += trb
+                line += ']'
+        else:
+                 line += lversion
+                 line += ' [local] '
+
 else:
-        if('False' == appv):
+        if('false' == appv):
             line += appbuild 
         else:
             line += apptag
-        line += ' '
+        line += ' ['
         line += appm
         line += ' '
         line += appb
+        line += ']'
 
 
 line += '")'
