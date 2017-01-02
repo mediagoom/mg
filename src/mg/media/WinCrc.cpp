@@ -1,5 +1,6 @@
-#include "StdAfx.h"
-#include "WinCrc.h"
+#include "stdafx.h"
+#include <stddef.h>
+#include "wincrc.h"
 
 #include "stdint.h"
 

@@ -28,8 +28,12 @@ libmgmedia_a_SOURCES = \
 		      	mp4/mp4i_ext.cpp \
 		        mp4/mp4_fragments.cpp \
 			mp4/cenc.cpp \
+			mp4/mpeg2ts.cpp \
+			mp4/mpeg2au.cpp \
 			mp4edit.cpp \
 			mp4dynamic.cpp \
-			mp4dynamicinfo.cpp
+			mp4dynamicinfo.cpp \
+			WinCrc.cpp \
+			tsinfo.cpp
 			
 

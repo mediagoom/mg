@@ -22,7 +22,7 @@
 #pragma once
 
 #include <TBitstream.h>
-#include "TS.H"
+#include "ts.h"
 #include <map>
 #include <iostream>
 #include "h264nal.h"
@@ -495,7 +495,7 @@ protected:
 	
 	template <typename M> void clean_up_map(M * pmap)
 	{
-		M::iterator iter;
+	       typename	M::iterator iter;
 
 		for( iter = pmap->begin(); iter != pmap->end(); iter++ ) 
 		{
@@ -693,7 +693,7 @@ protected:
 	void skipbytes(uint64_t bits)
 	{
 		uint64_t to_do_bits = bits * 8ULL;
-		unsigned int max = 	INT_MAX / 1024;
+		unsigned int max = 	INT32_MAX / 1024;
 		while((to_do_bits ) > max )
 		{
 			skip(max);
@@ -738,7 +738,7 @@ public:
 	{
 	   Transport_Packet ts;
 	   
-	   INT64 packet_read = 0;
+	   int64_t packet_read = 0;
 
 	   TSPROCESSRESULT result = TSPROCESSRESULT::MORE_INPUT;
 

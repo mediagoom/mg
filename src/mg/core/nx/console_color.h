@@ -21,6 +21,6 @@
 
 #define CLEAR "\033[2J"  // clear screen escape code 
 
-#define MGCOLOR char *
+#define MGCOLOR char const *
 
 inline MGCOLOR  get_current_color() { return RESET; }

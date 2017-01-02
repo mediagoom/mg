@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "MP4Edit.h"
+#include "mp4edit.h"
 #include "tswrite.h"
 #include <vector>
 
@@ -634,7 +634,7 @@ public:
 		uint64_t decoding_offset = composition_time - decoding_time;
 
         
-		if(_I64_MAX == s.computed_offset)
+		if(INT64_MAX == s.computed_offset)
 		{
 			s.computed_offset = s.base_time - composition_time;
 		    _composition_start_time[t_stream_id] = s;
@@ -685,7 +685,7 @@ public:
 		//ONLY USE ONE STREAM
 		t_stream_id = 0;
 
-		HLSSTREAM s = {composition_time, _I64_MAX};
+		HLSSTREAM s = {composition_time, INT64_MAX};
 		_composition_start_time[t_stream_id] = s;
 
 		//set_presentation_offset(0);

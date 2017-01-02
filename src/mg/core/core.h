@@ -50,9 +50,10 @@
 #ifndef _WIN32
 #ifndef WSTDINT
 #define WSTDINT
-#include <stdint.h>
+#include <stddef.h>
 //#define uint64_t int64_t
 #define DWORD uint32_t
+#define ULONG unsigned long
 #endif
 #endif
 
@@ -165,7 +166,7 @@ __MGCORE_END_NAMESPACE
 
 inline uint32_t ST_u32(size_t rhs)
 {
-	_ASSERT(rhs <= UINT32_MAX);
+	_ASSERTE(rhs <= UINT32_MAX);
 	if (rhs > UINT32_MAX)
 	{
 		throw MGCORE::mgexceptionbase(E_OVERFLOW);

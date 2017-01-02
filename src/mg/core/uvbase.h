@@ -147,6 +147,7 @@ public:
 
 	uvloopthread():_wait_time(100)
 		, _exit(false)
+		, _last_exception(nullptr)
 	{
 		_loop.Create();
 	}
@@ -168,19 +169,23 @@ public:
 		}
 	}
 
-	void end()
+	void end(bool check = false)
 	{		
 		if (!_exit)
 			stop();
 
 		join();
+		
+		if(check)
+		   if(std::uncaught_exception())//one exception is alredy being handled
+		   	return;
 
 		check_exception();
 	}
 	
 	virtual ~uvloopthread()
 	{
-		end();
+		end(true);
 	}
 
 	void set_exception(std::exception_ptr & eptr) { _last_exception = eptr; }

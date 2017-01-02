@@ -281,7 +281,9 @@ int test_bitstream(
 	try {
 		
 
-		CResource<uvloopthread> t; t.Create(); t->start();
+		CResource<uvloopthread> t; 
+			t.Create(); 
+			t->start();
 
 		Cstring ff(_T("bitset.tmp"));
 
@@ -511,7 +513,9 @@ int test_file_err()
 {
 	try {
 
-		CResource<uvloopthread> t; t.Create(); t->start();
+		CResource<uvloopthread> t; 
+		                        t.Create(); 
+					t->start();
 
 		
 		Cstring ff(_T("bitset.tmp"));
@@ -525,10 +529,13 @@ int test_file_err()
 			CHECK(true, fm.eof(), "CHECK EOF");
 
 			signal_event read;
+			             read.reset();
 
 			fm.read(50)->set_er([&read](std::exception_ptr eptr) -> bool
 			{
 				read.signal();
+			        std::cout << "READ EXCEPTION" << std::endl;
+				
 				std::rethrow_exception(eptr);
 
 				return true;
@@ -540,7 +547,13 @@ int test_file_err()
 
 			});
 
+			std::cout << "WAIT" << std::endl;
+
 			bool w = read.wait(10000);
+			if(!w)
+			{
+				t->end(); //this will re-throw the exception. //if we let the destructro throw we coredump.
+			}
 			CHECK(true, w, "WAIT TIME OUT");
 
 			fm.close(false);
@@ -557,9 +570,15 @@ int test_file_err()
 	}
 	catch (const std::exception & ex)
 	{
+		std::cout << "EXCEPTION" << std::endl;
 		std::cout << ex.what() << std::endl;
 		return 0;
-	}
+	}catch(...)
+		{
+			std::cout << "EX999999999" << std::endl;
+			return 12;
+		}
+
 
 }
 

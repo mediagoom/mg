@@ -22,6 +22,7 @@
 #include "../../exception.h"
 
 #include <stdlib.h>
+#include <sys/stat.h>
 
 __MGCORE_BEGIN_NAMESPACE
 

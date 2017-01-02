@@ -1,7 +1,7 @@
 #
 #
 AC_PREREQ(2.59)
-AC_INIT([libmg], [0.0.1])
+AC_INIT([libmg], [0.0.3])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects]) #
 AC_CONFIG_MACRO_DIR([m4])
 #AC_ENABLE_SHARED

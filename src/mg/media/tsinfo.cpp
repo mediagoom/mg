@@ -24,7 +24,7 @@
 
 #include "tsparse.h"
 #include "tsmux.h"
-#include "MP4DynamicInfo.h"
+#include "mp4dynamicinfo.h"
 #include "hls_renderer.h"
 #include "tsinfo.h"
 
@@ -618,7 +618,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 
 	_ASSERTE(SUCCEEDED(hr));
 
-	if(FAILED(hr))
+	if(0 > hr)
 		return 7;
 
 	sync_file_bitstream outf;
@@ -1214,7 +1214,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 		STDTSTRING kind = _T("auto");
 
 		if(c.command_specified(_T("kind")))
-			kind = c.get_value(_T("kind"));
+			kind = static_cast<const TCHAR*>(c.get_value(_T("kind")));
 
 
 		ost << _T("WORKING TYPE: ") << kind.c_str() << std::endl;
@@ -1222,7 +1222,7 @@ int tsinfo(console_command & c, std::ostream & ost)
 
 		if(kind == _T("test"))
 		{
-			STDTSTRING test = c.get_value(_T("test"));
+			STDTSTRING test = static_cast<const TCHAR*>(c.get_value(_T("test")));
 			//return auto_test(test);
 		}
 

@@ -28,9 +28,9 @@
 
 #include "wincrc.h"
 
-#include "intsafe.h"
+//#include "intsafe.h"
 
-#include <crtdbg.h>
+//#include <crtdbg.h>
 
 #include <set>
 #include <map>
@@ -181,7 +181,7 @@ public:
 	uint64_t PCR()
 	{
 		_ASSERTE(HasAdaptation());
-		_ASSERT(_Adaptation.PCR_flag);
+		_ASSERTE(_Adaptation.PCR_flag);
 
 		return MpegTime::Time(_Adaptation.program_clock_ref_1,
             _Adaptation.program_clock_ref_2,
@@ -206,7 +206,7 @@ public:
 	uint64_t FirstPCR()
 	{
 		_ASSERTE(HasFirstAdaptation());
-		_ASSERT(_FirstAdaptation.PCR_flag);
+		_ASSERTE(_FirstAdaptation.PCR_flag);
 
 		return MpegTime::Time(_FirstAdaptation.program_clock_ref_1,
             _FirstAdaptation.program_clock_ref_2,
@@ -848,7 +848,7 @@ protected:
 
 		if(LookUp(payload, ms))
 		{
-		   _offset = ms.get_position();//payload.GetPosition() - ms.getUnreadBufferSize();
+		   TSProgramElementaryStream<I>::_offset = ms.get_position();//payload.GetPosition() - ms.getUnreadBufferSize();
 		   structure_get(ms);
 		   _HasStruct = true;
 
@@ -862,7 +862,7 @@ protected:
 	{
 		if(_HasStruct)//ONLY THROW AWAY STUFF BEFORE THE FIRST VALID HEADER 
 		{	
-			if(!_receiver_written && HasData())
+			if(!TSProgramElementaryStream<I>::_receiver_written && TSProgramElementaryStream<I>::HasData())
 			{
 				//WE NEVER WROTE ANYTHING
                 bool res = UpdateLookUp(payload);
@@ -870,7 +870,7 @@ protected:
 			}
 
 			_IsDirty = true;
-			TSProgramElementaryStream::Receive(payload);
+			TSProgramElementaryStream<I>::Receive(payload);
 		}
 
 		
@@ -883,7 +883,7 @@ protected:
 			UpdateLookUp(payload);
 		}
 
-		try{TSProgramElementaryStream::process(ts, payload);}
+		try{TSProgramElementaryStream<I>::process(ts, payload);}
 		catch(...)
 		{if(_HasStruct){throw;}}
 	}
@@ -912,7 +912,7 @@ typedef TSProgramElementaryStreamAnalyze<SequenceHeader> PESVideo;
 class MpegAudioAnalize
 {
 	IBitstream & _bs;
-	UINT _frame_lenght;
+	uint32_t _frame_lenght;
 	uint64_t _last_good_frame_lenght;
 	uint64_t _last_count;
 	

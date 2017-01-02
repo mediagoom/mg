@@ -25,8 +25,11 @@
 
 #ifndef MG_ERRROR_LOG
 #define MG_ERROR(err) throw CMediaParserErr (_T(__FILE__), __LINE__, err);
+#define MG_ERROR1(err, K) throw CMediaParserErr (_T(__FILE__), __LINE__, err);
 #else
-#define MG_ERROR(err) fprintf(stdout, "MG ERROR %s %s %d\r\n", err, _T(__FILE__), __LINE__); 
+#define MG_ERROR(err) fprintf(stdout, "MG ERROR %s %s %d\r\n", err, _T(__FILE__), __LINE__);
+#define MG_ERROR1(err, K) fprintf(stdout, "MG ERROR %s %s %d %s\r\n", err, _T(__FILE__), __LINE__, K);
+
 #endif
 
 #define MG_WARNING(err) fprintf(stdout, "MG WARNING %s %s %d\r\n", err, _T(__FILE__), __LINE__); 

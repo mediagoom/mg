@@ -75,6 +75,15 @@ public:
 		_wait_end = true;
 
 		if (_read == _write)
+		{
+			//wait for the last call to read_cb to end
+			if(!_write_event.wait(SMALL_WAIT))
+			{
+			   _ASSERTE(false);
+
+		          MGCHECK(E_TIMEOUT);
+			}
+
 			return;
 
 		while (!_write_event.wait(SMALL_WAIT))

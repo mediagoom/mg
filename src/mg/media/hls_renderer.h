@@ -22,7 +22,7 @@
 #pragma once
 
 #include <mgcore.h>
-#include "MP4DynamicInfo.h"
+#include "mp4dynamicinfo.h"
 //#include <splitter.h>
 
 #ifdef HAVE_LIBGYPAES
@@ -82,7 +82,7 @@ public:
 
 	void set_use_stream_name(bool rhs){ _use_stream_name = rhs; }
 
-	void set_prefix(LPCTSTR psz_prefix)
+	void set_prefix(const TCHAR* psz_prefix)
 	{
 		_prefix = psz_prefix;
 	}
@@ -95,7 +95,7 @@ public:
 		_root_m3u += _T("#EXT-X-VERSION:3\n");
 	}
 
-	virtual void begin_stream(LPCTSTR psz_name, int points, int bitrates, stream_type stype)
+	virtual void begin_stream(const TCHAR* psz_name, int points, int bitrates, stream_type stype)
 	{
 		_begin_stream = true;
 		_video_points = false;
@@ -110,7 +110,7 @@ public:
 
 	}
 
-	virtual void add_video_bitrate(int bit_rate, LPCTSTR psz_type, int Width, int Height, BYTE* codec_private_data, int size)
+	virtual void add_video_bitrate(int bit_rate, const TCHAR * psz_type, int Width, int Height, BYTE* codec_private_data, int size)
 	{
 		_index++;
 
@@ -218,11 +218,11 @@ public:
 		_body += _T(".ts\r\n");
 		
 	}
-    virtual void add_point_info(LPCTSTR psz_path, uint64_t composition, uint64_t computed)
+    virtual void add_point_info(const TCHAR * psz_path, uint64_t composition, uint64_t computed)
 	{
 		
 	}
-	virtual void add_point_info_cross(LPCTSTR psz_path, uint64_t composition, uint64_t computed)
+	virtual void add_point_info_cross(const TCHAR * psz_path, uint64_t composition, uint64_t computed)
 	{
 		
 	}
@@ -299,14 +299,14 @@ public:
 		if(0 == (*pdest_size))
 		{
 			*pdest_size = ENC_SIZE(clear_size);
-			 return S_FALSE;
+			 return 1L;
 		}
 
 		_ASSERTE(ENC_SIZE(clear_size) <= (*pdest_size));
 
 		if(ENC_SIZE(clear_size) > (*pdest_size))
 		{
-			return E_OUTOFMEMORY;
+			return E_INVALID_INPUT;
 		}
 
 		uint64_t dest_size = ENC_SIZE(clear_size);
@@ -382,7 +382,7 @@ public:
 
 		*pdest_size = dest_size;
 
-		return S_OK;
+		return 0;
 	}
 #endif
 
