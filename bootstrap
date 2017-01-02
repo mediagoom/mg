@@ -3,10 +3,10 @@ automake --add-missing
 autoreconf
 
 
-set -x
-libtoolize
-aclocal --install -I m4
-aclocal -I config
-autoheader
-automake --foreign --add-missing --copy
-autoconf
+#set -x
+#libtoolize
+#aclocal --install -I m4
+#aclocal -I config
+#autoheader
+#automake --foreign --add-missing --copy
+#autoconf
