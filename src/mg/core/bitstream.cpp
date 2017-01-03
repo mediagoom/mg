@@ -85,6 +85,7 @@ public:
 			}
 
 			return;
+		}
 
 		while (!_write_event.wait(SMALL_WAIT))
 		{

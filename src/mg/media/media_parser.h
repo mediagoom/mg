@@ -28,7 +28,7 @@
 #define MG_ERROR1(err, K) throw CMediaParserErr (_T(__FILE__), __LINE__, err);
 #else
 #define MG_ERROR(err) fprintf(stdout, "MG ERROR %s %s %d\r\n", err, _T(__FILE__), __LINE__);
-#define MG_ERROR1(err, K) fprintf(stdout, "MG ERROR %s %s %d %s\r\n", err, _T(__FILE__), __LINE__, K);
+#define MG_ERROR1(err, K) fprintf(stdout, "MG ERROR %s %s %d %d\r\n", err, _T(__FILE__), __LINE__, K);
 
 #endif
 
