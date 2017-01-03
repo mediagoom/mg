@@ -48,12 +48,12 @@
 #endif
 
 #ifndef PRId64
-#warning "PRId64 not defined"
-#define PRId64       "lld"
-#define PRIu64       "llu"
-#define SCNd64       "lld"
-#define SCNu64       "llu"
-#define SCNx64       "llx"
+//#warning "PRId64 not defined"
+#define PRId64       "ld"
+#define PRIu64       "lu"
+#define SCNd64       "ld"
+#define SCNu64       "lu"
+#define SCNx64       "lx"
 #endif
 
 

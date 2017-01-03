@@ -616,7 +616,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 		, sequence
 		, pkey);
 
-	_ASSERTE(SUCCEEDED(hr));
+	_ASSERTE(0 == hr);
 
 	if(0 > hr)
 		return 7;
