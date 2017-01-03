@@ -16,7 +16,7 @@ def get_file_content(path, linex):
         ctx = ''
         with open(path, 'r') as f:
                 for line in f:
-                        if i != 2:
+                        if i != 3:
                             ctx += line
                         else:
                             ctx += linex
@@ -45,9 +45,9 @@ trevis=False
 if trb != None:
         trevis=True
 
-print '---------*'
+print '---------**'
 print appv
-print '---------*'
+print '---------**'
 
 lversion=os.environ.get('VERSION')
 if None == lversion:
