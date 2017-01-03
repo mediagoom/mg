@@ -10,9 +10,12 @@ if [[ $? != 0 ]]; then
 	exit 1
 fi
 
-curl "https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/master/dropbox_uploader.sh" -o dropbox_uploader.sh
+curl "https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/master/dropbox_uploader.sh" -o ./dropbox_uploader.sh
 chmod 777 dropbox_uploader.sh
 
 echo "$OAUTH_ACCESS_TOKEN=${DBOX}" > ~/.dropbox_uploader
 
-./dropbox_uploader upload ./out/Release/mg mg
+#./dropbox_uploader upload ./out/Release/mg mg
+
+ls -a
+ls ~ -a
