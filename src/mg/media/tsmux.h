@@ -185,7 +185,7 @@ public:
 
 		_pes.set_position(0);
 
-		int64_t PCR = -1;
+		uint64_t PCR = UINT64_MAX;
 
 		if(IFrame)
 		{

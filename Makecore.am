@@ -5,8 +5,8 @@
 ACLOCAL_AMFLAGS=-I m4
 
 if DEBUG
-AM_CFLAGS   = -std=c++11 -g3 -O0 -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline -DNDEBUG=1 -D_DEBUG=1
-AM_CXXFLAGS = -std=c++11 -g3 -O0 -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline -DNDEBUG=1 -D_DEBUG=1
+AM_CFLAGS   = -std=c++11 -g3 -O0 -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions -fno-default-inline -DNDEBUG=1 -D_DEBUG=1 -Wsign-compare
+AM_CXXFLAGS = $(AM_CFLAGS)
 else
 AM_CFLAGS   = -O2 -g -std=c++11 -static-libstdc++ -static-libgcc
 AM_CXXFLAGS = $(AM_CFLAGS)

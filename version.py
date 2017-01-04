@@ -36,8 +36,8 @@ apptag=os.getenv('APPVEYOR_REPO_TAG_NAME', 'no tag')
 
 trevistag=os.environ.get('TRAVIS_TAG')
 
-trbn=os.getenv('TRAVIS_BUILD_NUMBER')
-trc=os.getenv('TRAVIS_COMMIT', '===')
+trbn=os.getenv('TRAVIS_BUILD_NUMBER', 'xx')
+trc='TRAVIS'
 trb=os.environ.get('TRAVIS_BRANCH')
 
 trevis=False
@@ -45,9 +45,11 @@ trevis=False
 if trb != None:
         trevis=True
 
-print '---------**'
+print '---------***'
 print appv
-print '---------**'
+print os.getenv('TRAVIS_BUILD_NUMBER')
+print trbn
+print '---------***'
 
 lversion=os.environ.get('VERSION')
 if None == lversion:

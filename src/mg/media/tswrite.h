@@ -166,16 +166,16 @@ protected:
 
 	void set_pts_dts(
 		  PesData & pes
-		, uint64_t timePTS = -1
-		, uint64_t timeDTS = -1
-		, uint64_t timePCR = -1
+		, uint64_t timePTS = UINT64_MAX
+		, uint64_t timeDTS = UINT64_MAX
+		, uint64_t timePCR = UINT64_MAX
 		)
 	{
 		 pes.PTS_flags = 0; 
          pes.DTS_flags = 0;
 		 pes.ESCR_flag = 0;
 
-		if(timePTS > -1)
+		if(timePTS < UINT64_MAX)
 		{
 			
             pes.PTS_flags = 1; 
@@ -189,7 +189,7 @@ protected:
 
 		}
 
-		if(timeDTS > -1)
+		if(timeDTS < UINT64_MAX)
 		{
 			
            
@@ -204,7 +204,7 @@ protected:
 
 		}		
 
-		if(timePCR > -1)
+		if(timePCR < UINT64_MAX)
 		{
 			pes.ESCR_flag = 1;
 
