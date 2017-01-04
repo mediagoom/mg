@@ -13,7 +13,7 @@ fi
 curl "https://raw.githubusercontent.com/andreafabrizi/Dropbox-Uploader/master/dropbox_uploader.sh" -o ./dropbox_uploader.sh
 chmod 777 dropbox_uploader.sh
 
-echo "$OAUTH_ACCESS_TOKEN=${DBOX}" > ~/.dropbox_uploader
+echo "OAUTH_ACCESS_TOKEN=${DBOX}" > ~/.dropbox_uploader
 
 #ls -a
 #ls ~ -a
