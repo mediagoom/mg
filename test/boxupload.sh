@@ -15,7 +15,7 @@ chmod 777 dropbox_uploader.sh
 
 echo "$OAUTH_ACCESS_TOKEN=${DBOX}" > ~/.dropbox_uploader
 
-ls -a
-ls ~ -a
+#ls -a
+#ls ~ -a
 
-./dropbox_uploader upload ./out/Release/mg mg
+./dropbox_uploader.sh upload ./out/Release/mg mg
