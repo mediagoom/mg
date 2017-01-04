@@ -4437,6 +4437,12 @@ int _tmain(int argc, TCHAR* argv[])
 			version();
 			return 0;
 		}
+		
+		if(kind == _T("throw"))
+		{
+			MGCHECK(-1);
+			//throw std::runtime_error("file not found");
+		}
 
 		if(kind == _T("test"))
 		{
@@ -5679,8 +5685,9 @@ int _tmain(int argc, TCHAR* argv[])
 	}*/
 	}catch ( std::exception & ex)
 	{
+	        std::cout << "EXCEPTION" << std::endl;
 		std::cout << ex.what() << std::endl;
-		return 125;
+		return 1277;
 	
 	}
 	catch (...)

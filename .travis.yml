@@ -25,6 +25,7 @@ script:
 - make CXX=/usr/bin/g++-5 CXX.host=/usr/bin/g++-5 CXX.target=/usr/bin/g++-5
 - env srcdir="$(pwd)" out/Release/mgtest
 - bash -c ./boxupload.sh
+- bash -c printenv
 deploy:
   provider: releases
   api_key:

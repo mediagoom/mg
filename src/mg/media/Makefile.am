@@ -33,7 +33,7 @@ libmgmedia_a_SOURCES = \
 			mp4edit.cpp \
 			mp4dynamic.cpp \
 			mp4dynamicinfo.cpp \
-			WinCrc.cpp \
+			wincrc.cpp \
 			tsinfo.cpp
 			
 

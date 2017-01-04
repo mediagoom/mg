@@ -194,6 +194,7 @@ public:
 		if (NULL == _f)
 		{
 			MGCHECK(-1);
+			//throw std::runtime_error("file not found");
 		}
 		
 		uv_fs_t req;

@@ -870,7 +870,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				 out_dir = c.get_value(_T("output"));
 				 Cstring out_xml_file = out_dir.clone();
 
-				 out_xml_file += _T("\\main.m3u8");
+				 out_xml_file += _T("/main.m3u8");
 
 				 {
 				    CstringT<char> main;
@@ -895,7 +895,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				 if(encrypted)
 				 {
 					 Cstring keyfile = out_dir.clone();
-					         keyfile += _T("\\");
+					         keyfile += _T("/");
 							 keyfile += r.get_key_file_name();
 
 							 /*
@@ -916,7 +916,7 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				 for(int idx = 0; idx < r.bit_rate_count(); idx++)
 				 {
 					 Cstring out_m3u_file = out_dir.clone();
-					         out_m3u_file += _T("\\");
+					         out_m3u_file += _T("/");
 							 out_m3u_file += r.bit_rate_name(idx);
 							
 							 {
@@ -1009,10 +1009,10 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 
 								
 								if(s->is_audio())
-										out_chunk_file += _T("\\audio_");
+										out_chunk_file += _T("/audio_");
 
 								if(s->is_video())
-										out_chunk_file += _T("\\video_");
+										out_chunk_file += _T("/video_");
 								
 
 								out_chunk_file += bitrate->first;
@@ -1371,13 +1371,13 @@ int tsinfo(console_command & c, std::ostream & ost)
 	catch (std::exception & ex)
 	{
 		std::cout << ex.what() << std::endl;
-		return 125;
+		return 1244;
 
 	}
 	catch (...)
 	{
 		std::cout << "...." << std::endl;
-		return 127;
+		return 1233;
 	}
 
 	return 0;
