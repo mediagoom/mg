@@ -24,7 +24,7 @@ script:
 - python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
 - make CXX=/usr/bin/g++-5 CXX.host=/usr/bin/g++-5 CXX.target=/usr/bin/g++-5
 - env srcdir="$(pwd)" out/Release/mgtest
-- bash -c ../boxupload.sh
+- bash -c ./boxupload.sh
 deploy:
   provider: releases
   api_key:
