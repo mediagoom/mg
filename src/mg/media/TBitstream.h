@@ -196,7 +196,7 @@ public:
 		_current_pos = rhs;
 
 		if (_current_pos < _buffer.getFull())
-			_reset.Back(_buffer.getFull() - U64_ST(_current_pos));
+			_reset.MoveBack(_buffer.getFull() - U64_ST(_current_pos));
 		else
 			_buffer.updatePosition(U64_ST(_current_pos) - _buffer.getFull());
 

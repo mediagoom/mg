@@ -204,11 +204,17 @@ public:
 		//m_Buffer.m_iSize = 0;
 	}
 
-	void Back(sizetype size)
+	void Back(sizetype size, bool zero = true)
 	{
 		_ASSERTE(m_Buffer.m_iCurrent >= size);
 		m_Buffer.m_iCurrent -= size;
-		memset(m_Buffer.m_p + m_Buffer.m_iCurrent, 0, size * sizeof(type));
+		if(zero)
+			memset(m_Buffer.m_p + m_Buffer.m_iCurrent, 0, size * sizeof(type));
+	}
+
+	void MoveBack(sizetype size)
+	{
+		Back(size, false);
 	}
 };
 
