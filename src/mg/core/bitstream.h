@@ -892,14 +892,14 @@ protected:
 
 		if (bit_ava < n)
 		{
-			//we do not have enougth bits
+			//we do not have enough bits
 
 			uint64_t bit_sha = _shadow_len << 3;
 
 			if ((bit_ava + bit_sha) > n)
 			{
 				_cur_bit += bit_ava;
-				_nextbits(32); //move at the beginnig of the _shadow and async reload shadow
+				_nextbits(32); //move at the beginning of the _shadow and async reload shadow
 				_ASSERTE(_cur_bit == 0);
 				_ASSERTE((bit_sha >> 3) == _buf_len);
 				_ASSERTE((n - bit_ava) < (_buf_len << 3));

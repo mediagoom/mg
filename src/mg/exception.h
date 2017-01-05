@@ -32,7 +32,7 @@ class mgexception: public mgexceptionbase
 	int     _line;
 	
 	Cstring _msg;
-	CstringT<char> _what; //TODO: test unicode
+	CstringT<char> _what; //TODO: test Unicode
 	
 	void update_what()
 	{
