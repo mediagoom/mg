@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys, getopt, os, glob, ast
-import hashlib
+import hashlib, re
 
 # BUF_SIZE is totally arbitrary, change for your app!
 BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
@@ -27,14 +27,16 @@ def file_hash(filepath):
                 sha1.update(data)
     return sha1.hexdigest()
 
-def do_files(dir, filter):
+def do_files(dir, filter, excl):
         """process file in a directory"""
         path = os.path.join(dir, filter)
         print path
         dic = {}
+	rx = re.compile(excl)
         for file in glob.glob(path):
-            hx = file_hash(file)
-            dic[os.path.basename(file)] = hx
+            if None == rx.match(path):	
+                hx = file_hash(file)
+                dic[os.path.basename(file)] = hx
         return dic
 
 def main(argv):
@@ -43,10 +45,11 @@ def main(argv):
     filter=''
     blueprint=''
     out=False
+    exclude=r'((audio)|(video))_\d+_i\.mp[av]'
     try:
-        opts, args = getopt.getopt(argv,"ohd:f:b:",["dir=","filter=","blueprint="])
+        opts, args = getopt.getopt(argv,"ohd:f:b:",["dir=","filter=","blueprint=","exclude="])
     except getopt.GetoptError:
-      print 'test_hash.py -i <inputfile> -o <outputfile>'
+      print 'test_hash.py --dir <directory> --filter <*.ts> --blueprint <blueprint-file-path> -o <output:true/false> --exclude <exclude-rx>'
       sys.exit(2)
     for opt, arg in opts:
       if opt == '-h':
@@ -58,6 +61,8 @@ def main(argv):
          filter = arg
       elif opt in ("-b", "--blueprint"):
          blueprint = arg
+      elif opt in ("--exclude"):
+          exclude = arg
       elif opt == '-o':
               out=True
     print 'dir is : ', dir 
@@ -66,13 +71,13 @@ def main(argv):
             blueprint = os.path.dirname(os.path.realpath(__file__))
             blueprint = os.path.join(blueprint, 'test_assets', 'hls_full.txt')
     print 'file blueprint is: ', blueprint
-    hh = do_files(dir, filter)
+    hh = do_files(dir, filter, exclude)
     if out:
             out_hash(blueprint, hh)
             print 'output hash to ', hh
     else:
             zz = in_hash(blueprint)
-            if len(zz) != len(hh):
+            if len(zz) > len(hh):
                     print 'invalid hash size ', len(zz), len(hh)
             for k in zz.keys():
                     print k, ' ', zz[k], ' ', hh[k]

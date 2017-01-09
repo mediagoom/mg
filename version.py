@@ -57,7 +57,7 @@ if None == lversion:
 if None == appv:
         #not in appveyor
         if trevis:
-                if trevistag != None:
+                if trevistag != '':
                         line += trevistag
                 else:
                         line += trbn

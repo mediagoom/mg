@@ -1,7 +1,7 @@
 
 if [ -z "$DBOX" ]; then
     echo "DBOX NOT FOUND"
-        exit 1
+        exit 0
 fi 
 
 which curl > /dev/null

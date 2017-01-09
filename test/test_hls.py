@@ -1,11 +1,15 @@
 #!/usr/bin/python
 
-import subprocess, os
+import subprocess, os, shutil
 
-def getmp4():
+def getsrcdir():
 	srcdir=os.environ.get('srcdir')
 	if(srcdir == None):
 		srcdir = os.path.dirname(os.path.realpath(__file__))
+	return srcdir
+
+def getmp4():
+	srcdir = getsrcdir()
 	return os.path.join(srcdir, 'test_assets', 'MEDIA1.MP4')
 
 
@@ -22,12 +26,27 @@ print cwd
 
 mg = os.path.join(cwd, 'src', 'mgcli', 'mg')
 
+print mg
+
+if not os.path.exists(mg):
+    mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
+
 mp4 = getmp4()
 
 do = os.path.join(cwd, 'tmp')
 
-if not os.path.exists(do):
-    os.makedirs(do)
+if os.path.exists(do):
+    shutil.rmtree(do)    
+    
+os.makedirs(do)
 
 exechls(mg, mp4, do)
 
+srcd = getsrcdir()
+
+cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', "'*.*'", '--blueprint', os.path.join(srcd, 'test_assets', 'hls_small.txt')]
+
+print cmd
+
+rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+print rr
