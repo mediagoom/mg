@@ -19,7 +19,9 @@ mgtest_SOURCES =  test_bitstream.cpp \
 mgtest_LDADD =  $(top_builddir)/src/mg/core/libmgcore.a \
 		$(top_builddir)/src/mg/media/libmgmedia.a
 
-TESTS = BITSTREAM RESOURCES UV THREAD MP4
+TESTS = BITSTREAM RESOURCES UV THREAD MP4 test_hls.py test_dash.py
+TEST_EXTENSIONS = .py
+PY_LOG_COMPILER = $(PYTHON)
 LOG_COMPILER = ./mgtest
 
 

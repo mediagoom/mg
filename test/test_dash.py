@@ -69,5 +69,10 @@ cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', '*
 
 print cmd
 
-rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-print rr
+try:
+    rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+except subprocess.CalledProcessError as e:
+    print e.output
+    raise
+    
+#print rr
