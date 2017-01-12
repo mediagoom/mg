@@ -78,6 +78,7 @@ public:
 	CBuffer(sizetype size = 1024)
 	:m_iCurrent(0), m_iSize(size), m_iOrigin(size)
 	{ 
+		_ASSERTE(0 < size);
 		m_p = new type[size];
 		if(0 == m_p) throw std::bad_alloc();
 		//DOUBLE CHECK BUT THIS SHOULD NEVER HAPPEN SINCE WE HAVE JUST ALLOCATED IT

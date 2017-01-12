@@ -298,6 +298,8 @@ class pic_parameter_set_rbsp
 	         int pic_init_qs_minus26 = 0;
 	         int chroma_qp_index_offset = 0;
 
+	unsigned int start_size = numbits();
+
 		%g{pic_parameter_set_id  = exp_ue_golomb(var_bs);%g}
 		%g{seq_parameter_set_id  = exp_ue_golomb(var_bs);%g}
 	
@@ -354,14 +356,85 @@ class pic_parameter_set_rbsp
 	unsigned int(1) deblocking_filter_control_present_flag;
 	unsigned int(1) constrained_intra_pred_flag;
 	unsigned int(1) redundant_pic_cnt_present_flag;
+
+	
         
     ///////////rbsp_trailing_bits( )//////
 	unsigned int(1) rbsp_stop_one_bit = 1;
-	unsigned int skip = numbits()%8;
-	if(skip)
-    {skipbits(8-skip);}
+	unsigned int skip = numbits() % 8;
+	/////extended///////
+	unsigned int end_size = numbits();
+	unsigned int extended = 0;
+
+	%g{ if(_size && 
+	             ( ( (end_size + skip) - start_size) / 8) < _size
+			) 
+			extended = 1;
+	%g}
+
+	if(skip && (!extended))
+    {
+	    //unsigned int(1) transform_8x8_mode_flag;
+		skipbits(8-skip);
+	}
+
+	if(extended)
+	{
+		unsigned int(1) transform_8x8_mode_flag;
+		unsigned int(1) pic_scaling_matrix_present_flag;
+		
+		if(pic_scaling_matrix_present_flag)
+		{
+		    unsigned int i = 0;
+			unsigned int itime = (6 + 2 * transform_8x8_mode_flag);
+		    for( i = 0 ; i < itime; i++ )
+            {
+                unsigned int(1) pic_scaling_list_present_flag;
+                if( pic_scaling_list_present_flag )
+                {
+                    if( i < 6 )
+                    {
+						%g{
+						  unsigned int j = 0;
+						   for(j = 0; j < 16; j++)
+						     exp_se_golomb(var_bs);
+						%g}
+                        
+                    }
+                    else
+                    {
+                        %g{
+						  unsigned int j = 0;
+						   for(j = 0; j < 64; j++)
+						     exp_se_golomb(var_bs);
+						%g}
+                    }
+                }
+            }
+
+		}
+
+		int second_chroma_qp_index_offset = 0;
+		%g{second_chroma_qp_index_offset  = exp_se_golomb(var_bs);%g}
+
+		///////////rbsp_trailing_bits( )//////
+	   unsigned int(1) rbsp_stop_one_bit2 = 1;
+	   unsigned int skip2 = numbits() % 8;
 	
-   
+		if(skip2)
+		{
+	   
+			skipbits(8-skip2);
+		}
+	}
+	
+%{
+	unsigned int _size;
+public:
+	 pic_parameter_set_rbsp():_size(0){}
+	 pic_parameter_set_rbsp(unsigned int size):_size(size){}
+	
+%}
 }
 
 class ref_pic_list_reordering(unsigned int slice_type)  

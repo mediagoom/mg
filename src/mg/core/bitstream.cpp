@@ -93,7 +93,17 @@ public:
 			FDBGC4(COPY_STREAM_DEBUG, "wait-end\t%u\t%u\t%u\t%u", _read, _write, _traveling, 0);
 
 			if (_read == _write)
+			{
+				//wait for the last call to read_cb to end
+				if (!_write_event.wait(SMALL_WAIT))
+				{
+					_ASSERTE(false);
+
+					MGCHECK(E_TIMEOUT);
+				}
+
 				return;
+			}
 
 			
 		}

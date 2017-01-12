@@ -271,7 +271,7 @@ void outputAVCDecoderConfigurationRecord(CMP4 &mp4)
 									{
 										for(uint32_t idx = 0; idx < avcC.get_picture_count(); idx++)
 										{
-											pic_parameter_set_rbsp picture;
+											
 
 											H264Nal nal;
 											        nal.decode_nal(avcC.get_picture_size(idx)
@@ -286,7 +286,13 @@ void outputAVCDecoderConfigurationRecord(CMP4 &mp4)
 													              , nal.decoded_rbsp_size() -1
 													);
 
+											//pic_parameter_set_rbsp picture(nal.decoded_rbsp_size() - 1);
+											pic_parameter_set_rbsp picture;
+											
 											picture.get(mem);
+
+											
+											//picture.skip
 
 											_ASSERTE(mem.get_position() == nal_size -1);
 
