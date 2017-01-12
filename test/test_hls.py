@@ -30,6 +30,8 @@ print mg
 
 if not os.path.exists(mg):
     mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
+if not os.path.exists(mg):
+    mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
 
 mp4 = getmp4()
 

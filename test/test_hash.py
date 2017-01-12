@@ -6,6 +6,8 @@ import hashlib, re
 # BUF_SIZE is totally arbitrary, change for your app!
 BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
 
+#import pdb; pdb.set_trace()
+
 def in_hash(filepath):
     with open(filepath, 'r') as f:
         s = f.read()
@@ -34,7 +36,7 @@ def do_files(dir, filter, excl):
         dic = {}
 	rx = re.compile(excl)
         for file in glob.glob(path):
-            if None == rx.match(path):	
+            if None == rx.search(file):	
                 hx = file_hash(file)
                 dic[os.path.basename(file)] = hx
         return dic
@@ -45,7 +47,7 @@ def main(argv):
     filter=''
     blueprint=''
     out=False
-    exclude=r'((audio)|(video))_\d+_i\.mp[av]'
+    exclude=r'((audio)|(video))_\d+_i\.m4[av]'
     try:
         opts, args = getopt.getopt(argv,"ohd:f:b:",["dir=","filter=","blueprint=","exclude="])
     except getopt.GetoptError:
@@ -71,6 +73,7 @@ def main(argv):
             blueprint = os.path.dirname(os.path.realpath(__file__))
             blueprint = os.path.join(blueprint, 'test_assets', 'hls_full.txt')
     print 'file blueprint is: ', blueprint
+    print 'exclude : ', exclude
     hh = do_files(dir, filter, exclude)
     if out:
             out_hash(blueprint, hh)

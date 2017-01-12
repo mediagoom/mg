@@ -29,7 +29,8 @@ install-sh
 missing
 COPYING
 INSTALL
-								
+/tmp*
+
 #generated files
 *.sln
 *.vcxproj
