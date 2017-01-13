@@ -32,7 +32,11 @@ def exechls(mg, mp4, do):
     #cmd  = [mg, '-k:version']
     print cmd
     res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    print res
+    try:
+        rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print e.output
+        raise
 
 cwd = os.getcwd()
 cwd = os.path.abspath(os.path.join(cwd, os.pardir))
