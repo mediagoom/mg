@@ -31,9 +31,9 @@ def exechls(mg, mp4, do):
     cmd = [mg, '-k:dash', '-s:0', '-e:0', '-b:750', '-i:' + mp4, '-o:' + do]
     #cmd  = [mg, '-k:version']
     print cmd
-    res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    print '----------------'
     try:
-        rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         print e.output
         raise
