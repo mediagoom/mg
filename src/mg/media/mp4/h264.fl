@@ -274,7 +274,10 @@ class H264Sequence
 
 %{
 public:
-	 H264Sequence():VUI(NULL){}
+	 H264Sequence():
+		  VUI(NULL)
+		, mb_adaptive_frame_field_flag(0)
+	 {}
 	~H264Sequence(){if(VUI){delete VUI;}}
 %}
    
