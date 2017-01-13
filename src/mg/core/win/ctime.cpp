@@ -39,7 +39,8 @@ int64_t Ctime::_GetUTCOffset()
 	}
 	else if(TIME_ZONE_ID_UNKNOWN == dword)
 	{
-		ALXTHROW_T(_T("UNKNOWN TIME ZONE"));
+		//ALXTHROW_T(_T("UNKNOWN TIME ZONE"));
+		return 0;
 	}
 	else if(TIME_ZONE_ID_STANDARD == dword)
 	{
