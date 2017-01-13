@@ -286,8 +286,8 @@ void outputAVCDecoderConfigurationRecord(CMP4 &mp4)
 													              , nal.decoded_rbsp_size() -1
 													);
 
-											//pic_parameter_set_rbsp picture(nal.decoded_rbsp_size() - 1);
-											pic_parameter_set_rbsp picture;
+											pic_parameter_set_rbsp picture(nal.decoded_rbsp_size() - 1);
+											//pic_parameter_set_rbsp picture;
 											
 											picture.get(mem);
 

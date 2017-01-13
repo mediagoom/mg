@@ -24,7 +24,7 @@ def anal_2_file(mg, do, n, nn):
     aia = aia.replace('\r', '')
     kia = re.split('\n', aia)
     naia = '\n'.join(kia[1:len(kia)-2])
-    with open( os.path.join(do, nn), 'w') as target:
+    with open( os.path.join(do, nn), 'wb') as target:
             target.write(naia)
 
 def exechls(mg, mp4, do):

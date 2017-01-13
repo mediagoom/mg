@@ -297,6 +297,7 @@ class pic_parameter_set_rbsp
 	         int pic_init_qp_minus26 = 0;
 	         int pic_init_qs_minus26 = 0;
 	         int chroma_qp_index_offset = 0;
+			 int second_chroma_qp_index_offset = 0;
 
 	unsigned int start_size = numbits();
 
@@ -358,26 +359,17 @@ class pic_parameter_set_rbsp
 	unsigned int(1) redundant_pic_cnt_present_flag;
 
 	
-        
-    ///////////rbsp_trailing_bits( )//////
-	unsigned int(1) rbsp_stop_one_bit = 1;
-	unsigned int skip = numbits() % 8;
 	/////extended///////
-	unsigned int end_size = numbits();
+	unsigned int end_size = numbits() + (numbits() % 8);
 	unsigned int extended = 0;
 
 	%g{ if(_size && 
-	             ( ( (end_size + skip) - start_size) / 8) < _size
+	             ( ( (end_size) - start_size) / 8) < _size
 			) 
 			extended = 1;
 	%g}
 
-	if(skip && (!extended))
-    {
-	    //unsigned int(1) transform_8x8_mode_flag;
-		skipbits(8-skip);
-	}
-
+	
 	if(extended)
 	{
 		unsigned int(1) transform_8x8_mode_flag;
@@ -414,18 +406,20 @@ class pic_parameter_set_rbsp
 
 		}
 
-		int second_chroma_qp_index_offset = 0;
+		
 		%g{second_chroma_qp_index_offset  = exp_se_golomb(var_bs);%g}
 
-		///////////rbsp_trailing_bits( )//////
-	   unsigned int(1) rbsp_stop_one_bit2 = 1;
-	   unsigned int skip2 = numbits() % 8;
+		
+	}
+
+	///////////rbsp_trailing_bits( )//////
+	unsigned int(1) rbsp_stop_one_bit = 1;
+	unsigned int skip = numbits() % 8;
 	
-		if(skip2)
-		{
+	if(skip)
+	{
 	   
-			skipbits(8-skip2);
-		}
+		skipbits(8-skip);
 	}
 	
 %{
