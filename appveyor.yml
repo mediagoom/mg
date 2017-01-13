@@ -205,6 +205,9 @@ after_test:
 # to run your custom scripts instead of automatic tests
 test_script:
   - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2
+  - ps: cd test
+  - ps: python test_dash.py
+  - ps: python test_hls.py
 
 # to disable automatic tests
 #test: off
