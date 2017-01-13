@@ -154,27 +154,27 @@ public:
 	}
 	
 	virtual void write_cb(uint32_t written) override
-	{
-		
+	{	
 
 		_write++;
-
-		FDBGC3(COPY_STREAM_DEBUG, "write-cb\t%u\t%u\t%u", _read, _write, _traveling);
-
-		if (_wait_end)
-			if (_read == _write)
-			{
-				_write_event.signal();
-				FDBGC3(COPY_STREAM_WAIT, "write-signal\t%u\t%u\t%u", _read, _write, _traveling);
-			}
-
+		
 		if (_read - _write <= _max_out)
 		{
 			_read_event.signal();
 			FDBGC4(COPY_STREAM_DEBUG, "read-signal\t%u\t%u\t%u\t%u", (_read - _write), _read, _write, _traveling);
 		}
 
-		//_write_event.signal();
+		FDBGC3(COPY_STREAM_DEBUG, "write-cb\t%u\t%u\t%u", _read, _write, _traveling);
+
+		if (_wait_end)
+		{
+			if (_read == _write)
+			{
+				FDBGC3(COPY_STREAM_WAIT, "write-signal\t%u\t%u\t%u", _read, _write, _traveling);
+				_write_event.signal();
+			}
+		}
+
 	}
 };
 
