@@ -173,7 +173,7 @@ before_package:
 
 # scripts to run after build
 after_build:
-        - ps: 7z a win-release.zip ./test/bin/Win32/Release/mg.exe ./test/bin/Win32/Release/mg.pdb; ls; gi env:;
+        - ps: 7z a win-release.zip ./test/bin/Win32/Release/mg.exe ./test/bin/Win32/Release/mg.pdb; 
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
