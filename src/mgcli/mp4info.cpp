@@ -4400,11 +4400,15 @@ int _tmain(int argc, TCHAR* argv[])
 			<< "USAGE mg -k:kind -i:[input file path] options"
 			<< std::endl
 			<< std::endl
-			<< "kind is the subcommand should be dash, gop or analyze."
+			<< "kind is the subcommand should be adaptive, dash, hls, gop or analyze."
 			<< std::endl
 			<< std::endl
-			<< "DASH: the dash kind will produce a static mpeg-dash fragmented version of your mp4."
+			<< "DASH/HLS/ADAPTIVE: the dash kind will produce a static mpeg-dash fragmented version of your mp4."
 			<< std::endl
+            << "\t\tthe hls kind wil produce a HTTP LIVE STREAM version of your mp4."
+            << std::endl
+            << "\t\tthe adaptive kind will produce both a mpeg-dash and hls version of your files."
+            << std::endl
 			<< "\tAdd the first mp4 with this sintax: -i:[path] -s:0 -e:0 -b:[bitrate]"
 			<< std::endl
 			<< "\t where -i:path is the path the the file with a -i: prefix. If you want the full file just use -s:0 -e:0."
@@ -4459,9 +4463,22 @@ int _tmain(int argc, TCHAR* argv[])
 		if (kind == _T("hls") 
 		 || kind == _T("PES")
 		 || kind == _T("all")
+         || kind == _T("adaptive")
 		)
 		{
-			return tsinfo(c, std::cout);
+            bool adaptive = false;
+            
+            if(kind == _T("adaptive"))
+            {
+                kind = _T("hls");
+                adaptive = true;
+            }
+			int r = tsinfo(c, std::cout);
+
+            if(adaptive)
+                kind = _T("dash");
+            else
+                return r;
 		}
 
 		//CResource<uvloopthread> t; t.Create(); t->start();
