@@ -4470,8 +4470,8 @@ int _tmain(int argc, TCHAR* argv[])
             
             if(kind == _T("adaptive"))
             {
-                kind = _T("hls");
                 adaptive = true;
+                c.set_value(_T("kind"), _T("hls"), 0);
             }
 			int r = tsinfo(c, std::cout);
 

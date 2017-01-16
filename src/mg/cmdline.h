@@ -538,6 +538,15 @@ public:
 		return _commands[pszname].psz_value[idx];
 	}
 
+    void set_value(const TCHAR * pszname, const TCHAR * value, uint32_t idx)
+    {
+		_ASSERTE(_commands.find(pszname) != _commands.end());
+		_ASSERTE(idx < _commands[pszname].psz_value.size());
+
+
+		_commands[pszname].psz_value[idx] = value;
+    }
+
 	Cstring get_value(const TCHAR * pszname)
 	{
 		return get_value(pszname, 0);
