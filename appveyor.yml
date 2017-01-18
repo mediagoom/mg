@@ -240,7 +240,7 @@ deploy:
 
     # Deploy to GitHub Releases
   - provider: GitHub
-    release: $(appveyor_repo_tag)
+    release: $(appveyor_repo_tag_name)
     artifact:  win-release.zip 
     draft: true
     prerelease: true
