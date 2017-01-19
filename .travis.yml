@@ -38,3 +38,4 @@ deploy:
     repo: mediagoom/mg
     branch: master
     tags: true
+
