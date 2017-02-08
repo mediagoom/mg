@@ -1445,7 +1445,7 @@ protected:
 
 	bool _has_sample_description;
 
-	virtual void parse_header(CMP4& mp4) = 0;
+	virtual bool parse_header(CMP4& mp4) = 0;
 	virtual void parse_sample_description(CMP4& mp4) = 0;
 
 	virtual void not_sample_description_found(CMP4 &mp4)
@@ -1503,8 +1503,8 @@ public:
 		_minf_size     = mp4.get_box().get_size();
 
 		mp4.do_box();
-		parse_header(mp4);
-		mp4.do_box();
+		if(parse_header(mp4))
+			mp4.do_box();
 
 		parse_boxes(mp4);
 	}
@@ -1861,10 +1861,16 @@ class CMP4HandlerVide: public CMP4Handler
 	std::vector<CMP4VisualEntry*> _entries;
 	
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
-		MP4CHECK(box_vmhd);
-		mp4.parse_video_header_box(_vmhd);
+		//MP4CHECK(box_vmhd);
+		if (box_vmhd == mp4.get_box().get_type())
+		{
+			mp4.parse_video_header_box(_vmhd);
+			return true;
+		}
+
+		return false;
 	}
 
 	virtual void parse_sample_description(CMP4& mp4)
@@ -1906,10 +1912,17 @@ class CMP4HandlerSoun: public CMP4Handler
 	SoundMediaHeaderBox _smhd;
 	std::vector<CMP4AudioEntry*> _entries;
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
-		MP4CHECK(box_smhd);
-		mp4.parse_sound_header_box(_smhd);
+		//MP4CHECK(box_smhd);
+		if (box_smhd == mp4.get_box().get_type())
+		{
+			mp4.parse_sound_header_box(_smhd);
+			return true;
+		}
+		
+		return false;
+		
 	}
 
 	virtual void parse_sample_description(CMP4& mp4)
@@ -1949,12 +1962,14 @@ class CMP4HandlerLTC: public CMP4Handler
 	bool _has_one;
 
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
 		MP4CHECK(box_smhd);
 		mp4.parse_sound_header_box(_smhd);
 
 		_has_one = true;
+
+		return true;
 	}
 
 	virtual void not_sample_description_found(CMP4 &mp4)
