@@ -23,6 +23,7 @@ script:
 - cd test
 - python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
 - make CXX=/usr/bin/g++-5 CXX.host=/usr/bin/g++-5 CXX.target=/usr/bin/g++-5
+- ldd out/Release/mg || echo "-"
 - env srcdir="$(pwd)" out/Release/mgtest
 - ./test_dash.py
 - ./test_hls.py
@@ -31,10 +32,11 @@ after_script:
 deploy:
   provider: releases
   api_key:
-    secure: d8Rd1h43S4S1zfNAvnR6Vhg64HMommrY2WlPMAhGzPHZWP51E+/mQBFX3mR+3lFkDk+bBvEkUjtoTFxY/XMNwbxp6UgZn6r4i+cZnGj+F4s8zn13P7a38yFNm6VpM29e4wTHLl6On7W8UktvSrQM9aBDhycQ29ox/4FHw3s3T85+0f7SNFIU+3HsU7J4LJjwD7TXggEG9F/oJ+pdV6xfLsAxN7nQfq+ZfJrOnwXFD0XKYuO6ggTc4PxFMMsL78Ccq2UmDUUCiUg3Iv/P4aqGg1TWDMl0YkAblclmwXzgWL9ZrT1rUmNT4RqMcKf4IbmoEZBgzxuH6o2uM71jkjHZMlFCzdCHtjJMJ67GL/XTtrJVIjBjIkVs0Kqdd+rxqD2F+V6sm5/OzHPEiB4Ih6h0oKvVGRAvRfMMHx0KAZxQfShjWUs4AQ+vgfqcIzJH6qQwdMyUdTDoFArjkozeAP0gJlG32VH75yTB/ZCARhTV5ElbpCD/4Tdyps3oejB46ZxP/EnRkaQBQH7wXn+Pg4Y5zXu9Ktp3gyGn3HdluLea/an5QjTUIHw2kjV6NHuYd2l3o8UhnaOqw154dzV+wN7QS1jnFzf9Egicx/ZwzTmBuy6FGcztzzw+xYc+hIIi9Etegm7q+d6eLloV80ajdSA8RiG7/5RZQV+xSTBSms4nIu0=
+    secure: "g6a6Z5/NHxSrUtcQix/Vbr3A5BYV2YOujOCgWuqyE5RFUBMJnA50Mx44pEa9v55mPG2paZl98J9VwmmgM8+Mwqyaza1Ny2LKMPEgHdKoQleFs+POSti/cCOJyXkKGVpott3dSOoIxPNItYYVLuDnD7eANo4tgQJzsG2PMEOzf/1grmZdfQpiiwEoxmCmrHgYqAHQQxU14ZqSTNLE2zMfm6ner9UA4PCtgJrOOr5HDiw4G3a9TGIkTc5q/X8LPzIIFWtr2Rwj5/IhU3lT/yIDiKX4gxFn42Q5PdJlJRM9Duyu3XmkpoDcalplHbSo/JuxoSa2PBTv5ICl/C3cKBGvxInZcwaYzLgm5cB7oQH3U1j+FvCw3bbaR/QfHKR35j1TJa+vWsFLeEJHZcJfNBaFjkI/tntkxk4ThH5jW/Kb+ljvIozs57d3U5TGzz0aKggldDBIDFIT5ul0ZTEcrsvia9HbkISQGdXVbrq68X1+BVNfkhX5B2w11+BLjEsyM+6fTfyp0k42DXoZeTNZTee6Uc4fbN7cHMtsMx/ESC2/ncNINLrcCbl3egrDh3ZMVH499xMW07XAtAW8yWE0T0nL6ZUGBgRP7O5qsA1iX++gjSsglxMDYZSAmvuSLS4t7DQh20wCuTW2tasNkdZVXi+5SgBtHAXADXaRmgZjzVn1iFY="
   file: out/Release/mg
   skip_cleanup: true
   on:
     repo: mediagoom/mg
     branch: master
     tags: true
+

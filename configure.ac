@@ -41,9 +41,9 @@ AM_PROG_AR
 #LT_INIT
 
 # TODO(bnoordhuis) Check for -pthread vs. -pthreads
-AC_CHECK_LIB([uv], [uv_default_loop])
 AC_CHECK_LIB([pthread], [pthread_mutexattr_settype])
 AC_CHECK_LIB([gypaes], [aes_init])
+AC_CHECK_LIB([uv], [uv_default_loop])
 #AC_CHECK_LIB([socket], [socket])
 #AM_PROG_AR
 
