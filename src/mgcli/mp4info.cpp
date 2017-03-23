@@ -4403,7 +4403,7 @@ int _tmain(int argc, TCHAR* argv[])
 			<< "kind is the subcommand should be adaptive, dash, hls, gop or analyze."
 			<< std::endl
 			<< std::endl
-			<< "DASH/HLS/ADAPTIVE: the dash kind will produce a static mpeg-dash fragmented version of your mp4."
+			<< "dash/hls/adaptive: the dash kind will produce a static mpeg-dash fragmented version of your mp4."
 			<< std::endl
             << "\t\tthe hls kind wil produce a HTTP LIVE STREAM version of your mp4."
             << std::endl
