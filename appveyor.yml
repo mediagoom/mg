@@ -221,12 +221,12 @@ test_script:
 #---------------------------------#
 
 artifacts:
-        - path: '.\test\bin\$(configuration)\Release\mg.exe'
+        - path: '.\test\bin\$(platform)\Release\mg.exe'
           name: mg.exe
-        - path: '.\test\bin\$(configuration)\Release\mg.pdb'
+        - path: '.\test\bin\$(platform)\Release\mg.pdb'
           name: mg.pdb
-        - path: win-release-$(configuration).zip
-          name: win-release-$(configuration)
+        - path: win-release-$(platform).zip
+          name: win-release-$(platform)
 
  
 
