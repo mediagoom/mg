@@ -52,6 +52,8 @@ if not os.path.exists(mg):
     mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
 if not os.path.exists(mg):
     mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Release', 'mg.exe')
+if not os.path.exists(mg):
+    mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe')
 
 mp4 = getmp4()
 
