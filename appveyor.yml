@@ -129,8 +129,9 @@ install:
   - git submodule update --init --recursive
   #- ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - git clone https://chromium.googlesource.com/external/gyp.git gyp
-  - ps: $l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
+  #- ps: $l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
   - ps: python ./version.py
+  - ps: echo "-->$($env:platform)<--"
 
 
 
@@ -141,7 +142,9 @@ install:
 #---------------------------------#
 
 # build platform, i.e. x86, x64, Any CPU. This setting is optional.
-platform: Win32 
+platform:
+    - Win32 
+    - x64
 
 # to add several platforms to build matrix:
 #platform:
@@ -158,9 +161,9 @@ configuration: Release
 
 build:
   parallel: true                  # enable MSBuild parallel builds
-  project: ./test/mgtest.sln      # path to Visual Studio solution or project
+  project: mg.msbuild.proj        # path to Visual Studio solution or project
 
-  # MSBuild verbosity level
+  # MSBuild verbosity level normal / detailed
   verbosity: normal
 
 
@@ -173,7 +176,7 @@ before_package:
 
 # scripts to run after build
 after_build:
-        - ps: 7z a win-release.zip ./test/bin/Win32/Release/mg.exe ./test/bin/Win32/Release/mg.pdb; 
+        - ps: 7z a "win-release-$($env:platform).zip" "./test/bin/$($env:platform)/Release/mg.exe" "./test/bin/$($env:platform)/Release/mg.pdb"; 
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
@@ -204,7 +207,7 @@ after_test:
 
 # to run your custom scripts instead of automatic tests
 test_script:
-  - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2
+  - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2 -arch "$env:platform"
   - ps: cd test
   - ps: python test_dash.py
   - ps: python test_hls.py
@@ -218,12 +221,12 @@ test_script:
 #---------------------------------#
 
 artifacts:
-        - path: '.\test\bin\Win32\Release\mg.exe'
+        - path: '.\test\bin\$(platform)\Release\mg.exe'
           name: mg.exe
-        - path: '.\test\bin\Win32\Release\mg.pdb'
+        - path: '.\test\bin\$(platform)\Release\mg.pdb'
           name: mg.pdb
-        - path: win-release.zip
-          name: win-release
+        - path: win-release-$(platform).zip
+          name: win-release-$(platform)
 
  
 
@@ -241,7 +244,7 @@ deploy:
     # Deploy to GitHub Releases
   - provider: GitHub
     release: $(appveyor_repo_tag_name)
-    artifact:  win-release.zip 
+    artifact:  win-release-$(configuration).zip 
     draft: true
     prerelease: true
     auth_token:
@@ -277,7 +280,7 @@ on_failure:
 
 # after build failure or success
 on_finish:
-  #- do something
+  - ps: rm ".\bin\$env:platform\Release\*"
 
 
 #---------------------------------#
