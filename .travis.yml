@@ -21,35 +21,29 @@ script:
 - git clone https://chromium.googlesource.com/external/gyp.git gyp
 - python version.py
 - cd test
-- python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi
+- python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64"
+  -I../deps/libuv/common.gypi
 - make CXX=/usr/bin/g++-5 CXX.host=/usr/bin/g++-5 CXX.target=/usr/bin/g++-5
 - ldd out/Release/mg || echo "-"
 - env srcdir="$(pwd)" out/Release/mgtest
-- ./test_dash.py
-- ./test_hls.py
+- "./test_dash.py"
+- "./test_hls.py"
 after_script:
 - bash -c ./boxupload.sh
 deploy:
-  provider: releases
-  api_key:
-    secure: "g6a6Z5/NHxSrUtcQix/Vbr3A5BYV2YOujOCgWuqyE5RFUBMJnA50Mx44pEa9v55mPG2paZl98J9VwmmgM8+Mwqyaza1Ny2LKMPEgHdKoQleFs+POSti/cCOJyXkKGVpott3dSOoIxPNItYYVLuDnD7eANo4tgQJzsG2PMEOzf/1grmZdfQpiiwEoxmCmrHgYqAHQQxU14ZqSTNLE2zMfm6ner9UA4PCtgJrOOr5HDiw4G3a9TGIkTc5q/X8LPzIIFWtr2Rwj5/IhU3lT/yIDiKX4gxFn42Q5PdJlJRM9Duyu3XmkpoDcalplHbSo/JuxoSa2PBTv5ICl/C3cKBGvxInZcwaYzLgm5cB7oQH3U1j+FvCw3bbaR/QfHKR35j1TJa+vWsFLeEJHZcJfNBaFjkI/tntkxk4ThH5jW/Kb+ljvIozs57d3U5TGzz0aKggldDBIDFIT5ul0ZTEcrsvia9HbkISQGdXVbrq68X1+BVNfkhX5B2w11+BLjEsyM+6fTfyp0k42DXoZeTNZTee6Uc4fbN7cHMtsMx/ESC2/ncNINLrcCbl3egrDh3ZMVH499xMW07XAtAW8yWE0T0nL6ZUGBgRP7O5qsA1iX++gjSsglxMDYZSAmvuSLS4t7DQh20wCuTW2tasNkdZVXi+5SgBtHAXADXaRmgZjzVn1iFY="
-  file: out/Release/mg
-  skip_cleanup: true
-  on:
-    repo: mediagoom/mg
-    branch: master
-    tags: true
   provider: s3
-  edge: true
-  bucket: "mediagoom"
-  endpoint: "s3-eu-central-1.amazonaws.com"
-  region: "eu-central-1"
-  upload-dir: "dev"
+  api_key:
+    secure: g6a6Z5/NHxSrUtcQix/Vbr3A5BYV2YOujOCgWuqyE5RFUBMJnA50Mx44pEa9v55mPG2paZl98J9VwmmgM8+Mwqyaza1Ny2LKMPEgHdKoQleFs+POSti/cCOJyXkKGVpott3dSOoIxPNItYYVLuDnD7eANo4tgQJzsG2PMEOzf/1grmZdfQpiiwEoxmCmrHgYqAHQQxU14ZqSTNLE2zMfm6ner9UA4PCtgJrOOr5HDiw4G3a9TGIkTc5q/X8LPzIIFWtr2Rwj5/IhU3lT/yIDiKX4gxFn42Q5PdJlJRM9Duyu3XmkpoDcalplHbSo/JuxoSa2PBTv5ICl/C3cKBGvxInZcwaYzLgm5cB7oQH3U1j+FvCw3bbaR/QfHKR35j1TJa+vWsFLeEJHZcJfNBaFjkI/tntkxk4ThH5jW/Kb+ljvIozs57d3U5TGzz0aKggldDBIDFIT5ul0ZTEcrsvia9HbkISQGdXVbrq68X1+BVNfkhX5B2w11+BLjEsyM+6fTfyp0k42DXoZeTNZTee6Uc4fbN7cHMtsMx/ESC2/ncNINLrcCbl3egrDh3ZMVH499xMW07XAtAW8yWE0T0nL6ZUGBgRP7O5qsA1iX++gjSsglxMDYZSAmvuSLS4t7DQh20wCuTW2tasNkdZVXi+5SgBtHAXADXaRmgZjzVn1iFY=
   file: out/Release/mg
   skip_cleanup: true
-  secret_access_key:
-    secure: rhHFH4FqseA4XRCm5qdenU5vGclVxmLfyZlCoXmnsp7sP+HxXA8ejkm9aogu13Nm4NydAajDFefFPxNWz32xKSDML3S8VwEUxVuYGyfIKGupGCVBCfWLC/rvnJNxfvVP/k0q7w3BuhyIpRBAHFnCDgIfCjP+S8iln5HNaowkFLSk2BPGcp2LZsnn/jghK8vqdHjRYPLcMjilTZSn9D802kpI8x2txzc8S9K3tzmjvSB8VUunxcvA1DWkSOxD3kVIzzBHpY1PSDK5iMvBS9ga9A6QGWo8z5zvJwqapEglxtgUV4wxL5R38DhvhGyEZR0chFZx+N062U7uU4TrSLz0t6/ZFK7E1Xi4HMJSrnAegZNRbPYwg4dF3sXvcGwxIQaSIVRIO5uvSJhBRrZCr6ExknUKxO4QJ6wBYIAhiZj1nB5kPN+otOu3q3tuO8CkG3lbjFFNmC+K50irTuUCf75W/3iuiIbgfmlBLKOXWZZDTrF087CL9QE/0nuJ7X5ALcRoiKCtwAKSF92ItnFFtk/us0sXLMkVaFPCNaTyC7L/PqhJkYS2Lc9gK1Wv6L66Niq14aXvG+6GFC2jgCT5HpwUlujcL/mE0n34eYn1rHc96pOWG7cY3T6lNROUFZbFrcA/W4AkuMSjUixZq8F9Y1KrREpqVpeMS6KI+7El+GIdHPU=
-  access_key_id:
-    secure: kYQ6vNnu1eO+ien84xQNWJXslTGAoCkMZumkDz/VsAq/ADDSsU3f9gRBR979Wq/RVYw3B4EEGGHkjr7c5Nb5ynFYjodJnMy3j4m7sYpRscOiE8cVDElHy7jzVA7/yCRGyGXlT7SvdSAhn9I3lw+oLQyijbawDp23riSVduM3ENcE+29BLE1UnzUsEHdZtlUgwGBKUkxs3CUhD+vLl/zKEKuOU/ckj3PpUUmzJCokpoMlVWYamTYH4wk0AU+ygu9WjpHCI9lHzLMj1jKkO209KhA77zbGpyKDctB7HMBUi1fnm/7kweBDekdaKfC8Ycc8vDC1wo7cCcTWhFSomrzcLm2haCeaccIFcYRc8oL5aQ7M9IngIxXKoHqUin+ouBF1ujdPq7zOK79uxbB608yCsOnmMqigRAf7w9UKzYtF0ZBYjMuN9PprdHZX7Hwz6NLSmHjNRyludPPCjOsudzwinDi3QeGLtdN0kswEnjTotRzVZHOdcGPMb3/kW9489lSJINxnbhoxSEcUO3pF5o/nCZJGf1gdFsMQkPj0VUEWNfN8oP67g6oxMSixGbeDMBZtyLCWR0r57tBX/IL6tvnssTyxekAzmHkKwN+Xvt7o0cBRNkdnKMD/spePiFUcOFUuSmI6bnzr0Gx21HEHDYPvzaAK2fsL1V4jUi70XOB37Zs=
   on:
     branch: dev
+  edge: true
+  bucket: mediagoom
+  endpoint: s3-eu-central-1.amazonaws.com
+  region: eu-central-1
+  upload-dir: dev
+  access_key_id:
+    secure: cTdt30KTQMDZ+kbrHE4RWID17/ClKWxqxiGfiodBqBJn/Jf58prm+5u4eKx2Be17vdZQaGY4xtx11esFg+g8qRpTWXX0jVQBVEkc3ZCby16stVg6s5Nn68C5iS1amgRS77HfYOtEEnsNl9HXyymXI0BbCiCdof9pG30j+Jwu1ShQOcdhxrIhhk42MTcrAEN7WHn4c/weydXWOw6W6VoquFzoPVgN+KtBKf7XeICFyky1Z/zctCGB/wanvOYF6uRM+891fi2umka3FTj3fs5hFVbb+BevxmIEGEPcPaKKrG3BRCfP1Z+ZBqo+dKm182g88oD3h0siw0ekhounKPA9hudiL5n20QuuoKHgd410vVmM/YDBwok3CyJISk+1pP69VVd5OW++0ZIAr8vARHieif5xG9dCCKHmLKb+M3w54jUca8qTX6ukEmxVrNVUqVs2CtnD80XVvlcADga0oLNnYg4FetfDJ2mlMh0CoUmXIy+sulDOU7PugAy2y+zk+Cdvrig3OPFC8t7tvqnAHNoJQhrhGcdUgP1PN/kH4TVjZDu+iAWaseoQtNDazZq1gMR1ar1p114H6frZeF8HMkwaq4oD3G5L91Rm9427RqHwT3MH+/2FcLW4sDuaTvjrmuhZkkvI/KH7IKCPUS5/A4x/8AjzGAvHc8qM72HLmMKbKyQ=
+  secret_access_key:
+    secure: Oy1B0caAZEAxNB9UuGubMTdnItWL6SGB57VdLOWA3VgCYs4kGcSTPKaBQT2QK7M2N4C6PvxdhIEOX1PGIuAXXcnixcFf9iCAZGcuSaWgBSa5bEatTjQjD9Qy9/qj6yHWkJEWRVDCdeTa1owd4vwXNtIz4rWO5qlIVeoQAUAp6t78hCVI9/7H0HCML9MvotwrpMdTDPCHSHhp5LMVE9+MQVNkzJWlBYoNjtzaXw1zV20JbDyNaLMXnHMN6nbfOxqSrEG1Jd5RM/HvSjdnjztsk07liH+glEjEbxipzNEgp5fkvKjoH54ROnQS7qvo/5iU6HsBieMNTZC+VpUVnan97rz1UEfknOxJnb7qXTZ2IfyG8NwSw1nMb6zVkeOuaHofEEY0WxBZ4qEdU6NzW5ziwIP0pqU7bFqiwE8dlicyWvwXwc+9x2ipD+q/2qwTGsjSfBriUbqobtZXF8JVD/Yn6SgdBhpiWtWGmyEvCX9Djhy/aoBojfScyAKWHnxKtiKrUYzCaMhiPUHixEQbZMt7ZMEID4R9Q24Pvnn+V7ltd5D8yakDu3tWpPTXFr0CqUHztm0ZBdweNFHyPJ+KLbcYx2RsBHkqkw42teuRFqqF3l9v6/slmB/lMuZRJOx441/OJgdG8O9hg6cz2EyzM5hPLk6WN8ZBGnFg5qmgY1+kbzg=
