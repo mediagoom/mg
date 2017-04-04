@@ -43,6 +43,7 @@ deploy:
   endpoint: s3-eu-central-1.amazonaws.com
   region: eu-central-1
   upload-dir: dev
+  file: out/Release/mg
   access_key_id:
     secure: cTdt30KTQMDZ+kbrHE4RWID17/ClKWxqxiGfiodBqBJn/Jf58prm+5u4eKx2Be17vdZQaGY4xtx11esFg+g8qRpTWXX0jVQBVEkc3ZCby16stVg6s5Nn68C5iS1amgRS77HfYOtEEnsNl9HXyymXI0BbCiCdof9pG30j+Jwu1ShQOcdhxrIhhk42MTcrAEN7WHn4c/weydXWOw6W6VoquFzoPVgN+KtBKf7XeICFyky1Z/zctCGB/wanvOYF6uRM+891fi2umka3FTj3fs5hFVbb+BevxmIEGEPcPaKKrG3BRCfP1Z+ZBqo+dKm182g88oD3h0siw0ekhounKPA9hudiL5n20QuuoKHgd410vVmM/YDBwok3CyJISk+1pP69VVd5OW++0ZIAr8vARHieif5xG9dCCKHmLKb+M3w54jUca8qTX6ukEmxVrNVUqVs2CtnD80XVvlcADga0oLNnYg4FetfDJ2mlMh0CoUmXIy+sulDOU7PugAy2y+zk+Cdvrig3OPFC8t7tvqnAHNoJQhrhGcdUgP1PN/kH4TVjZDu+iAWaseoQtNDazZq1gMR1ar1p114H6frZeF8HMkwaq4oD3G5L91Rm9427RqHwT3MH+/2FcLW4sDuaTvjrmuhZkkvI/KH7IKCPUS5/A4x/8AjzGAvHc8qM72HLmMKbKyQ=
   secret_access_key:
