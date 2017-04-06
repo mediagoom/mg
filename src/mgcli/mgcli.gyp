@@ -33,6 +33,7 @@
       , 'sources': [
           'mp4info.cpp'
         , 'version.h'
+		, 'cenc_provider.h'
         , 'stdafx.h'
       ]              
     }

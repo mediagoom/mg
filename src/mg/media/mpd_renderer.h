@@ -111,11 +111,6 @@ public:
 		_stream_xml += (stream_type::stream_video == stype)?_T("video/mp4"):_T("audio/mp4");
 		_stream_xml += "\" ";
 
-
-
-		
-
-
 	}
 
 	virtual void add_video_bitrate(int bit_rate, const TCHAR * psz_type, int Width, int Height, BYTE* codec_private_data, int size)

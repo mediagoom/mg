@@ -4460,6 +4460,35 @@ int _tmain(int argc, TCHAR* argv[])
 			return auto_test(test, c);
 		}
 
+		if (kind == _T("64hex"))
+		{
+			std::wcout << _T("64 to hex ") << std::endl;
+
+			if (c.command_specified(_T("key")))
+			{
+				Cstring k = c.get_value(_T("key"));
+
+				int size = k.size() / 2;
+				//size += 2;
+
+				CBuffer<unsigned char> buffer(size);
+
+				k.extract_binary_hex(buffer.get(), size);
+
+				std::wcout << reinterpret_cast<char*>(buffer.get()) << std::endl;
+
+				Cstring base64;
+				base64 += PlayReadyCencProvider::Base64(buffer.get(), size);
+
+				std::wcout << base64 << std::endl;
+
+
+			}
+
+			if (0 != r)
+				return r;
+		}
+
 		if (kind == _T("hls") 
 		 || kind == _T("PES")
 		 || kind == _T("all")
@@ -4671,6 +4700,7 @@ int _tmain(int argc, TCHAR* argv[])
 			if(0 != r)
 				return r;
 		}
+		
 		
 
 		/*
