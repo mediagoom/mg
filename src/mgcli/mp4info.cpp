@@ -5243,6 +5243,9 @@ int _tmain(int argc, TCHAR* argv[])
 				for(uint32_t k = 0; k < vContentProtection.size(); k++)
 				{
 					d.add_content_protection(vContentProtection[k]);
+
+					if(audio_encrypted)
+						d.add_content_protection(vContentProtection[k], false);
 				}
 
 							

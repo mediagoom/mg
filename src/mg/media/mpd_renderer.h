@@ -50,13 +50,20 @@ class MPDRenderer: public IDynamicRenderer
 
 	 std::vector<Cstring> _v_content_protection;
 
+	 std::vector<Cstring> _a_content_protection;
+
 public:
 	MPDRenderer() : _xml(10480), _stream_id(0), _group_id(1), _maxWidth(0), _maxHeight(0), _use_stream_name(true)
 	{
 	}
 
-	void add_content_protection(Cstring & cp){_v_content_protection.push_back(cp);}
-
+	void add_content_protection(Cstring & cp, bool video = true)
+	{
+		if(video)
+			_v_content_protection.push_back(cp);
+        else
+			_a_content_protection.push_back(cp);
+	}
 	
 	virtual void begin(uint64_t duration)
 	{	
@@ -65,7 +72,7 @@ public:
 		_xml += _T("<MPD xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ");
 		_xml += _T("profiles=\"urn:mpeg:dash:profile:isoff-live:2011\" type=\"static\" ");
 
-		if(_v_content_protection.size())
+		if(_v_content_protection.size() || _a_content_protection.size())
 		{
 			_xml += _T("xmlns:cenc=\"urn:mpeg:cenc:2013\" xmlns:mspr=\"urn:microsoft:playready\" ");
 		}
@@ -304,10 +311,11 @@ public:
 
 			_stream_xml += _T("\r\n");
 
+			std::vector<Cstring> & content_protection = (stream_type::stream_video == _stype)?_v_content_protection:_a_content_protection;
 
-			for(uint32_t k = 0; k < _v_content_protection.size(); k++)
+			for(uint32_t k = 0; k < content_protection.size(); k++)
 			{
-				_stream_xml += _v_content_protection[k];
+				_stream_xml += content_protection[k];
 			}
 
 			_stream_xml += _T("<SegmentTemplate timescale=\"10000000\" media=\"");
