@@ -4460,9 +4460,9 @@ int _tmain(int argc, TCHAR* argv[])
 			return auto_test(test, c);
 		}
 
-		if (kind == _T("64hex"))
+		if (kind == _T("hex64"))
 		{
-			std::wcout << _T("64 to hex ") << std::endl;
+			std::wcout << _T("hex to 64 ") << std::endl;
 
 			if (c.command_specified(_T("key")))
 			{
@@ -4481,6 +4481,52 @@ int _tmain(int argc, TCHAR* argv[])
 				base64 += PlayReadyCencProvider::Base64(buffer.get(), size);
 
 				std::wcout << base64 << std::endl;
+
+
+			}
+
+			if (0 != r)
+				return r;
+		}
+
+		if (kind == _T("64hex"))
+		{
+			std::wcout << _T("64 to hex ") << std::endl;
+
+			if (c.command_specified(_T("key")))
+			{
+				Cstring k = c.get_value(_T("key"));
+
+				int size = k.size();
+				
+				CstringT<char> str64;
+							   str64 += k;
+				
+				CBuffer<char>  strClear(size);
+				
+#ifdef BASE64
+
+				base64_decodestate state_in;
+
+				base64_init_decodestate(&state_in);
+
+				int written = base64_decode_block(
+					static_cast<const char*>(str64)
+					, str64.size()
+					, strClear.get()
+					, &state_in);
+
+				strClear.updatePosition(written);
+#endif
+				//std::wcout << reinterpret_cast<const char*>(strClear.get()) << std::endl;
+
+				std::wcout << hexformat(reinterpret_cast<unsigned char*>(strClear.get()), strClear.size())
+					<< std::endl;
+
+				Cstring hex;
+				hex.append_hex_buffer(reinterpret_cast<unsigned char*>(strClear.get()), strClear.size());
+
+				std::wcout << hex << std::endl;
 
 
 			}
@@ -5136,6 +5182,17 @@ int _tmain(int argc, TCHAR* argv[])
 
 					                      prp.add_pssh(vpssh);
 										  prp.add_ContentProtection(vContentProtection);
+				}
+
+				if (c.command_specified(_T("widevinebody")))
+				{
+					CstringT<char> body64;
+					               body64 += c.get_value(_T("widevinebody"));
+					
+					WidevineBoyProvider prp( key, kid, body64, body64.size() );
+
+					prp.add_pssh(vpssh);
+					prp.add_ContentProtection(vContentProtection);
 				}
 
 				if(clearkey)
