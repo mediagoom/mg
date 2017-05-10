@@ -604,7 +604,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 
 	inf.close();
 
-	_ASSERTE(fr == size);
+	//_ASSERTE(fr == size);
 
 	CBuffer<unsigned char> encrypted(U64_ST(size));
 

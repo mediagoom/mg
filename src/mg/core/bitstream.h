@@ -986,8 +986,9 @@ private:
 			this->_cur_bit += (todo << 3);
 			this->_tot_bits += (todo << 3);
 
-			this->_nextbits(32); //reload buffer if needed
-
+			if(!this->atend())
+				this->_nextbits(32); //reload buffer if needed
+			
 			(*read) = available + todo;
 
 		}
