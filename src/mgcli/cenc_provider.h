@@ -550,15 +550,40 @@ public:
 		ProtectionSystemSpecificHeaderBox pssh;
 		fill(pssh);
 
-		WriteMemoryBitstream stream(1024);
+		/*
 
-		pssh.put(stream);
+		CMP4WriteMemory & m = _bit_stream;
+		//m.Open(&_bit_stream);
+		m.open(1024);
 
-		stream.flush();
+		m.open_box(box_pssh);
+
+		m.write_box(pssh);
+
+		m.close_box(box_pssh);
+
+		//_bit_stream.flush();
+
+		m.flush();
+		*/
+
+		//WriteMemoryBitstream stream(1024);
+
+		CMP4WriteMemory m;
+		m.open(1024);
+		m.open_box(box_pssh);
+		m.write_box(pssh);
+		m.close_box(box_pssh);
+
+		//pssh.put(stream);
+
+		//stream.flush();
+
+		m.flush();
 		
 		cp += _T("<cenc:pssh>");
 		
-		cp += PlayReadyCencProvider::Base64(stream.get_buffer(), u64_ST(stream.get_size()));
+		cp += PlayReadyCencProvider::Base64(m.get_buffer(), u64_ST(m.get_size()));
 
 		cp += _T("</cenc:pssh>");
 		cp += _T("</ContentProtection>");
