@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "C:/Program Files (x86)/MSBuild/14.0/Bin/msbuild.exe",
+    
+    "args": [
+        "${workspaceRoot}\\test\\mgtest.sln"
+        // Ask msbuild to generate full paths for file names.
+        , "/property:GenerateFullPaths=true"
+        , "/p:Configuration=Debug"
+        //, "/p:WindowsSdkDir=C:/Program Files (x86)/Windows Kits/10"
+        //, "/p:TargetPlatformVersion=10.0.14393.0"
+    ],
+    "taskSelector": "/t:",
+    "showOutput": "silent",
+        
+    "tasks": [
+        {
+            "taskName": "build",
+            // Show the output window only if unrecognized errors occur.
+            "showOutput": "always",
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+            , "echoCommand": true
+            , "options": {
+                "env": {
+                      "WindowsSdkDir" : "C:/Program Files (x86)/Windows Kits/10"
+                    , "TargetPlatformVersion" : "10.0.14393.0"
+                }
+            }
+            
+        }
+    ]
+}

@@ -4,8 +4,10 @@
 USAGE:
 
 LOCAL TEST WITH POWERSHELL:
-$gypmain = "F:\data\code\gyp\tools\gyp\gyp_main.py" // PUT HERE YOUR PATH TO GYP
-
+$gypmain = "a:\data\code\gyp\tools\gyp\gyp_main.py" # PUT HERE YOUR PATH TO GYP
+$env:GYP_MSVS_VERSION=2015
+$env:WindowsSdkDir="C:\Program Files (x86)\Windows Kits\10"
+$env:TargetPlatformVersion="10.0.14393.0"
 msbuild /p:Configuration=Release /p:Platform=Win32 /p:gyp=$gypmain
 
 -->

@@ -913,8 +913,10 @@ inline Cstring hexformat(const unsigned char *buffer
 	
 	unsigned long lines = buffer_size / (line_width_minus1 + 1);
 
-	Cstring out(lines * (line_width_minus1 + 5) * 2);
+	if(0 == lines)
+		lines = 1;
 
+	Cstring out(lines * (line_width_minus1 + 5) * 2);
 	
 
 	for (unsigned long i = 0; i <= lines; i++)

@@ -1200,7 +1200,9 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 				   mp4.parse_box(sample_box);
 
 				   std::wcout 
-					   << _T("\t\tsample: ") 
+					   << _T("\t\tsample [")
+					   << i
+					   << _T("]: ") 
 					   << sample_box.get_type_string()
 					   << _T("\t")
 					   << sample_pos
@@ -1211,14 +1213,18 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					   << std::endl
 					   ;
 
-				   if(handler_vide == mp4.get_last_handler_type())
+				   if(handler_vide == mp4.get_last_handler_type() 
+				   	/*&& 
+					      box_avc1 == box.get_type() 
+					   || box_encv == box.get_type()
+					*/
+					)
 				   {
 					   VisualSampleEntry box;
 					   mp4.parse_visual_sample_entry(box);
 
 					   Cstring hex = ALX::hexformat(reinterpret_cast<const unsigned char*>(box.compressorname), box.size, 16);
 					   
-
 					   std::wcout 
 						   << _T("\t\t\tvideo-sample ")
 						   << _T("\tdata-reference:\t")
@@ -1256,7 +1262,6 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					   {
 					      Box config_box;
 
-
 						  uint64_t config_pos = mp4.get_position();
 
 				          mp4.parse_box(config_box);
@@ -1287,8 +1292,14 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 
 						  }
 
+						  if(box_sinf == config_box.get_type())
+						  {
+							  dobox(mp4, _T("avcC"), true);
+							  config_box = mp4.get_box();
+						  }
+
 						  if((box_avc1 == sample_box.get_type() || box_encv == sample_box.get_type())
-							  && box_avcC == config_box.get_type()
+							  && box_avcC == config_box.get_type() 
 							  )
 						  {
 							  							
@@ -1325,12 +1336,8 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					          
 						  }
 					   }
+                   
 				   
-				   else
-				   {
-					   std::wcout << _T("Unknown handler type ") << sample_box.get_type_string() << std::endl;
-					   return 12;
-				   }
 			   }
 			   else if(handler_soun == mp4.get_last_handler_type())
 		       {
@@ -1353,6 +1360,12 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					   {
 					      Box config_box;
 				          mp4.parse_box(config_box);
+
+						  if(box_sinf == config_box.get_type())
+						  {
+							  dobox(mp4, _T("esds"), true);
+							  config_box = mp4.get_box();
+						  }
 
 						  if(box_mp4a == sample_box.get_type()
 							  && box_esds == config_box.get_type()
@@ -1442,7 +1455,12 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 						  }
 						}//if position
 
-				}//else if(handler_soun
+				}//else if(handler_soun}
+               else
+               {
+                   std::wcout << _T("Unknown handler type ") << sample_box.get_type_string() << std::endl;
+                   return 12;
+               }
 		   }//for
 		   }//command
 		   else if(command == _T("btrt"))
