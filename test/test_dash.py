@@ -88,11 +88,12 @@ def docheck(kind):
         exechls(mg, mp4, do)
     srcd = getsrcdir()
     cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', '*.*', '--blueprint', os.path.join(srcd, 'test_assets', checkfile)]
-    print cmd
+    #print cmd
     try:
         rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         print e.output
+        print "run to update: ", ' '.join( '"' + c + '"' for c in cmd), "-o"
         raise
    
 
