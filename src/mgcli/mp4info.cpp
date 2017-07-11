@@ -529,15 +529,18 @@ BOX_FUNCTION(tenc)
 	mp4.read_box(tenc);
 
 	std::wcout << _T("TrackEncryptionBox: ") << std::endl
-		<< _T("\tversion: ") << tenc.get_version() << std::endl
-        << _T("\tdefault_isProtected: ") << tenc.default_isProtected << std::endl
-		<< _T("\tdefault_constant_IV_size: ") << tenc.default_constant_IV_size << std::endl
-		<< _T("\tdefault_crypt_byte_block: ") << tenc.default_crypt_byte_block << std::endl
-		<< _T("\tdefault_Per_Sample_IV_Size: ") << tenc.default_Per_Sample_IV_Size << std::endl
-		<< _T("\tdefault_skip_byte_block: ") << tenc.default_skip_byte_block << std::endl
-		;
+		<< _T("\tversion: ") << tenc.get_version() << std::endl;
 
-	if (tenc.default_isProtected ==1 && tenc.default_Per_Sample_IV_Size == 0) {
+	if (0 < tenc.get_version())
+		std::wcout << _T("\tdefault_crypt_byte_block: ") << tenc.default_crypt_byte_block << std::endl
+				   << _T("\tdefault_skip_byte_block: ")  << tenc.default_skip_byte_block << std::endl;
+
+    std::wcout 
+        << _T("\tdefault_isProtected: ") << tenc.default_isProtected << std::endl
+		<< _T("\tdefault_Per_Sample_IV_Size: ") << tenc.default_Per_Sample_IV_Size << std::endl;
+  
+
+	if (tenc.default_isProtected == 1 && tenc.default_Per_Sample_IV_Size == 0) {
 		
 		Cstring hex = ALX::hexformat(tenc.default_constant_IV, tenc.default_constant_IV_size);
 
@@ -1184,6 +1187,8 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 		   }
 		   else if(command == _T("stsd"))
 		   {
+
+			   uint64_t stsd_box_position_end = mp4.get_box_position_end();
 			   
 			   SampleDescriptionBox box;
 			   mp4.parse_sample_description_box(box);
@@ -1258,7 +1263,7 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 
 						   ;//<< std::endl;
 
-					   if(mp4.get_position() < mp4.get_box_position_end())
+					   if(mp4.get_position() < stsd_box_position_end)
 					   {
 					      Box config_box;
 
@@ -1356,7 +1361,7 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					   << _T(") ")
 					   << std::endl;
 
-					   if(mp4.get_position() < mp4.get_box_position_end())
+					   if(mp4.get_position() < stsd_box_position_end)
 					   {
 					      Box config_box;
 				          mp4.parse_box(config_box);
@@ -1367,7 +1372,7 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 							  config_box = mp4.get_box();
 						  }
 
-						  if(box_mp4a == sample_box.get_type()
+						  if((box_mp4a == sample_box.get_type() || box_enca == sample_box.get_type())
 							  && box_esds == config_box.get_type()
 							  )
 						  {
