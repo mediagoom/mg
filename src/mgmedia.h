@@ -26,6 +26,7 @@
 #include "aes.h"
 #endif
 
+#include <mg/media/mp4/cenc.h>
 #include <mg/media/mp4parse.h>
 #include <mg/media/mp4write.h>
 #include <mg/media/mp4fragmented.h>

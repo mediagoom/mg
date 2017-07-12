@@ -514,7 +514,7 @@ BOX_FUNCTION(schm)
 		<< schm.get_flags() << std::endl;
 	std::wcout << schm._stype
 			   << _T("\tscheme_version:\t")
-			   << schm.scheme_version
+			   << std::hex << schm.scheme_version << std::dec
 			   << _T("\t")
 			   << schm.scheme_type
 			   << _T("\t")
@@ -600,7 +600,7 @@ BOX_FUNCTION(saiz)
 	SampleAuxiliaryInformationSizesBox saiz;
 	mp4.read_box(saiz);
 
-	std::wcout << _T("SampleAuxiliaryInformationSizesBox:\t") << saiz.sample_count 
+	std::wcout << _T("SampleAuxiliaryInformationSizesBox:\tsample_count\t") << saiz.sample_count 
 		<< _T("\tflags:\t") << saiz.get_flags()
 		<< _T("\tversion:\t") << saiz.get_version()
 		<< _T("\tdefault_sample_info_size\t") << saiz.default_sample_info_size
@@ -612,7 +612,6 @@ BOX_FUNCTION(saiz)
 			std::wcout << _T("\t\t") << i << _T("\t") << saiz._samples_info_size[i] << std::endl;
 	}
 
-
 	return 0;
 		
 }
@@ -622,7 +621,7 @@ BOX_FUNCTION(saio)
 	SampleAuxiliaryInformationOffsetsBox saio;
 	mp4.read_box(saio);
 
-	std::wcout << _T("SampleAuxiliaryInformationOffsetsBox:\t") << saio.entry_count
+	std::wcout << _T("SampleAuxiliaryInformationOffsetsBox:\tentry_count\t") << saio.entry_count
 		<< _T("\tflags:\t") << saio.get_flags()
 		<< _T("\tversion:\t") << saio.get_version()
 		<< std::endl;
@@ -913,6 +912,7 @@ BOX_TYPE(saio, box_simple)
 BOX_TYPE(pssh, box_simple)
 BOX_TYPE(sbgp, box_simple)
 BOX_TYPE(sgpd, box_simple)
+//BOX_TYPE(styp, box_simple)
 
 
 END_BOX_TYPE
@@ -1593,7 +1593,7 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 					   << box.entry(i)._media_rate_fraction
 				       << std::endl;
 			   }
-		   }else if(command == _T("ftyp"))
+		   }else if(command == _T("ftyp") || command == _T("styp"))
 		   {
 			   FileTypeBox box(static_cast<uint32_t>(mp4.get_box().get_size()));
 			   mp4.parse_file_type_box(box);
@@ -2000,6 +2000,7 @@ int dobox(CMP4 &mp4, const TCHAR * target, bool recursive, bool extended)
 	}
 	else if(
 		   ALX::Equals(_T("ftyp"), type)
+        || ALX::Equals(_T("styp"), type)
 		|| ALX::Equals(_T("mvhd"), type)
 		|| ALX::Equals(_T("tkhd"), type)
 		|| ALX::Equals(_T("mdhd"), type)

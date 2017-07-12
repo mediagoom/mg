@@ -67,6 +67,7 @@ struct sample_stream_info: public sample_info
 
 #define MP4ERROR(msg) ALXTHROW_T(msg)
 #define MP4CHECK(box) _ASSERTE(box == mp4.get_box().get_type()); if(box != mp4.get_box().get_type()) MP4ERROR(_T(#box " expected"));
+#define MP4CHECK2(box1, box2) _ASSERTE(box1 == mp4.get_box().get_type() || box2 == mp4.get_box().get_type()); if(box1 != mp4.get_box().get_type() && box2 != mp4.get_box().get_type()) MP4ERROR(_T(#box1 " expected or " #box2));
 template <typename K, typename T>
 class CRangeMap
 {
@@ -428,7 +429,7 @@ public:
 
 	void parse_file_type_box(FileTypeBox &box)
 	{
-        _ASSERTE(ALX::Equals(_T("ftyp"), _last_box_type));
+        _ASSERTE(ALX::Equals(_T("ftyp"), _last_box_type) || ALX::Equals(_T("styp"), _last_box_type));
 		box.get(*_p_f);
 	}
 	void parse_sound_header_box(SoundMediaHeaderBox &box)
@@ -2112,7 +2113,6 @@ protected:
 		_trak_size = mp4.get_box().get_size();
 		_trak_position = mp4.get_box_position();
 
-		
 	}
 public:
 	virtual void parse(CMP4 &mp4)
@@ -2551,7 +2551,8 @@ private:
 
 		switch(mp4.get_box().get_type())
 		{
-		case box_ftyp:
+        case box_ftyp:
+        case box_STYP:
 			_p_ftyp = new FileTypeBox(static_cast<uint32_t>(mp4.get_box().get_size()));
 			mp4.parse_file_type_box(*_p_ftyp);
 			break;
@@ -2623,7 +2624,7 @@ public:
 
 		mp4.do_box();
 
-		MP4CHECK(box_ftyp);
+		MP4CHECK2(box_ftyp, box_STYP);
 
 		parse_boxes(mp4);
 

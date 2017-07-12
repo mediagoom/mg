@@ -391,6 +391,7 @@ protected:
 
 	virtual void write_stsd(CMP4W &mp4w)
 	{
+        //TODO: CENC 2 entry
 		SampleDescriptionBox stsd;
 		                     stsd.entry_count = 1;
 

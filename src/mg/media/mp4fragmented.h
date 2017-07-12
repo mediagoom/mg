@@ -664,7 +664,7 @@ public:
 		
 
 		//write.set_ftyp(ftyp_DASH, 0);
-
+        //TODO: styp
 		write.set_ftyp(BOX( 'c', 'c', 'f', 'f' ), 1);
 		write.add_brand(ftyp_ISO6);
 		write.set_mvhd_timescale(static_cast<uint32_t>(time_scale));
