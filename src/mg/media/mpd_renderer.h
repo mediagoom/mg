@@ -358,12 +358,12 @@ public:
 
 			_stream_xml += _points_xml;
 
-			_stream_xml += _T("\r\n\t\t\t</SegmentTimeline>");
-			_stream_xml += _T("\r\n\t\t\t</SegmentTemplate>");
+			_stream_xml += _T("\t\t\t</SegmentTimeline>");
+			_stream_xml += _T("\r\n\t\t\t</SegmentTemplate>\r\n");
 
 			_stream_xml += _rappresentation_xml;
 
-			_stream_xml += _T("\r\n\t\t\t</AdaptationSet>");
+			_stream_xml += _T("\t\t</AdaptationSet>\r\n");
 
 			_xml += _stream_xml;
 

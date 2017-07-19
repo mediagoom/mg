@@ -56,11 +56,11 @@ def docheck(kind):
     if not os.path.exists(mg):
         mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
     if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
-    if not os.path.exists(mg):
         mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Release', 'mg.exe')
     if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe')
+        mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe') 
+    if not os.path.exists(mg):
+        mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
     mp4 = getmp4()
     mdir = 'tmp'
     checkfile = 'hls_small.txt'
