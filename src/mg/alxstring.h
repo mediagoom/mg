@@ -945,7 +945,14 @@ inline Cstring hexformat(const unsigned char *buffer
 					break;
 
 				case 1:
-					out.append_format(_T("%c"), (0 == c) ? '\0' : c);
+                    if(c == 10)
+                        out.append(_T("\\n"));
+                    else if(c == 13)
+                        out.append(_T("\\r"));
+                    else if(c == 0)
+                        out.append(_T("\\0"));
+                    else
+					    out.append_format(_T("%c"), c);
 					break;
 				default:
 

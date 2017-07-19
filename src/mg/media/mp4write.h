@@ -391,14 +391,29 @@ protected:
 
 	virtual void write_stsd(CMP4W &mp4w)
 	{
-        //TODO: CENC 2 entry
+        //TODO: CHECK CENC 2 entry
 		SampleDescriptionBox stsd;
+#ifdef FRAGMENTEDSTYPFALSE
 		                     stsd.entry_count = 1;
+#else
+                             stsd.entry_count = (has_cenc_id())?2:1;
+#endif
 
 		mp4w.open_box(box_stsd);
 		mp4w.write_box(stsd);
 
-		write_stream_entry(mp4w);
+        write_stream_entry(mp4w);
+
+#ifdef FRAGMENTEDSTYPTRUE
+
+        if(has_cenc_id())
+        {
+            _has_cenc_id = false;
+            write_stream_entry(mp4w);
+            _has_cenc_id = true;
+        }
+
+#endif
 
 		mp4w.close_box(box_stsd);
 	}
@@ -2155,7 +2170,7 @@ public:
 
 	}
 
-	virtual void write_ftyp(CMP4W &mp4w)
+	virtual void write_ftyp(CMP4W &mp4w, uint32_t type = box_ftyp)
 	{
 		mp4w.write_child_box(box_ftyp, _ftyp);
 	}

@@ -245,7 +245,7 @@ class CMP4SampleManager;
 class CMP4
 {
 	Box              _current_box;
-	uint64_t _box_position;
+	uint64_t         _box_position;
 	unsigned int     _last_handler_type;
 	FullBox          _current_full_box;
 
@@ -295,9 +295,17 @@ public:
 		{
 			skip(max);
 			to_do_bits -= max;
+
+            if(_p_f->eof())
+            {                
+                to_do_bits = 0;
+                break;
+            }
+
 		}
 		
-		skip(static_cast<short>(to_do_bits));
+        if(to_do_bits)
+		    skip(static_cast<short>(to_do_bits));
 	}
 
 	void set_position(uint64_t position)

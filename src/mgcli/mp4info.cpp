@@ -743,7 +743,7 @@ BOX_FUNCTION(pssh)
 
 
 	   }
-	   else
+       else
 	   {
 		   uint32_t size = 1000;
 
@@ -756,11 +756,23 @@ BOX_FUNCTION(pssh)
 			if(size < pssh.DataSize)
 				hex.append(_T("........"));
 
-			std::wcout
-			<< _T("unknown system") 
-			<< std::endl
-			<< static_cast<const TCHAR*>(hex) 
-			<< std::endl;
+            if(ALX::Equals(_T("EDEF8BA979D64ACEA3C827DCD51D21ED"), systemid))
+            {
+                std::wcout
+				<< _T("Widevine drm system") 
+				<< std::endl
+			    << static_cast<const TCHAR*>(hex) 
+			    << std::endl;
+            }
+            else
+            {
+
+			    std::wcout
+			    << _T("unknown system") 
+			    << std::endl
+			    << static_cast<const TCHAR*>(hex) 
+			    << std::endl;
+            }
 	   }
 
 	   //<< static_cast<const TCHAR *>(guid)

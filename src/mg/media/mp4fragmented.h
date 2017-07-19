@@ -59,6 +59,8 @@
 #define STREAM_TYPE_VIDEO_H264      0x1b
 #endif
 
+
+
 __ALX_BEGIN_NAMESPACE
 
 class IMP4ReaderCallback
@@ -87,6 +89,8 @@ class CMP4Fragment
 	CBuffer<unsigned char> _avcn;
 
 	bool _do_avcn;
+
+    bool _use_styp;
 
 #ifdef CENC
 	unsigned char _key[KEY_LEN];
@@ -198,6 +202,7 @@ public:
 #ifdef CENC
 	    , _encrypted(false)
 		, _encrypted_buffer(10240)
+        , _use_styp(FRAGMENTEDSTYP)
 #endif
 	{}
 
@@ -409,12 +414,28 @@ public:
 	
 	virtual void end(CMP4W & mp4w)
 	{
+        /*
+        if(_use_styp)
+        {
+            FileTypeBox    ftyp;
+                                                       
+                           ftyp.set_major_brand(ftyp_isom); 
+		                   ftyp.set_minor_version(0);
+                           ftyp.add_brand(ftyp_ISO8);
+                           ftyp.add_brand(ftyp_mp41);
+                           ftyp.add_brand(ftyp_DASH); 
+		                   ftyp.add_brand(ftyp_avc1);
+                           ftyp.add_brand(ftyp_CMFS);
+		                  
+            mp4w.write_child_box(box_STYP, ftyp);
+        }
+        */
+
 		mp4w.open_box(box_MOOF);
 		mp4w.write_child_box(box_MFHD, _mfhd);
 		mp4w.open_box(box_TRAF);
 		mp4w.write_child_box(box_TFHD, _tfhd);
 		
-
 		//tfdt
 		if(has_baseMediaDecodeTime())
 		{			
@@ -451,19 +472,22 @@ public:
 
 			mp4w.write_child_box(box_senc, _senc);
 
-			_saio.entry_count = 1;
-			_saio._samples_offset.push_back(senc_offset_position);
+            //if(!_use_styp)
+            {
+			    _saio.entry_count = 1;
+			    _saio._samples_offset.push_back(senc_offset_position);
 
-			_saiz.default_sample_info_size = 16;
-			_saiz.sample_count = _senc.sample_count;
+			    _saiz.default_sample_info_size = 16;
+			    _saiz.sample_count = _senc.sample_count;
 
-			mp4w.write_child_box(box_saiz, _saiz);
-			mp4w.write_child_box(box_saio, _saio);
+			    mp4w.write_child_box(box_saiz, _saiz);
+			    mp4w.write_child_box(box_saio, _saio);
+             }
 			
 		}
 #endif
 
-		if(_do_avcn)
+		if(_do_avcn)// && !_use_styp)
 		{
 			mp4w.open_box(box_AVCN);
 			   mp4w.write_bytes(_avcn.get(), _avcn.size());
@@ -658,19 +682,25 @@ public:
 		write.set_stream_track_id(track_id -1 , stream_id);
 		write.set_allow_empty_stream(true);
 
-		//write.set_
-
 		_ASSERTE(0 == stream_id);
 		
-
-		//write.set_ftyp(ftyp_DASH, 0);
-        //TODO: styp
+#ifdef FRAGMENTEDSTYPFALSE
+		
 		write.set_ftyp(BOX( 'c', 'c', 'f', 'f' ), 1);
 		write.add_brand(ftyp_ISO6);
+#else   
+
+        write.set_ftyp(ftyp_isom, 0);
+		write.add_brand(ftyp_ISO8);
+        write.add_brand(ftyp_mp41);
+        write.add_brand(ftyp_DASH); 
+		write.add_brand(ftyp_avc1);
+        write.add_brand(ftyp_CMFS);
+
+#endif
 		write.set_mvhd_timescale(static_cast<uint32_t>(time_scale));
 		write.set_mvhd_version(1);
-		//write.add_brand(ftyp_avc1);
-		//write.add_brand(ftyp_mp41);
+		
 
 
 		write.write_ftyp(output_stream);

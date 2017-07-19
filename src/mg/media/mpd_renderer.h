@@ -81,9 +81,9 @@ public:
 		_xml += duration / 10000000UL;
 		_xml += _T(".");
 		_xml += TNANO;
-		_xml += _T("S\" minBufferTime=\"PT3S\">");
+		_xml += _T("S\" minBufferTime=\"PT3S\">\r\n");
 
-		_xml += _T("<Period>");
+		_xml += _T("\t<Period>\r\n");
 	}
 
 	virtual void begin_stream(const TCHAR * psz_name, int points, int bitrates, stream_type stype)
@@ -108,7 +108,9 @@ public:
 				_current_stream = _T("audio");
 		}
 
-		_stream_xml = _T("<AdaptationSet id=\"");
+#ifdef FRAGMENTEDSTYPFALSE
+
+		_stream_xml = _T("\t\t<AdaptationSet id=\"");
 		_stream_xml += _stream_id;
 		_stream_xml += _T("\" group=\"");
 		_stream_xml += _group_id;
@@ -117,6 +119,17 @@ public:
         _stream_xml += "\" mimeType=\"";
 		_stream_xml += (stream_type::stream_video == stype)?_T("video/mp4"):_T("audio/mp4");
 		_stream_xml += "\" ";
+#else
+        _stream_xml = _T("\t\t<AdaptationSet id=\"");
+		_stream_xml += _stream_id;
+        _stream_xml += _T("\" group=\"");
+		_stream_xml += _group_id;
+		_stream_xml += _T("\" segmentAlignment=\"true\" contentType=\"");
+		_stream_xml += (stream_type::stream_video == stype)?_T("video"):_T("audio");
+        _stream_xml += "\" mimeType=\"";
+		_stream_xml += (stream_type::stream_video == stype)?_T("video/mp4"):_T("audio/mp4");
+		_stream_xml += "\" ";
+#endif
 
 	}
 
@@ -160,13 +173,21 @@ public:
 			_maxHeight = Height;
 
 
-		_rappresentation_xml += _T("<Representation id=\"");
+
+		_rappresentation_xml += _T("\t\t\t<Representation id=\"");
 		_rappresentation_xml += _stream_id;
-	    _rappresentation_xml += _T("_");
+
+
+#ifdef FRAGMENTEDSTYPFALSE	
+
+        _rappresentation_xml += _T("_");
 		_rappresentation_xml += _current_stream;
 		_rappresentation_xml += _T("_");
 		_rappresentation_xml += _group_id;
 		_rappresentation_xml += "\" bandwidth=\"";
+#else
+        _rappresentation_xml += "\" frameRate=\"25\" sar=\"1:1\" startWithSAP=\"1\" bandwidth=\"";
+#endif
 		_rappresentation_xml += bit_rate;
 
 		if(add_codec)
@@ -179,11 +200,12 @@ public:
 		_rappresentation_xml += Width;
 		_rappresentation_xml += "\" height=\"";
 		_rappresentation_xml += Height;
-		_rappresentation_xml += "\"/>";
-		
+		_rappresentation_xml += "\"/>\r\n";
+
 
 		_group_id++;
 	}
+
 	virtual void add_audio_bitrate(int bit_rate
 		, int AudioTag, int SamplingRate, int Channels, int BitsPerSample, int PacketSize
 		, BYTE* codec_privet_data, int size)
@@ -192,14 +214,20 @@ public:
 		if(0 == _codecs.size())
 		{
 			_codecs = _T("mp4a.40.2");
+
+#ifndef FRAGMENTEDSTYPFALSE
+            _rappresentation_xml += _T("\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"6\"/>\r\n");
+#endif
 		}
 
-		_rappresentation_xml += _T("<Representation id=\"");
+		_rappresentation_xml += _T("\t\t\t<Representation id=\"");
 		_rappresentation_xml += _stream_id;
+#ifdef FRAGMENTEDSTYPFALSE
 	    _rappresentation_xml += _T("_");
 		_rappresentation_xml += _current_stream;
 		_rappresentation_xml += _T("_");
 		_rappresentation_xml += _group_id;
+#endif
 		_rappresentation_xml += "\" bandwidth=\"";
 		_rappresentation_xml += bit_rate;
 		_rappresentation_xml += "\" audioSamplingRate=\"";
@@ -208,9 +236,6 @@ public:
 		
 
 		_group_id++;
-		 
-
-		
 
 		
 	}
@@ -224,7 +249,7 @@ public:
 					_last_stream_duration != duration)
 				&& _last_stream_count > 0)
 			{
-				_points_xml += _T("<S d=\"");
+				_points_xml += _T("\t\t\t\t<S d=\"");
 				_points_xml += _last_stream_duration;
 				
 				if(1 < _last_stream_count)
@@ -245,7 +270,7 @@ public:
 		{
 			_ASSERTE(0 == _last_stream_count);
 			
-			_points_xml += _T("<S d=\"");
+			_points_xml += _T("\t\t\t\t<S d=\"");
 			_points_xml += duration;
 			_points_xml += _T("\" t=\"");
 			_points_xml += computed_time;
@@ -283,7 +308,7 @@ public:
 	{
 			if(_last_stream_count > 0)
 			{
-				_points_xml += _T("<S d=\"");
+				_points_xml += _T("\t\t\t\t<S d=\"");
 				_points_xml += _last_stream_duration;
 				if(1 < _last_stream_count)
 				{
@@ -314,11 +339,12 @@ public:
 			std::vector<Cstring> & content_protection = (stream_type::stream_video == _stype)?_v_content_protection:_a_content_protection;
 
 			for(uint32_t k = 0; k < content_protection.size(); k++)
-			{
+			{               
 				_stream_xml += content_protection[k];
+                _stream_xml += _T("\r\n");
 			}
 
-			_stream_xml += _T("<SegmentTemplate timescale=\"10000000\" media=\"");
+			_stream_xml += _T("\t\t\t<SegmentTemplate timescale=\"10000000\" media=\"");
 			_stream_xml += _current_stream;
 			_stream_xml += _T("_$Bandwidth$_$Time$.m4");
 			_stream_xml += (stream_type::stream_video == _stype)?_T("v"):_T("a");
@@ -328,16 +354,16 @@ public:
 			_stream_xml += (stream_type::stream_video == _stype)?_T("v"):_T("a");
 			_stream_xml += _T("\" >\r\n");
 
-			_stream_xml += _T("<SegmentTimeline>\r\n");
+			_stream_xml += _T("\t\t\t<SegmentTimeline>\r\n");
 
 			_stream_xml += _points_xml;
 
-			_stream_xml += _T("\r\n</SegmentTimeline>");
-			_stream_xml += _T("\r\n</SegmentTemplate>");
+			_stream_xml += _T("\r\n\t\t\t</SegmentTimeline>");
+			_stream_xml += _T("\r\n\t\t\t</SegmentTemplate>");
 
 			_stream_xml += _rappresentation_xml;
 
-			_stream_xml += _T("\r\n</AdaptationSet>");
+			_stream_xml += _T("\r\n\t\t\t</AdaptationSet>");
 
 			_xml += _stream_xml;
 
@@ -345,7 +371,7 @@ public:
 	}
 	virtual void end()
 	{
-		_xml += "</Period></MPD>";
+		_xml += "\t</Period>\r\n</MPD>";
 
 	}
 
