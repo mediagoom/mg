@@ -5,9 +5,6 @@
 
 %.c{
 
-
-
-
 const unsigned int box_MVEX = BOX( 'm', 'v', 'e', 'x' );
 const unsigned int box_MEHD = BOX( 'm', 'e', 'h', 'd' );
 const unsigned int box_TREX = BOX( 't', 'r', 'e', 'x' );

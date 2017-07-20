@@ -557,9 +557,11 @@ public:
 			mp4w.set_position(end_position);
 		}
 
+#ifdef FRAGMENTEDSTYPTRUE
         mp4w.set_position(sidx_referenced_size_position);
         mp4w.write_uint(U64_ST(end_position - moof_position));
         mp4w.set_position(end_position);
+#endif
 	
 	}
 
