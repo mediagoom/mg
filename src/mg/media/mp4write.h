@@ -1372,16 +1372,24 @@ protected:
 				
 		mp4w.write_box(const_cast<VisualSampleEntry &>(e));
 
+#ifdef CENC 
+#ifdef FRAGMENTEDSTYPTRUE
+         write_protected_sinf(mp4w);
+#endif
+#endif
+
 		mp4w.open_box(box_avcC);
 		   mp4w.write_bytes(_v.get_body(), static_cast<uint32_t>(_v.get_body_size()));
 	    mp4w.close_box(box_avcC);
 
-#ifdef CENC
-		   write_protected_sinf(mp4w);
-#endif
-	
 
-		mp4w.write_child_box(box_btrt, _v.get_btrt());
+#ifdef CENC
+#ifdef FRAGMENTEDSTYPFALSE
+		   write_protected_sinf(mp4w);
+           mp4w.write_child_box(box_btrt, _v.get_btrt());
+#endif
+#endif
+		
 
 #ifdef CENC
 		if(has_cenc_id())

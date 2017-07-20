@@ -63,6 +63,7 @@
 
 #define box_pasp BOX('p','a','s','p')
 #define box_clap BOX('c','a','a','p')
+#define box_sidx BOX('s','i','d','x')
 
 #define ftyp_isom BOX('i','s','o','m')
 #define ftyp_iso2 BOX('i','s','o','2')

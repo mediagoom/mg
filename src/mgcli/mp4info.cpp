@@ -358,8 +358,10 @@ struct moofinfo
 {
 	unsigned int     sample_count;
 	uint64_t baseMediaDecodeTime;
+    uint64_t position;
 
 } g_moof_info;
+
 
 struct moovinfo
 {	
@@ -367,10 +369,15 @@ struct moovinfo
 
 } g_moov_info;
 
+
+uint64_t trun_time_hns(uint64_t time)  {return (1000UL * 10000UL * time) / g_moov_info.mvhd_time_scale ;}
+
+
 BOX_FUNCTION(moof)
 {
 	g_moof_info.sample_count        = 0;
 	g_moof_info.baseMediaDecodeTime = 0;
+    g_moof_info.position = mp4.get_box_position();
 
 	return 0;
 }
@@ -380,21 +387,19 @@ BOX_FUNCTION(tfdt)
 	TrackFragmentBaseMediaDecodeTimeBox box;
 	mp4.read_box(box);
 
+    g_moof_info.baseMediaDecodeTime = box.get_baseMediaDecodeTime();
+
 	std::wcout << _T("Track Fragment Base Media Decode Time Box ") << std::endl
-		<< HNS(box.get_baseMediaDecodeTime()) 
+		<< HNS(trun_time_hns(box.get_baseMediaDecodeTime())) 
 		<< _T("\t")
 		<< box.get_baseMediaDecodeTime()
 		<< _T("\t")
 		
 		<< std::endl;
 
-	g_moof_info.baseMediaDecodeTime = box.get_baseMediaDecodeTime();
-
 	return 0;
 
-	
 }
-
 
 BOX_FUNCTION(trik)
 {
@@ -443,12 +448,17 @@ BOX_FUNCTION(sidx)
 
 	mp4.read_box(box);
 
+    g_moov_info.mvhd_time_scale = box.timescale;
+
 	std::wcout << _T("Segment Index Box [sidx] sample:") << box.reference_count 
-		 << _T("\t") << box.get_earliest_presentation_time()
+		 << _T("\t") << HNS(trun_time_hns( box.get_earliest_presentation_time()))
+                               << _T(" [") << box.get_earliest_presentation_time() << _T("]")
 		  << _T("\t") << box.get_first_offset()
 		   << _T("\t") << box.reference_ID
 		    << _T("\t") << box.timescale
 		<< std::endl;
+
+    
 
 	std::wcout << _T("\t") 
 		<< _T("reference_type")
@@ -468,7 +478,8 @@ BOX_FUNCTION(sidx)
 	{
 		std::wcout << _T("\t") << box.reference_type[i]
 				   << _T("\t") << box.referenced_size[i]
-				   << _T("\t") << box.subsegment_duration[i]
+				   << _T("\t") << HNS(trun_time_hns(box.subsegment_duration[i]))
+                               << _T(" [") << box.subsegment_duration[i] << _T("]")
 				   << _T("\t") << box.starts_with_SAP[i]
 				   << _T("\t") << box.SAP_type[i]
 				   << _T("\t") << box.SAP_delta_time[i]
@@ -479,8 +490,6 @@ BOX_FUNCTION(sidx)
 
 	return 0;
 }
-
-
 
 BOX_FUNCTION(avcn)
 {
@@ -558,10 +567,15 @@ BOX_FUNCTION(tenc)
 
 BOX_FUNCTION(senc)
 {
+    uint64_t pos = mp4.get_box_position();
+             pos += 12 + 4; //sample_count
+
 	SampleEncryptionBox senc;
 	mp4.read_box(senc);
 
-	std::wcout << _T("SampleEncryptionBox samples: ") << senc.sample_count << std::endl;
+	std::wcout << _T("SampleEncryptionBox samples: ") << senc.sample_count  
+        << _T("\tsaiz offset: ") << (pos - g_moof_info.position ) << _T(" saiz pos: ") <<  pos << _T("\tmoof offset: ") << g_moof_info.position 
+        << std::endl;
 
 			for(uint32_t i = 0; i < senc.sample_count; i++)
 			{
@@ -591,8 +605,6 @@ BOX_FUNCTION(senc)
 
 	return 0;
 }
-
-
 
 BOX_FUNCTION(saiz)
 {
@@ -798,8 +810,6 @@ BOX_FUNCTION(pssh)
 
 }
 
-
-
 BOX_FUNCTION(sbgp)
 {
 	SampleToGroupBox sbgp;
@@ -839,8 +849,6 @@ BOX_FUNCTION(sbgp)
 	return 0;
 
 }
-
-
 
 BOX_FUNCTION(sgpd)
 {
@@ -926,7 +934,6 @@ BOX_TYPE(sbgp, box_simple)
 BOX_TYPE(sgpd, box_simple)
 //BOX_TYPE(styp, box_simple)
 
-
 END_BOX_TYPE
 
 
@@ -935,12 +942,12 @@ void fill_box_map()
 	if(g_box_map.size())
 		return;
 
+    g_moov_info.mvhd_time_scale = 1000UL * 10000UL;
+
 	for(int i = 0; i < g_box_size; i++)
 		g_box_map[g_box_all_handler[i].boxname] = g_box_all_handler[i];
 
 }
-
-
 
 int doimeta(CMP4 &mp4)
 {
@@ -1015,7 +1022,6 @@ int doimeta(CMP4 &mp4)
 
 	return 0;
 }
-
 
 int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 {
@@ -1745,11 +1751,11 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 						<< _T(" sample composition: ") 
 						<< box.get_item(i).sample_composition_time_offset 
 					    << _T(" ") 
-						<< HNS(c)
+						<< HNS(trun_time_hns(c))
 					    << _T(" ") 
-						<< HNS(dts)
+						<< HNS(trun_time_hns(dts))
 					    << _T(" ") 
-						<< HNS(dts + c);
+						<< HNS(trun_time_hns(dts + c));
 					}
    
 					if(0x000100 & box.get_flags())
@@ -4035,9 +4041,9 @@ int produce_m4f_initialization
 	, const unsigned int target_bit_rate
 	, uint64_t duration   = 0
 	, uint64_t time_scale = 10000000
-		, unsigned char	* pKid        = NULL
-		, const unsigned char * ppssh       = NULL
-		, unsigned int     pssh_size  = 0
+	, unsigned char	* pKid        = NULL
+	, const unsigned char * ppssh       = NULL
+	, unsigned int     pssh_size  = 0
 )
 {
 
@@ -5265,8 +5271,6 @@ int _tmain(int argc, TCHAR* argv[])
 					}
 				}
 
-
-
 				pKid = kid;
 				pKey = key;
 			}
@@ -5369,10 +5373,8 @@ int _tmain(int argc, TCHAR* argv[])
 				 int mpd_track_id(1);
 
 
-
 				 CMP4FragmentValidation * p_validation = NULL;
 				 bool validate = false;
-
 
 #ifdef _DEBUG
 				 CMP4FragmentValidation vobj;
@@ -5390,9 +5392,7 @@ int _tmain(int argc, TCHAR* argv[])
 #endif
 
 				 }
-
-				 
-
+                 
 				 for(int i = 0; i < p.Count(); i++)
 				 {
 					const DynamicStream      * s = p.get_by_index(i);
@@ -5429,7 +5429,6 @@ int _tmain(int argc, TCHAR* argv[])
 								if(s->is_video())
 									init_chunk_file += _T(".m4v");
 
-
 						produce_m4f_initialization(
 							  (s->id + 1)//mpd_track_id
 							, (s->is_video())?STREAM_TYPE_VIDEO_H264:STREAM_TYPE_AUDIO_AAC
@@ -5439,7 +5438,7 @@ int _tmain(int argc, TCHAR* argv[])
 							, static_cast<uint32_t>(bitrate->first)
 							, s->duration()
 							, 10000000
-							, pKid
+							, (s->is_video())?pKid:((audio_encrypted)?pKid:NULL)
 							, (s->is_video())?ppssh:((audio_encrypted)?ppssh:NULL)
 							, pssh_size
 							);
@@ -5458,7 +5457,6 @@ int _tmain(int argc, TCHAR* argv[])
 							_ASSERTE(composition_time == s->get_original_time(computed_time));
 
 							point++;
-
 
 							if(point != s->get_point_end())
 							{

@@ -90,7 +90,7 @@ class CMP4Fragment
 
 	bool _do_avcn;
 
-    bool _use_styp;
+    
 
 #ifdef CENC
 	unsigned char _key[KEY_LEN];
@@ -202,7 +202,6 @@ public:
 #ifdef CENC
 	    , _encrypted(false)
 		, _encrypted_buffer(10240)
-        , _use_styp(FRAGMENTEDSTYP)
 #endif
 	{}
 
@@ -414,9 +413,9 @@ public:
 	
 	virtual void end(CMP4W & mp4w)
 	{
-        /*
-        if(_use_styp)
-        {
+        
+#ifdef FRAGMENTEDSTYPTRUE
+
             FileTypeBox    ftyp;
                                                        
                            ftyp.set_major_brand(ftyp_isom); 
@@ -428,8 +427,40 @@ public:
                            ftyp.add_brand(ftyp_CMFS);
 		                  
             mp4w.write_child_box(box_STYP, ftyp);
-        }
-        */
+
+            uint64_t sidx_referenced_size_position = mp4w.get_position();
+                     sidx_referenced_size_position += (12 + 16 + 4);
+
+            SegmentIndexBox sidx;
+                            
+                            sidx.reference_ID = _tfhd.track_ID;
+                            sidx.timescale = 1000UL * 10000UL;
+                            sidx.set_earliest_presentation_time(
+                                    _trun.get_item(0).sample_composition_time_offset + _baseMediaDecodeTime
+                            );
+                            
+                            sidx.set_first_offset(0);
+
+                            sidx.reference_count = 1;
+
+                            uint32_t idx = _trun.get_sample_count() - 1;
+
+                            //sidx.reference_type[0] = 0;
+                            //sidx.referenced_size[0] = 0;
+                            sidx.subsegment_duration[0] = U64_ST(_trun.get_duration());// +
+                                //_trun.get_item(idx).sample_composition_time_offset + _trun.get_item(idx).sample_duration;
+                            sidx.starts_with_SAP[0] = 1;
+                            sidx.SAP_type[0] = 1;
+                            sidx.SAP_delta_time[0] = 0;
+
+            mp4w.write_child_box(box_sidx, sidx);
+
+
+#endif
+        
+        //sidx
+
+        uint64_t moof_position = mp4w.get_position();
 
 		mp4w.open_box(box_MOOF);
 		mp4w.write_child_box(box_MFHD, _mfhd);
@@ -468,12 +499,18 @@ public:
 
 			_ASSERTE(_trun.sample_count == _senc.sample_count);
 
+#ifdef FRAGMENTEDSTYPFALSE
+
 			uint64_t senc_offset_position = mp4w.get_position() + 16;
 
 			mp4w.write_child_box(box_senc, _senc);
-
-            //if(!_use_styp)
-            {
+#else
+            uint64_t senc_offset_position = 
+                mp4w.get_position() + 16 - moof_position
+                + 17 //saiz
+                + 20 //saio
+                ;
+#endif
 			    _saio.entry_count = 1;
 			    _saio._samples_offset.push_back(senc_offset_position);
 
@@ -482,10 +519,15 @@ public:
 
 			    mp4w.write_child_box(box_saiz, _saiz);
 			    mp4w.write_child_box(box_saio, _saio);
-             }
-			
+
+#ifdef FRAGMENTEDSTYPTRUE
+                mp4w.write_child_box(box_senc, _senc);
+#endif
+
 		}
 #endif
+
+#ifdef FRAGMENTEDSTYPFALSE
 
 		if(_do_avcn)// && !_use_styp)
 		{
@@ -493,6 +535,8 @@ public:
 			   mp4w.write_bytes(_avcn.get(), _avcn.size());
 			mp4w.close_box(box_AVCN);
 		}
+
+#endif
 
 		mp4w.close_box(box_TRAF);
 		mp4w.close_box(box_MOOF);
@@ -509,13 +553,15 @@ public:
 		if(_trun.get_flags() & 0x000001)
 		{
 			mp4w.set_position(data_offset_position);
-			mp4w.write_uint(static_cast<uint32_t>(data_offset));
+			mp4w.write_uint(U64_ST(data_offset - moof_position));
 			mp4w.set_position(end_position);
 		}
+
+        mp4w.set_position(sidx_referenced_size_position);
+        mp4w.write_uint(U64_ST(end_position - moof_position));
+        mp4w.set_position(end_position);
 	
 	}
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////

@@ -28,10 +28,8 @@
 
 #ifndef FRAGMENTEDSTYP
 #ifdef DEBUG
-#define FRAGMENTEDSTYP true
 #define FRAGMENTEDSTYPTRUE
 #else
-#define FRAGMENTEDSTYP false
 #define FRAGMENTEDSTYPFALSE
 #endif
 #endif

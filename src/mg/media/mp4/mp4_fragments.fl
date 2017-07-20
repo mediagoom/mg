@@ -23,6 +23,8 @@ const unsigned int box_AVCN = BOX( 'a', 'v', 'c', 'n' );
 
 const unsigned int ftyp_DASH = BOX( 'd', 'a', 's', 'h' );
 const unsigned int ftyp_ISO6 = BOX( 'i', 's', 'o', '6' );
+const unsigned int ftyp_ISO8 = BOX( 'i', 's', 'o', '8' );
+const unsigned int ftyp_CMFS = BOX( 'c', 'm', 'f', 's' );
 
 const unsigned int box_SDTP = BOX( 's', 'd', 't', 'p' );
 const unsigned int box_STYP = BOX( 's', 't', 'y', 'p' );
@@ -117,7 +119,18 @@ aligned(8) class trun_body(unsigned int flags)
 aligned(8) class TrackRunBox extends FullBox
 { 
 %{
+
+private:
      std::vector<trun_body *> _samples;
+
+     uint64_t _duration;
+
+public:
+
+      TrackRunBox():_duration(0)
+      {}
+
+      uint64_t get_duration(){return _duration;}
      
       void cleanup()
       {
@@ -136,6 +149,10 @@ aligned(8) class TrackRunBox extends FullBox
 		             tp->sample_composition_time_offset = s_composition_time_offset;
 		             
 		  _samples.push_back(tp);
+
+          sample_count = ST_U32(_samples.size());
+
+          _duration += s_duration;
       }
       
       
