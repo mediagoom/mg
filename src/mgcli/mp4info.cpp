@@ -1338,6 +1338,15 @@ int docommand(CMP4 &mp4, const STDTSTRING command, bool extended = false)
 							     config_box = mp4.get_box();
 						  }
 
+                          if(box_btrt == config_box.get_type())
+						  {
+                              std::wcout 
+								  << _T("btrt")
+                                  << std::endl;
+
+                              docommand(mp4, _T("btrt"));
+						  }
+
 						  if((box_avc1 == sample_box.get_type() || box_encv == sample_box.get_type())
 							  && box_avcC == config_box.get_type() 
 							  )

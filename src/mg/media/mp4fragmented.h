@@ -59,7 +59,7 @@
 #define STREAM_TYPE_VIDEO_H264      0x1b
 #endif
 
-
+#define TIMESCALE(t, b) (b != 10000000)?CMP4Stream::time_scale(t, b):t
 
 __ALX_BEGIN_NAMESPACE
 
@@ -261,7 +261,7 @@ public:
     	
 	void set_baseMediaDecodeTime(uint64_t baseMediaDecodeTime)
 	{
-		_baseMediaDecodeTime = CMP4Stream::time_scale(baseMediaDecodeTime, _timescale);
+		_baseMediaDecodeTime = TIMESCALE(baseMediaDecodeTime, _timescale);
 	}
 
 	void add_avcn_box(const unsigned char * body, int size)
@@ -344,13 +344,13 @@ public:
 		)
 	{
 
-		uint64_t comp_diff = CMP4Stream::time_scale(composition_time - decoding_time, _timescale);
+		uint64_t comp_diff = TIMESCALE(composition_time - decoding_time, _timescale);
 
 		unsigned int     comp_diff_flag = 0x000800 & _trun.get_flags();
 
 		//_ASSERTE( ! ( comp_diff != 0 && comp_diff_flag == 0) );
 
-		_trun.add(static_cast<uint32_t>(CMP4Stream::time_scale(duration, _timescale))
+		_trun.add(static_cast<uint32_t>(TIMESCALE(duration, _timescale))
 			, body_size
 		  , 0x000100 //duration
 		    | 0x000200 //sample size
