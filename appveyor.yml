@@ -262,7 +262,7 @@ deploy:
     region: eu-central-1
     unzip: true
     set_public: false 
-    folder: $(configuration)
+    folder: $(platform)
     artifact: win-release-$(platform).zip
     on:
         branch: dev
