@@ -85,6 +85,7 @@ class CMP4Fragment
 	//CMP4WriteMemory       _headers;
 
 	uint64_t _baseMediaDecodeTime;
+    uint64_t _timescale;
 
 	CBuffer<unsigned char> _avcn;
 
@@ -124,8 +125,6 @@ class CMP4Fragment
 			buf[i] = r[count++];
 		}
 	}
-
-
 
 	void encrypt(unsigned char * buf, unsigned int clear, unsigned int protected_bytes)
 	{
@@ -199,6 +198,7 @@ public:
 		, _baseMediaDecodeTime(UINT64_MAX)
 		, _do_avcn(false)
 		, _avcn(1024)
+        , _timescale(10000000)
 #ifdef CENC
 	    , _encrypted(false)
 		, _encrypted_buffer(10240)
@@ -258,13 +258,10 @@ public:
 			counter8(&(cbuf[8]));
 		}
 	}
-
-
-
-	
+    	
 	void set_baseMediaDecodeTime(uint64_t baseMediaDecodeTime)
 	{
-		_baseMediaDecodeTime = baseMediaDecodeTime;
+		_baseMediaDecodeTime = CMP4Stream::time_scale(baseMediaDecodeTime, _timescale);
 	}
 
 	void add_avcn_box(const unsigned char * body, int size)
@@ -278,6 +275,8 @@ public:
 
 	uint64_t get_baseMediaDecodeTime(){return _baseMediaDecodeTime;}
 	bool has_baseMediaDecodeTime(){return (UINT64_MAX != _baseMediaDecodeTime);}
+
+    void set_timescale(uint64_t timescale){_timescale = timescale;}
 
 #ifdef CENC
 	void set_encryption(unsigned char * p_key, unsigned int flags = 0x000002)
@@ -345,12 +344,13 @@ public:
 		)
 	{
 
-		uint64_t comp_diff = composition_time - decoding_time;
+		uint64_t comp_diff = CMP4Stream::time_scale(composition_time - decoding_time, _timescale);
+
 		unsigned int     comp_diff_flag = 0x000800 & _trun.get_flags();
 
 		//_ASSERTE( ! ( comp_diff != 0 && comp_diff_flag == 0) );
 
-		_trun.add(static_cast<uint32_t>(duration)
+		_trun.add(static_cast<uint32_t>(CMP4Stream::time_scale(duration, _timescale))
 			, body_size
 		  , 0x000100 //duration
 		    | 0x000200 //sample size
@@ -365,8 +365,7 @@ public:
 		if(_encrypted)
 		{
 			bool sub_sample_encryption = (_senc.get_flags() & 0x000002)?true:false;
-
-				 
+ 
 			if(sub_sample_encryption)
 			{
 
@@ -434,7 +433,7 @@ public:
             SegmentIndexBox sidx;
                             
                             sidx.reference_ID = _tfhd.track_ID;
-                            sidx.timescale = 1000UL * 10000UL;
+                            sidx.timescale = U64_ST(_timescale);//1000UL * 10000UL;
                             sidx.set_earliest_presentation_time(
                                     _trun.get_item(0).sample_composition_time_offset + _baseMediaDecodeTime
                             );
@@ -808,11 +807,13 @@ public:
 					  , IMP4ReaderCallback * p_callback = NULL
 					  , unsigned char * p_key = NULL
 					  , DWORD senc_flags = 0
+                      , uint64_t timescale = 1000*10000
 					  )
 {
 	
 			CMP4Fragment m4f;
 
+            m4f.set_timescale(timescale);
 			m4f.start(track_id, sequence, ((AVCNBOX)?0xa600000:0));
 
 #ifdef CENC
@@ -860,6 +861,7 @@ public:
 		, IMP4ReaderCallback * p_callback = NULL
 		, unsigned char * p_key = NULL
 		, DWORD senc_flags = 0
+        , uint64_t timescale = 1000*10000
 		)
 	{
 		MP4Reader reader;
@@ -877,7 +879,9 @@ public:
 			, base_media_decode_time
 			, p_callback
 			, p_key
-			, senc_flags);
+			, senc_flags
+            , timescale
+        );
 	}
 
 
@@ -901,10 +905,13 @@ public:
 					  , IMP4ReaderCallback * p_callback = NULL
 					  , unsigned char * p_key = NULL
 					  , DWORD senc_flags = 0
+                      , uint64_t timescale = 1000*10000
 					  )
 {
 	
 			CMP4Fragment m4f;
+
+            m4f.set_timescale(timescale);
 
 			m4f.start(track_id, sequence, ((AVCNBOX)?0xa600000:0));
 
@@ -972,6 +979,7 @@ public:
 		, IMP4ReaderCallback * p_callback = NULL
 		, unsigned char * p_key = NULL
 		, DWORD senc_flags = 0
+        , uint64_t timescale = 1000*10000
 		)
 	{
 		MP4Reader reader;
@@ -996,7 +1004,9 @@ public:
 			, base_media_decode_time
 			, p_callback
 			, p_key
-			, senc_flags);
+			, senc_flags
+            , timescale
+        );
 	}
 };
 
