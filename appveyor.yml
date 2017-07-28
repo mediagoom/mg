@@ -260,7 +260,7 @@ deploy:
         secure: oAdkNMj9/USAiXUok7G5+GRNfx7lBeFOmGatLXmNwp9Vr+ZbYI+csHyuXfIYlr7J
     bucket: mediagoom
     region: eu-central-1
-    unzip: false
+    unzip: true
     set_public: false 
     folder: $(configuration)
     artifact: win-release-$(platform).zip
