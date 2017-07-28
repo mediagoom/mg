@@ -210,7 +210,7 @@ test_script:
   - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2 -arch "$env:platform"
   - ps: cd test
   - ps: python test_dash.py
-  - ps: python test_hls.py
+  - ps: python test_dash.py -k hls
 
 # to disable automatic tests
 #test: off
@@ -253,6 +253,21 @@ deploy:
      appveyor_repo_tag: true       # deploy on tag push only
 
    
+  - provider: S3
+    access_key_id:
+        secure: 1bViieNbvpJIqLW+K3kDV244io4vnJxWdNB3MpyfgS8=
+    secret_access_key:
+        secure: oAdkNMj9/USAiXUok7G5+GRNfx7lBeFOmGatLXmNwp9Vr+ZbYI+csHyuXfIYlr7J
+    bucket: mediagoom
+    region: eu-central-1
+    unzip: true
+    set_public: false 
+    folder: dev/win/$(configuration)
+    artifact: win-release-$(configuration).zip
+    on:
+        branch: dev
+   
+
 
 # scripts to run before deployment
 before_deploy:
