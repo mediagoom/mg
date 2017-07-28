@@ -244,7 +244,7 @@ deploy:
     # Deploy to GitHub Releases
   - provider: GitHub
     release: $(appveyor_repo_tag_name)
-    artifact:  win-release-$(configuration).zip 
+    artifact:  win-release-$(platform).zip 
     draft: true
     prerelease: true
     auth_token:
@@ -260,10 +260,10 @@ deploy:
         secure: oAdkNMj9/USAiXUok7G5+GRNfx7lBeFOmGatLXmNwp9Vr+ZbYI+csHyuXfIYlr7J
     bucket: mediagoom
     region: eu-central-1
-    unzip: true
+    unzip: false
     set_public: false 
     folder: $(configuration)
-    artifact: win-release-$(configuration).zip
+    artifact: win-release-$(platform).zip
     on:
         branch: dev
    
