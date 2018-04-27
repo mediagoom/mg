@@ -2782,6 +2782,8 @@ int pick_samples(uint64_t start, uint64_t end
 			<< HNS(reader.get_start_time(i))
 			<< _T(" end time: ")
 			<< HNS(reader.get_end_time_plus_duration(i))
+            << _T(" timescale: ")
+            << reader.get_media_time_scale(i)
 			/*
 			<< _T(" {")
 			<< HNS(  (reader.get_end_time_plus_duration(i) - reader.get_start_time(i)) / reader.get_sample_count(i) )
@@ -2811,6 +2813,10 @@ int pick_samples(uint64_t start, uint64_t end
 			<< _T("offset")
 			<< _T("\t")
 			<< _T("size")
+            << _T("\t")
+			<< _T("raw-composition")
+            << _T("\t")
+			<< _T("timescale-composition")
 			<< std::endl;
 
 	bool work = true;
@@ -2842,6 +2848,12 @@ int pick_samples(uint64_t start, uint64_t end
 			<< ms.offset
 			<< _T("\t")
 			<< ms.size
+            << _T("\t")
+            << ms.composition_time
+            << _T("\t")
+			<< reader.get_raw_composition_time(ms.sample_number, ms.stream)
+            //<< _T("\t")
+			//<< reader.get_raw_decoding_time(ms.sample_number, ms.stream)
 			<< std::endl;
 		
 		streams[ms.stream] = (ms.decoding_time < static_cast<int64_t>(end)) || (0 == end);

@@ -2412,6 +2412,16 @@ public:
 		return (1000UL * 10000UL * time) / _mdhd.get_timescale() ;
 	}
 
+    uint64_t get_raw_composition_time(const uint64_t sample_number) const
+	{
+		return _time_manager.get_composition_time(sample_number);
+	}
+
+	uint64_t get_raw_decoding_time(const uint64_t sample_number) const
+	{
+		return _time_manager.get_decoding_time(sample_number);
+	}
+
 };
 
 
@@ -2717,6 +2727,18 @@ public:
 	{	
 	   _ASSERTE(stream_number < _streams.size());
 	   return _streams[stream_number]->get_decoding_time(sample_number);
+	}
+
+    uint64_t get_raw_composition_time(const uint64_t sample_number, const unsigned int stream_number) const
+	{	
+	   _ASSERTE(stream_number < _streams.size());
+	   return _streams[stream_number]->get_raw_composition_time(sample_number);
+	}
+
+	uint64_t get_raw_decoding_time(const uint64_t sample_number, const unsigned int stream_number) const
+	{	
+	   _ASSERTE(stream_number < _streams.size());
+	   return _streams[stream_number]->get_raw_decoding_time(sample_number);
 	}
 
 	uint64_t get_composition_sample_number(const uint64_t time, const unsigned int stream_number) const
