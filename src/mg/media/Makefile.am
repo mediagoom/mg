@@ -16,7 +16,7 @@ lib_LIBRARIES = libmgmedia.a
 libmgmedia_adir = $(includedir)/mg/media
 
 mp4/%.h mp4/%.cpp: $(srcdir)/mp4/%.fl
-	cd "$(srcdir)/mp4"; flavor  -x -l $*.fl;cd -;mv $(srcdir)/mp4/$*.cpp ./mp4;mv $(srcdir)/mp4/$*.h ./mp4 
+	cd "$(srcdir)/mp4"; flavor  -x -l $*.fl;cd -;if ["$(srcdir)/mp4" -ne "./mp4"] ; then mv $(srcdir)/mp4/$*.cpp ./mp4/$*.cpp;mv -n $(srcdir)/mp4/$*.h ./mp4/$*.h; fi 
 
 libmgmedia_a_HEADERS = TBitstream.h 
 libmgmedia_a_SOURCES = \
