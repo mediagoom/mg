@@ -9,6 +9,7 @@
 
 *.tmp
 *.tmp.mp4
+*.gcda
 
 *.o
 /ar-lib
