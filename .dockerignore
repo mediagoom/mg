@@ -1,0 +1,4 @@
+.tmp/
+.vs/
+/test/.vs
+/tmp_*
