@@ -1,8 +1,18 @@
 FROM ubuntu:trusty AS build-env
 WORKDIR /build
 
-#$tag = "mgtmp"
-#docker build --build-arg HTTP_PROXY=http://192.168.75.1:8888 --build-arg HTTPS_PROXY=http://192.168.75.1:8888 --build-arg http_proxy=http://192.168.75.1:8888 --build-arg https_proxy=http://192.168.75.1:8888 -t $tag .
+ARG ENV_CODECOV_MP4=""
+ENV ENV_CODECOV_MP4="${ENV_CODECOV_MP4}"
+
+ARG ENV_CODECOV_MG=""
+ENV ENV_CODECOV_MG="${ENV_CODECOV_MG}"
+
+ARG ENV_GITHUB_TOKEN=""
+ENV ENV_GITHUB_TOKEN="${ENV_GITHUB_TOKEN}"
+
+ARG ENV_GITHUB_USER=""
+ENV ENV_GITHUB_USER="${ENV_GITHUB_USER}"
+
 
 RUN apt-get update \
     && apt-get install -y software-properties-common \ 
@@ -10,15 +20,15 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y gcc-5 g++-5 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5 \
-    && apt-get install -y make git autoconf libtool gyp lcov python3-pip \
-    && pip3 install pyYaml 
+    && apt-get install -y --force-yes make git autoconf libtool gyp lcovcurl 
+    
+#python3-pip  \#&& pip3 install pyYaml 
     
 #&& pip3 install -U cpp-coveralls
 
+#RUN gcc --version
 
-RUN gcc --version
-
-
+COPY . local
 
 RUN git clone --recursive https://github.com/mediagoom/mg.git \
     && cd mg \
@@ -52,13 +62,24 @@ RUN cd mg \
     && make \
     && make check 
 
-RUN cd mg/src/mgcli \
-    && gcov mp4info.gcda \
+RUN cd mg/src/b64 \
+    && find . -type f -name '*.gcda' -exec gcov {} + \
+    && cd ../mg/core \
+    && find . -type f -name '*.gcda' -exec gcov {} + \
+    && cd ../media \
+    && find . -type f -name '*.gcda' -exec gcov {} + \
+    && cd ../../mgcli \
+    && find . -type f -name '*.gcda' -exec gcov {} + \
     && cd ../../test \
-    && gcov test.gcda
+    && find . -type f -name '*.gcda' -exec gcov {} +
     
-RUN git clone https://github.com/aseduto/cpp-coveralls.git \
-    && cd mg \
+RUN curl -s https://codecov.io/bash > codecov \
+    && chmod +x codecov
+
+RUN if [$ENV_CODECOV_MG]; then ./codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout
+
+
+
    
 
     
