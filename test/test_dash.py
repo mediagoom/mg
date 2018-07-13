@@ -46,11 +46,11 @@ def exechls(mg, mp4, do):
 	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 	print res
 
-def exechelp(mg)
+def exechelp(mg):
     cmd = [mg, '--help']
     print cmd
     res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-	print res 
+    print res
 
 
 def docheck(kind):
