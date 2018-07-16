@@ -2,3 +2,5 @@
 .vs/
 /test/.vs
 /tmp_*
+/tmp*
+*~

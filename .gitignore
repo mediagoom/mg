@@ -10,7 +10,8 @@
 *.tmp
 *.tmp.mp4
 *.gcda
-
+*.gcov
+*.gcno
 *.o
 /ar-lib
 config.guess

@@ -14,13 +14,14 @@ ARG ENV_GITHUB_USER=""
 ENV ENV_GITHUB_USER="${ENV_GITHUB_USER}"
 
 
+
 RUN apt-get update \
     && apt-get install -y software-properties-common \ 
     && add-apt-repository ppa:ubuntu-toolchain-r/test \
     && apt-get update \
     && apt-get install -y gcc-5 g++-5 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5 \
-    && apt-get install -y --force-yes make git autoconf libtool gyp lcovcurl 
+    && apt-get install -y --force-yes make git autoconf libtool gyp lcov curl 
     
 #python3-pip  \#&& pip3 install pyYaml 
     
@@ -76,7 +77,7 @@ RUN cd mg/src/b64 \
 RUN curl -s https://codecov.io/bash > codecov \
     && chmod +x codecov
 
-RUN if [$ENV_CODECOV_MG]; then ./codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout
+RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout; fi
 
 
 
