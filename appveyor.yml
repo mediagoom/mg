@@ -92,7 +92,12 @@ environment:
   APPVEYOR_YML_DISABLE_PS_LINUX: true
   MG_TOKEN:
     secure: LRFLcOTdHrSzJ4bTkjmgBbrtKXAvwayzeu1mv56UERsM3wvZqDX2jNxOTKKScHrb
-
+  MP4_TOKEN:
+    secure: CRpaujBNT3qH2TEm2kWITtlrZrdt68sezFvp32CcVI+zb8pGTKjLP81r5E0c3w2e
+  GH_TOKEN:
+    secure: RspSF6tUWqsRj3dFIAPknfrr3wyRnfLc1SZV6Vvny8/bqEtSIWHEvHyNFDSUh/HB
+  GH_U:
+    secure: DhrGIHb1DmF/B2DLxvmVMA==
 # environment:
 #  global:
 #    connection_string: server=12;password=13;
@@ -181,7 +186,7 @@ after_build:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - bs: echo "todo run docker"
+  - sh: docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN -t mgi
 # to disable automatic builds
 #build: off
 
