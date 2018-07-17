@@ -79,8 +79,44 @@ RUN curl -s https://codecov.io/bash > codecov \
 
 RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout; fi
 
+RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/mg/media/mp4tmp \
+&& cd /build/mg/src/mg/media \
+&& msg="$(git log -1 --pretty=format:%s)" \
+&& git clone https://github.com/mediagoom/mp4.git \
+&& mv /build/mg/src/mg/media/mp4tmp/* /build/mg/src/mg/media/mp4 \
+&& rm mp4tmp -r \
+&& git config --global user.email "$ENV_GITHUB_USER@hotmail.com" \
+&& git config --global user.name "$ENV_GITHUB_USER" \
+&& cd mp4 \
+&& sed -i "s/@mediagen/@mediagen - $msg -/" $(grep -l 'mediagen' ./*) \
+&& git add *.cpp && git add *.h && git commit -m "$msg" \
+&& git push https://$ENV_GITHUB_USER:$ENV_GITHUB_TOKEN@github.com/mediagoom/mp4.git \
+; fi
 
 
+RUN if [ $ENV_CODECOV_MP4 ] ; then \
+cd /build/mg/src/mg/media \
+&& find ./mp4 -type f -name '*.gcov' -delete \
+&& grep -l '0:Source:mp4/' ./*.gcov | xargs cp -t mp4 \
+&& find . -type f -name '*.gcov' -exec sed -i 's/0:Source:mp4\//0:Source:/' {} + \
+&& cd /build/mg/src/mg/media/mp4 \
+&& ../../../../../codecov -t "$ENV_CODECOV_MP4" -X gcov -X gcovout \
+&& echo "-----------" \
+&& cd /build/mg/src/mgcli \
+&& find ../../src/mg/media/mp4 -type f -name '*.gcov' -delete \
+&& grep -l '0:Source:../../src/mg/media/mp4/' ./*.gcov | xargs cp -t ../../src/mg/media/mp4 \
+&& find ../../src/mg/media/mp4 -type f -name '*.gcov' -exec sed -i 's/0:Source:..\/..\/src\/mg\/media\/mp4\//0:Source:/' {} + \
+&& cd /build/mg/src/mg/media/mp4 \
+&& ../../../../../codecov -t "$ENV_CODECOV_MP4" -X gcov -X gcovout \
+&& echo "-----------" \
+&& cd /build/mg/test \
+&& find ../src/mg/media/mp4 -type f -name '*.gcov' -delete \
+&& grep -l '0:Source:../src/mg/media/mp4/' ./*.gcov | xargs cp -t ../src/mg/media/mp4 \
+&& find ../src/mg/media/mp4 -type f -name '*.gcov' -exec sed -i 's/0:Source:..\/src\/mg\/media\/mp4\//0:Source:/' {} + \
+&& cd /build/mg/src/mg/media/mp4 \
+&& ../../../../../codecov -t "$ENV_CODECOV_MP4" -X gcov -X gcovout \
+; fi
+ 
    
 
     
