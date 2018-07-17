@@ -15,6 +15,7 @@ def doit(cmd, rpl=None, hash=None):
 	testok=False
 	print cmd
 	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+	res = re.sub("\r\n", "\n", res)
 	if not rpl is None:
 		for h in rpl:
 			res = re.sub(h, "", res)
@@ -40,26 +41,26 @@ def doit(cmd, rpl=None, hash=None):
 
 def execmg(mg, mp4):
 	res = []
-	rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d']
+	rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+']
 	
 	cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:20000000']
-	res.append(doit(cmd, rpl, '33bb37cd08ca43d101f717c06e0dd880336f1c91'))
+	res.append(doit(cmd, rpl, '83e8b7d77b1da0d57f360613321a7c18ece8f4b8'))
 	
 	cmd = [mg, '-k:analyze', '-i:' + mp4]
-	res.append(doit(cmd, rpl, 'f196260e03a4c42e1f7fa6fcfcaffdf7b99f09d7'))
+	res.append(doit(cmd, rpl, '18cdf9deeaaf7593c58981a8cca7c251b271996e'))
 
 	cmd = [mg, '-k:version']
-	res.append(doit(cmd, None, 'd803c4fffed725bbcca1924baa7b61b660fe8c8e'))
+	doit(cmd, None)
 
 	root = test_core.getroot()
 	ts = os.path.join(root, 'tmp/video_750000_800000.ts')
 	cmd = [mg, '-k:all', '-i:' + ts]
-	doit(cmd, rpl))
+	doit(cmd, rpl)
 
 
 	for x in res:
 		if not x:
-			 raise TestError("mg command line failed")
+			 raise test_core.TestError("mg command line failed")
 
 
 mp4 = test_core.getmp4()
