@@ -9,8 +9,11 @@
 
 *.tmp
 *.tmp.mp4
-
+*.gcda
+*.gcov
+*.gcno
 *.o
+*.pyc
 /ar-lib
 config.guess
 config.sub

@@ -4447,6 +4447,7 @@ int _tmain(int argc, TCHAR* argv[])
 					pick  \n\r \
 					gop  \n\r \
                     dash  \n\r \
+                    analyze  \n\r \
 	    "), 'k');
  
 /*
@@ -4459,7 +4460,7 @@ int _tmain(int argc, TCHAR* argv[])
 					test  \n\r \
 					ssf  \n\r \
 					discrete  \n\r \
-					analyze  \n\r \
+					
 					simul  \n\r \
 					frame  \n\r \
 */

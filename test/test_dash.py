@@ -46,6 +46,12 @@ def exechls(mg, mp4, do):
 	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 	print res
 
+def exechelp(mg):
+    cmd = [mg, '--help']
+    print cmd
+    res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    print res
+
 
 def docheck(kind):
     cwd = os.getcwd()
@@ -84,8 +90,10 @@ def docheck(kind):
         print do
         anal_2_file(mg, do, 'audio_96000_i.m4a', 'audio_96000_i.txt')
         anal_2_file(mg, do, 'video_750000_i.m4v', 'video_750000_i.txt')
-    else:
+    elif 'hls' == kind:
         exechls(mg, mp4, do)
+    else:
+        exechelp(mg)
     srcd = getsrcdir()
     cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', '*.*', '--blueprint', os.path.join(srcd, 'test_assets', checkfile)]
     #print cmd

@@ -157,6 +157,7 @@ inline void output_time(std::map<Cstring, TEST_TIMING> & hash)
 #define ENDCASE  if(failed){std::cout << RED;}else{std::cout << GREEN;} \
                  std::cout << "SUMMARY:\t" << tests << "\tSUCCEEDED:\t" << successed << "\tFAILED:\t" << failed << original << std::endl \
 			     ; output_time(timehash) \
+                 ; std::cout << orig << std::endl; \
                 ;return failed;
 
 #define F1SRC(SRC) Cstring f1 = SRC.clone(); f1 += _T("/test_assets/"); f1 += _T("MEDIA1.MP4");
