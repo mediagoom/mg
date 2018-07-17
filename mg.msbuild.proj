@@ -28,7 +28,7 @@ msbuild /p:Configuration=Release /p:Platform=Win32 /p:gyp=$gypmain
     <Exec Command='python $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi' WorkingDirectory=".\test" />
 </Target>
 
-<Target Name="Main">
+<Target Name="Main" Condition="$(CI_LINUX)!='true'">
     <CallTarget Targets="GYP32" ContinueOnError="false" />
     <CallTarget Targets="GYP64" ContinueOnError="false" />
 

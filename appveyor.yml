@@ -65,7 +65,9 @@ max_jobs: 1
 #---------------------------------#
 
 # Build worker image (VM template)
-image: Visual Studio 2015
+image: 
+  - Visual Studio 2015
+  - Ubuntu
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -87,11 +89,9 @@ hosts:
 
 # environment variables
 environment:
-  my_var1: value1
-  my_var2: value2
-  # this is how to set encrypted variable. Go to "Encrypt data" page in account menu to encrypt data.
-  #my_secure_var1:
-  #  secure: FW3tJ3fMncxvs58/ifSP7w==
+  APPVEYOR_YML_DISABLE_PS_LINUX: true
+  MG_TOKEN:
+    secure: LRFLcOTdHrSzJ4bTkjmgBbrtKXAvwayzeu1mv56UERsM3wvZqDX2jNxOTKKScHrb
 
 # environment:
 #  global:
@@ -118,13 +118,14 @@ environment:
 
 # enable service required for build/tests
 services:
+  - docker
 #  - iis                 # start IIS
 
 
 # scripts that run after cloning repository
 install:
   # by default, all script lines are interpreted as batch
-  - choco install python2
+  - cmd: choco install python2
    # to run script as a PowerShell command prepend it with ps:
   - git submodule update --init --recursive
   #- ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
@@ -180,7 +181,7 @@ after_build:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-
+  - bs: echo "todo run docker"
 # to disable automatic builds
 #build: off
 
@@ -222,9 +223,9 @@ test_script:
 #---------------------------------#
 
 artifacts:
-        - path: '.\test\bin\$(platform)\Release\mg.exe'
+        - path: './test/bin/$(platform)/Release/mg.exe'
           name: mg.exe
-        - path: '.\test\bin\$(platform)\Release\mg.pdb'
+        - path: './test/bin/$(platform)/Release/mg.pdb'
           name: mg.pdb
         - path: win-release-$(platform).zip
           name: win-release-$(platform)
