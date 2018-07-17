@@ -186,7 +186,8 @@ after_build:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - sh: docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN -t mgi
+  - ps: msbuild mg.msbuild.proj
+  - sh: docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN -t mgi .
 # to disable automatic builds
 #build: off
 
