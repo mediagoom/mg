@@ -13,6 +13,12 @@ ENV ENV_GITHUB_TOKEN="${ENV_GITHUB_TOKEN}"
 ARG ENV_GITHUB_USER=""
 ENV ENV_GITHUB_USER="${ENV_GITHUB_USER}"
 
+ARG ENV_COMMIT_HASH=""
+ENV ENV_COMMIT_HASH="${ENV_COMMIT_HASH}"
+
+ARG ENV_BRANCH="dev"
+ENV ENV_BRANCH="${ENV_BRANCH}"
+
 
 
 RUN apt-get update \
@@ -31,9 +37,11 @@ RUN apt-get update \
 
 COPY . local
 
-RUN git clone --recursive https://github.com/mediagoom/mg.git \
+RUN if [ $ENV_COMMIT_HASH ] ; then cp local mg; else \
+       git clone --recursive https://github.com/mediagoom/mg.git \
     && cd mg \
-    && git checkout dev 
+    && git checkout $ENV_BRANCH \
+    ; fi
 
 
 RUN cd mg/deps/libuv/ \
@@ -60,7 +68,6 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 RUN cd mg \
     && ./bootstrap \
     && ./configure --enable-debug \
-    && make \
     && make check 
 
 RUN cd mg/src/b64 \
@@ -77,7 +84,10 @@ RUN cd mg/src/b64 \
 RUN curl -s https://codecov.io/bash > codecov \
     && chmod +x codecov
 
-RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout; fi
+RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then \
+        if [ $ENV_COMMIT_HASH ] ; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout -C $ENV_COMMIT_HASH -B $ENV_BRANCH \
+        ; else ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout \
+        ; fi
 
 RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/mg/media/mp4tmp \
 && cd /build/mg/src/mg/media \
@@ -90,7 +100,7 @@ RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/
 && cd mp4 \
 && sed -i "s/@mediagen/@mediagen - $msg -/" $(grep -l 'mediagen' ./*) \
 && git add *.cpp && git add *.h && git commit -m "$msg" \
-&& git push https://$ENV_GITHUB_USER:$ENV_GITHUB_TOKEN@github.com/mediagoom/mp4.git \
+&& git push https://$ENV_GITHUB_USER:$ENV_GITHUB_TOKEN@github.com/mediagoom/mp4.git >/dev/null \
 ; fi
 
 
