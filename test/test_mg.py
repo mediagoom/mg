@@ -54,7 +54,7 @@ def execmg(mg, mp4):
 	root = test_core.getroot()
 	ts = os.path.join(root, 'tmp/video_750000_800000.ts')
 	cmd = [mg, '-k:all', '-i:' + ts]
-	res.append(doit(cmd, rpl))
+	doit(cmd, rpl))
 
 
 	for x in res:
