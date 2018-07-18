@@ -196,7 +196,7 @@ after_build:
         - ps: cp "./test/bin/$($env:platform)/Release/mg.pdb" ./
         - sh: docker run --name mgtest mgi /bin/bash
         #- sh: mkdir -p ./test/bin/$PLATFORM/Release
-        - sh:  if [ $PLATFORM = "x64" ] ; then docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg; fi 
+        - sh:  if [ $PLATFORM = "x64" ] ; then docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg; else touch ./mg.exe; fi 
         - sh: touch ./mg.pdb
 
 #---------------------------------#
@@ -276,35 +276,26 @@ deploy:
     storage_access_key:
         secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
     container: builds
-    folder: APPVEYOR\WIN\$(PLATFORM)
-    artifact: win-release-$(platform).zip,mg.exe
+    folder: APPVEYOR\$(CI_LINUX)\$(PLATFORM)
+    artifact: mg.exe
     unzip: false
     set_content_type: false
-    on:
-        CI_WINDOWS: true
- 
- - provider: AzureBlob
-    storage_account_name: defgroupdisks
-    storage_access_key:
-        secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
-    container: builds
-    folder: APPVEYOR\NX
-    artifact: mg
-    unzip: false
-    set_content_type: false
-    on:
-        CI_LINUX: true
-        PLATFORM: x64
 
-   #- provider: AzureBlob
-   # storage_account_name: defgroupdisks
-   # storage_access_key:
-   #     secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
-   # container: builds
-   # folder: APPVEYOR\LATEST
-   # artifact: myapp
-   # unzip: false
-   # set_content_type: false
+
+  #- provider: AzureBlob
+  #  storage_account_name: defgroupdisks
+  #  storage_access_key:
+  #      secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
+  #  container: builds
+  #  folder: APPVEYOR\NX
+  #  artifact: mg
+  #  unzip: false
+  #  set_content_type: false
+  #  on:
+  #      CI_LINUX: true
+  #      PLATFORM: x64
+
+  
   
 
    
