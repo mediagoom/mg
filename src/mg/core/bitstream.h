@@ -1261,7 +1261,7 @@ template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_
 
 			//_ASSERTE( (_shadow_len == _buf_size) || _p_cb->eof() );
 		
-		}INVALIDELSE;
+		}//INVALIDELSE;
 	}
 	else
 	{

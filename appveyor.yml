@@ -183,7 +183,9 @@ before_package:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - ps: msbuild mg.msbuild.proj
-  - sh: if [ $PLATFORM = "x64" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT -t mgi .; fi
+  sh: if [ $PLATFORM = "x64" ] ; then docker build -t mgi .; fi
+  #- sh: if [ $PLATFORM = "Win32" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT -t mgi .; fi
+
 # to disable automatic builds
 #build: off
 
@@ -194,9 +196,10 @@ after_build:
         - ps: Push-AppveyorArtifact "win-release-$($env:platform).zip"
         - ps: cp "./test/bin/$($env:platform)/Release/mg.exe" ./
         - ps: cp "./test/bin/$($env:platform)/Release/mg.pdb" ./
+        - ps: cp "./mg.exe" "./mg"
         - sh: docker run --name mgtest mgi /bin/bash
         #- sh: mkdir -p ./test/bin/$PLATFORM/Release
-        - sh:  if [ $PLATFORM = "x64" ] ; then docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg; else touch ./mg.exe; fi 
+        - sh:  docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg; fi 
         - sh: touch ./mg.pdb
 
 #---------------------------------#
@@ -243,6 +246,8 @@ artifacts:
           name: mg.exe
         - path: './mg.pdb'
           name: mg.pdb
+        - path: './mg'
+          name: mg
         #- path: win-release-$(PLATFORM).zip
         #  name: win-release-$(PLATFORM)
 
@@ -257,12 +262,10 @@ artifacts:
 # provider names are case-sensitive!
 deploy:
 
-  
-
     # Deploy to GitHub Releases
   - provider: GitHub
     release: $(appveyor_repo_tag_name)
-    artifact:  win-release-$(platform).zip 
+    artifact:  win-release-$(PLATFORM).zip 
     draft: true
     prerelease: true
     auth_token:
@@ -276,8 +279,8 @@ deploy:
     storage_access_key:
         secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
     container: builds
-    folder: APPVEYOR\$(CI_LINUX)\$(PLATFORM)
-    artifact: mg.exe
+    folder: APPVEYOR\$(APPVEYOR_BUILD_WORKER_IMAGE)\$(PLATFORM)
+    artifact: mg.exe,mg
     unzip: false
     set_content_type: false
 

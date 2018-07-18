@@ -225,6 +225,8 @@ public:
 
 		size_t r = ::fread(_buffer.get(), 1, to_read, _f);
 
+        //_ASSERTE(r == to_read);
+
 		pcb->read_cb(_buffer.get(), ST_U32(r));
 	}
 

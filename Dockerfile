@@ -59,10 +59,11 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN cd mg \
     && ./bootstrap \
-    && ./configure --enable-debug \
+    && if [ "$ENV_CODECOV_MG" ]; then ./configure --enable-debug; else ./configure ; fi \
     && make check 
 
-RUN cd mg/src/b64 \
+RUN if [ "$ENV_CODECOV_MG" ]; then \
+       cd mg/src/b64 \
     && find . -type f -name '*.gcda' -exec gcov {} + \
     && cd ../mg/core \
     && find . -type f -name '*.gcda' -exec gcov {} + \
@@ -71,7 +72,8 @@ RUN cd mg/src/b64 \
     && cd ../../mgcli \
     && find . -type f -name '*.gcda' -exec gcov {} + \
     && cd ../../test \
-    && find . -type f -name '*.gcda' -exec gcov {} +
+    && find . -type f -name '*.gcda' -exec gcov {} + \
+    ; fi
     
 RUN curl -s https://codecov.io/bash > codecov \
     && chmod +x codecov
