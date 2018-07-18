@@ -489,6 +489,7 @@ public:
 	}
 }
 
+
 ////////////////////////
 // Stream Descriptors //
 ////////////////////////
@@ -964,7 +965,15 @@ class Adaptation_Field
 
 			total_bits += adaptation_field_extension_length/8;
 
-			skipbits(adaptation_field_extension_length*8);
+            %g{
+                    var_bs.skipbits(adaptation_field_extension_length * 8);
+            %g}
+            %p{
+               for(unsigned int dx = 0; dx < adaptation_field_extension_length; dx++)
+                    var_bs.putbits(0x0, 8);
+            %p}
+
+			//skipbits(adaptation_field_extension_length*8);
 		}
 		//for (i=0;i<N;i++){
 		//	stuffing_byte
@@ -972,7 +981,17 @@ class Adaptation_Field
 				
 
 		if((total_bits / 8) < adaptation_field_length)
-			skipbits((adaptation_field_length*8) - total_bits);
+        {
+			//skipbits((adaptation_field_length*8) - total_bits);
+
+            %g{
+                    var_bs.skipbits((adaptation_field_length*8) - total_bits);
+            %g}
+            %p{
+               for(unsigned int dx = 0; dx < (adaptation_field_length - (total_bits/8)); dx++)
+                    var_bs.putbits(0x0, 8);
+            %p}
+        }
 			
 		
 
@@ -1060,7 +1079,14 @@ class Adaptation_Field
 class Pointer_Field
 {
 	unsigned int(8) pointer_field;
-	skipbits(pointer_field / 8);
+    %g{
+       var_bs.skipbits(pointer_field * 8);
+    %g}
+    %p{
+       for(unsigned int dx = 0; dx < pointer_field; dx++)
+            var_bs.putbits(0x0, 8);
+    %p}
+
 }
 
 class BaseSection 

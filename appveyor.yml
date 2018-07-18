@@ -230,7 +230,7 @@ test_script:
   - ps: python test_dash.py --kind dash
   - ps: python test_dash.py --kind hls
   - ps: python test_dash.py --kind help
-  #- ps: python test_mg.py
+  - ps: python test_mg.py
  
 
 # to disable automatic tests
