@@ -199,7 +199,7 @@ after_build:
         - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./mg
         - sh: cp ./mg ./mg.exe
         - sh: touch ./mg.pdb
-        - sh: echo "PLATFORM: $PLATFORM"
+        - sh: echo $PLATFORM
         - sh: appveyor PushArtifact ./mg
 
 #---------------------------------#
