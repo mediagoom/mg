@@ -21,6 +21,12 @@ def getmp4():
 	srcdir = getsrcdir()
 	return os.path.join(srcdir, 'test_assets', 'MEDIA1.MP4')
 
+def printcmd(cmd):
+    line = ""
+    for c in cmd:
+        line += "'" + c + "' "
+    print line
+
 def getmg():
     cwd = getroot()
     print cwd

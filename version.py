@@ -24,7 +24,7 @@ def get_file_content(path, linex):
                         i += 1
         return ctx
 
-line='#define VERSION _T("'
+line='#define XVERSION _T("'
 v=version_file()
 appv=os.environ.get('APPVEYOR_REPO_TAG')
 

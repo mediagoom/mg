@@ -1,16 +1,7 @@
 #!/usr/bin/python
 
 import subprocess, os, shutil, re, sys, getopt
-
-def getsrcdir():
-    srcdir=os.environ.get('srcdir')
-    if(srcdir == None):
-        srcdir = os.path.dirname(os.path.realpath(__file__))
-    return srcdir
-
-def getmp4():
-    srcdir = getsrcdir()
-    return os.path.join(srcdir, 'test_assets', 'MEDIA1.MP4')
+import test_core
 
 def get_i_anal(mg, i_file):
     cmd = [mg, '-k:analyze', '-i:' + i_file]
@@ -42,7 +33,7 @@ def execdash(mg, mp4, do, extra):
 def exechls(mg, mp4, do):
 	cmd = [mg, '-k:hls', '-s:0', '-e:0', '-b:750', '-i:' + mp4, '-o:' + do]
 	#cmd  = [mg, '-k:version']
-	print cmd
+	test_core.printcmd(cmd)
 	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 	print res
 
@@ -54,20 +45,11 @@ def exechelp(mg):
 
 
 def docheck(kind):
-    cwd = os.getcwd()
-    cwd = os.path.abspath(os.path.join(cwd, os.pardir))
-    print cwd
-    mg = os.path.join(cwd, 'src', 'mgcli', 'mg')
-    print mg
-    if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
-    if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Release', 'mg.exe')
-    if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe') 
-    if not os.path.exists(mg):
-        mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
-    mp4 = getmp4()
+    
+    mg = test_core.getmg()    
+    mp4 = test_core.getmp4()
+    cwd = test_core.getroot()
+
     mdir = 'tmp'
     checkfile = 'hls_small.txt'
     extra = []
