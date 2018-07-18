@@ -19,8 +19,6 @@ ENV ENV_COMMIT_HASH="${ENV_COMMIT_HASH}"
 ARG ENV_BRANCH="dev"
 ENV ENV_BRANCH="${ENV_BRANCH}"
 
-
-
 RUN apt-get update \
     && apt-get install -y software-properties-common \ 
     && add-apt-repository ppa:ubuntu-toolchain-r/test \
@@ -29,18 +27,12 @@ RUN apt-get update \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5 \
     && apt-get install -y --force-yes make git autoconf libtool gyp lcov curl 
     
-#python3-pip  \#&& pip3 install pyYaml 
-    
-#&& pip3 install -U cpp-coveralls
-
-#RUN gcc --version
-
 COPY . local
 
-RUN if [ $ENV_COMMIT_HASH ] ; then cp local mg; else \
-       git clone --recursive https://github.com/mediagoom/mg.git \
-    && cd mg \
-    && git checkout $ENV_BRANCH \
+RUN if [ $ENV_COMMIT_HASH ] ; then cp local mg \
+    ; else git clone --recursive https://github.com/mediagoom/mg.git \
+        && cd mg \
+        && git checkout $ENV_BRANCH \
     ; fi
 
 
@@ -85,9 +77,10 @@ RUN curl -s https://codecov.io/bash > codecov \
     && chmod +x codecov
 
 RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then \
-        if [ $ENV_COMMIT_HASH ] ; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout -C $ENV_COMMIT_HASH -B $ENV_BRANCH \
-        ; else ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout \
-        ; fi
+                if [ $ENV_COMMIT_HASH ] ; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout -C $ENV_COMMIT_HASH -B $ENV_BRANCH \
+                ; else ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout \
+                ; fi \
+             ; fi
 
 RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/mg/media/mp4tmp \
 && cd /build/mg/src/mg/media \

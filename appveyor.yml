@@ -187,7 +187,7 @@ after_build:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - ps: msbuild mg.msbuild.proj
-  - sh: docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN -t mgi .
+  - sh: docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT -t mgi .
 # to disable automatic builds
 #build: off
 
@@ -216,9 +216,14 @@ after_test:
 test_script:
   - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2 -arch "$env:platform"
   - ps: cd test
-  - ps: python test_dash.py -k dash
-  - ps: python test_dash.py -k hls
-  - ps: python test_dash.py -k help
+  - ps: python test_dash.py --kind dash
+  - ps: python test_dash.py --kind hls
+  - ps: python test_dash.py --kind help
+  - ps: python test_mg.py
+  - sh: docker run --name mgtest mgi /bin/bash
+  - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./test/bin/$(platform)/Release/mg.exe
+  - sh: touch ./test/bin/$(platform)/Release/mg.pdb
+  - sh: touch win-release-$(platform).zip
 
 # to disable automatic tests
 #test: off
