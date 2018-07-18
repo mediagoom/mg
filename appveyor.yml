@@ -221,9 +221,9 @@ test_script:
   - ps: python test_dash.py --kind help
   #- ps: python test_mg.py
   - sh: docker run --name mgtest mgi /bin/bash
-  - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./test/bin/$(platform)/Release/mg.exe
-  - sh: touch ./test/bin/$(platform)/Release/mg.pdb
-  - sh: touch win-release-$(platform).zip
+  - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./test/bin/$platform/Release/mg.exe
+  - sh: touch ./test/bin/$platform/Release/mg.pdb
+  - sh: touch win-release-$platform.zip
 
 # to disable automatic tests
 #test: off
