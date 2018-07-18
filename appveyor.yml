@@ -199,7 +199,6 @@ after_build:
         - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./mg
         - sh: cp ./mg ./mg.exe
         - sh: touch ./mg.pdb
-  #- sh: touch win-release-$PLATFORM.zip
         - sh: echo "PLATFORM: $PLATFORM"
         - sh: appveyor PushArtifact ./mg
 
