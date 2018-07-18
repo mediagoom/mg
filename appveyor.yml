@@ -283,15 +283,15 @@ deploy:
     unzip: false
     set_content_type: false
 
-   - provider: AzureBlob
-    storage_account_name: defgroupdisks
-    storage_access_key:
-        secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
-    container: builds
-    folder: APPVEYOR\LATEST
-    artifact: myapp
-    unzip: false
-    set_content_type: false
+   #- provider: AzureBlob
+   # storage_account_name: defgroupdisks
+   # storage_access_key:
+   #     secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
+   # container: builds
+   # folder: APPVEYOR\LATEST
+   # artifact: myapp
+   # unzip: false
+   # set_content_type: false
   
 
    
