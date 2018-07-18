@@ -119,6 +119,9 @@ cd /build/mg/src/mg/media \
 && cd /build/mg/src/mg/media/mp4 \
 && ../../../../../codecov -t "$ENV_CODECOV_MP4" -X gcov -X gcovout \
 ; fi
+
+RUN ln -s /build/mg/src/mgcli/mg /usr/local/mg
+
  
    
 
