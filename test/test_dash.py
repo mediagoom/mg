@@ -76,9 +76,11 @@ def docheck(kind):
         exechls(mg, mp4, do)
     else:
         exechelp(mg)
-    srcd = getsrcdir()
+    srcd = test_core.getsrcdir()
+    
     cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', '*.*', '--blueprint', os.path.join(srcd, 'test_assets', checkfile)]
-    #print cmd
+    test_core.printcmd(cmd)
+    
     try:
         rr = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
