@@ -29,7 +29,7 @@ RUN apt-get update \
     
 COPY . local
 
-RUN if [ $ENV_COMMIT_HASH ] ; then cp local mg \
+RUN if [ $ENV_COMMIT_HASH ] ; then cp --recursive local mg \
     ; else git clone --recursive https://github.com/mediagoom/mg.git \
         && cd mg \
         && git checkout $ENV_BRANCH \
