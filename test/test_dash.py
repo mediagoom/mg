@@ -31,11 +31,11 @@ def execdash(mg, mp4, do, extra):
         raise
 
 def exechls(mg, mp4, do):
-	cmd = [mg, '-k:hls', '-s:0', '-e:0', '-b:750', '-i:' + mp4, '-o:' + do]
-	#cmd  = [mg, '-k:version']
-	test_core.printcmd(cmd)
-	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-	print res
+    cmd = [mg, '-k:hls', '-s:0', '-e:0', '-b:750', '-i:' + mp4, '-o:' + do]
+    #cmd  = [mg, '-k:version']
+    test_core.printcmd(cmd)
+    res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    print res
 
 def exechelp(mg):
     cmd = [mg, '--help']

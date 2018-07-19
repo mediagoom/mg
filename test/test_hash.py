@@ -34,7 +34,7 @@ def do_files(dir, filter, excl):
         path = os.path.join(dir, filter)
         print path
         dic = {}
-	rx = re.compile(excl)
+        rx = re.compile(excl)
         for file in glob.glob(path):
             if None == rx.search(file):	
                 hx = file_hash(file)

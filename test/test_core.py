@@ -7,10 +7,10 @@ class TestError(Exception):
         return repr(self.value)
 
 def getsrcdir():
-	srcdir=os.environ.get('srcdir')
-	if(srcdir == None):
-		srcdir = os.path.dirname(os.path.realpath(__file__))
-	return srcdir
+    srcdir=os.environ.get('srcdir')
+    if(srcdir == None):
+        srcdir = os.path.dirname(os.path.realpath(__file__))
+    return srcdir
 
 def getroot():
     cwd = getsrcdir() #os.getcwd()
@@ -18,8 +18,8 @@ def getroot():
     return cwd
 
 def getmp4():
-	srcdir = getsrcdir()
-	return os.path.join(srcdir, 'test_assets', 'MEDIA1.MP4')
+    srcdir = getsrcdir()
+    return os.path.join(srcdir, 'test_assets', 'MEDIA1.MP4')
 
 def printcmd(cmd):
     line = ""
