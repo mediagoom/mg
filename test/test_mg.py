@@ -13,8 +13,15 @@ def hashres(res):
 
 def doit(cmd, rpl=None, hash=None):
 	testok=False
-	print cmd
-	res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+	printcmd(cmd)
+	try:
+		res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+	 except subprocess.CalledProcessError as e:
+        print "COMMAND ERROR: " + e.returncode
+		print ">------------------------------"
+		print e.output
+        print "<------------------------------"
+        return False
 	res = re.sub("\r\n", "\n", res)
 	if not rpl is None:
 		for h in rpl:
