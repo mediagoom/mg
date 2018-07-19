@@ -16,7 +16,7 @@ def doit(cmd, rpl=None, hash=None):
 	printcmd(cmd)
 	try:
 		res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-	 except subprocess.CalledProcessError as e:
+	except subprocess.CalledProcessError as e:
         print "COMMAND ERROR: " + e.returncode
 		print ">------------------------------"
 		print e.output
