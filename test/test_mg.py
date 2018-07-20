@@ -59,7 +59,15 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:version']
     doit(cmd, None)
 
+    cmd = [mg, '--help']
+    doit(cmd, None)
+
     root = test_core.getroot()
+
+    m4f = os.path.join(root, 'tmp_dash/video_750000_800000.m4v')
+    cmd = [mg, '-k:analyze', '-i:' + m4f]
+    doit(cmd, rpl)
+    
     ts = os.path.join(root, 'tmp/video_750000_800000.ts')
     cmd = [mg, '-k:all', '-i:' + ts]
     doit(cmd, rpl)

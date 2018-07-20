@@ -468,7 +468,7 @@ public:
 	unsigned int(8)	 elementary_stream_id;
     unsigned int(16) elementary_stream_info_length;
     
-    unsigned int parsedBytes = 0;
+    uint64_t parsedBytes = 0;
     %p{ 
 			unsigned int descriptor_count = 0;
 		%p}
@@ -498,7 +498,7 @@ abstract class BaseStreamDescriptor : unsigned int(8) type = 0x00
     unsigned int(8) elementary_stream_id;
     unsigned int(16) elementary_stream_info_length;
 
-    unsigned int parsedBytes;
+    uint64_t parsedBytes;
     for (parsedBytes=0; parsedBytes < elementary_stream_info_length; ) {
         BaseProgramDescriptor descriptor;
         parsedBytes += lengthof(descriptor);
@@ -582,14 +582,14 @@ class PSMapTable extends PesBase //: const unsigned int(32) st_id = ST_PSMapTabl
     bit(1) marker = 0b1;
     unsigned int(16) program_stream_info_length;
 
-    unsigned int parsed;
+    uint64_t parsed;
     for (parsed=0; parsed < program_stream_info_length; ) {
         BaseProgramDescriptor program_descriptor;
         parsed += lengthof(program_descriptor);
     }
     
     unsigned int(16) elementary_stream_map_length;
-    unsigned int stream_map_ct;
+    uint64_t stream_map_ct;
     for (stream_map_ct=0; stream_map_ct < elementary_stream_map_length; ) {
         BaseStreamDescriptor stream_descriptor;
         stream_map_ct += lengthof(stream_descriptor);
