@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
 import subprocess, os, shutil
-import hashlib, re
+import hashlib, re, glob
 
 import test_core
 
+#def files2cmd(path):
+    #for file in glob.glob(path):
 
 def hashres(res):
     sha1 = hashlib.sha1()
@@ -67,9 +69,13 @@ def execmg(mg, mp4):
     m4f = os.path.join(root, 'tmp_dash', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
     doit(cmd, rpl)
+
+    m4f = os.path.join(root, 'tmp_widevine', 'video_750000_800000.m4v')
+    cmd = [mg, '-k:analyze', '-i:' + m4f]
+    doit(cmd, rpl)
     
     ts = os.path.join(root, 'tmp', 'video_750000_800000.ts')
-    cmd = [mg, '-k:ALL', '-i:' + ts]
+    cmd = [mg, '-k:pes', '-i:' + ts]
     doit(cmd, rpl)
 
     cmd = [mg, '-k:gop', '-i:' + mp4, '-s:0', '-e:0']
