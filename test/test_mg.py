@@ -69,7 +69,7 @@ def execmg(mg, mp4):
     doit(cmd, rpl)
     
     ts = os.path.join(root, 'tmp', 'video_750000_800000.ts')
-    cmd = [mg, '-k:all', '-i:' + ts]
+    cmd = [mg, '-k:ALL', '-i:' + ts]
     doit(cmd, rpl)
 
     cmd = [mg, '-k:gop', '-i:' + mp4, '-s:0', '-e:0']

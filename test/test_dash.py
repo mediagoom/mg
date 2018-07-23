@@ -88,7 +88,7 @@ def docheck(kind):
         print "run to update: ", ' '.join( '"' + c + '"' for c in cmd), "-o"
         raise
    
-
+    print rr
 
 def main(argv):
     """main program function"""

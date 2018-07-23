@@ -75,6 +75,9 @@ def main(argv):
     print 'file blueprint is: ', blueprint
     print 'exclude : ', exclude
     hh = do_files(dir, filter, exclude)
+    l = len(hh)
+    print 'dictonary len is ', l, hh
+
     if out:
             out_hash(blueprint, hh)
             print 'output hash to ', hh
