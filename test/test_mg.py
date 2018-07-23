@@ -5,8 +5,39 @@ import hashlib, re, glob
 
 import test_core
 
-#def files2cmd(path):
-    #for file in glob.glob(path):
+def files2cmd(path):
+    n = 1
+    p = re.compile(r".*_(\d+)\..*")
+    dash_i = os.path.join(path, '*_i.m4*')
+    stream = []
+    
+    for file in glob.glob(dash_i):
+        line = {}
+        filename = os.path.basename(file)
+        xline = "-S"
+        xline += str(n)
+        xline += ":"
+        xline += file
+        line[0] = xline
+        print filename
+        globname = re.sub("_i", "*", filename)
+        dash_s = os.path.join(path, globname)
+        print dash_s
+        for chunk in glob.glob(dash_s):
+            filename = os.path.basename(chunk)
+            xline = "-S"
+            xline += str(n)
+            xline += ":"
+            xline += chunk
+            print chunk
+            m = p.match(chunk)
+            if m:
+                #print m
+                k = long(m.group(1))
+                line[k] = xline
+        stream.append(line)    
+        n = n + 1
+    return stream
 
 def hashres(res):
     sha1 = hashlib.sha1()
@@ -50,7 +81,7 @@ def doit(cmd, rpl=None, hash=None):
 
 def execmg(mg, mp4):
     res = []
-    rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+']
+    rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+', 'value mismatch']
     
     cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:20000000']
     res.append(doit(cmd, rpl, '83e8b7d77b1da0d57f360613321a7c18ece8f4b8'))
@@ -62,13 +93,13 @@ def execmg(mg, mp4):
     doit(cmd, None)
 
     cmd = [mg, '--help']
-    doit(cmd, None)
+    res.append(doit(cmd, None, '3ad140e7203b801aee493559d372afc21314ab1b'))
 
     root = test_core.getroot()
 
     m4f = os.path.join(root, 'tmp_dash', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
-    doit(cmd, rpl)
+    res.append(doit(cmd, rpl, 'ae52490e5b4a7fad52580e9d92d127c5cc798dcf'))
 
     m4f = os.path.join(root, 'tmp_widevine', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
@@ -79,23 +110,31 @@ def execmg(mg, mp4):
     doit(cmd, rpl)
 
     cmd = [mg, '-k:gop', '-i:' + mp4, '-s:0', '-e:0']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
     cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:200000000']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
     cmd = [mg, '-k:mux', '-i:' + mp4, '-s:0', '-e:100000000', '-o:out1.mp4']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
     cmd = [mg, '-k:mux', '-i:' + mp4, '-s:100000000', '-e:200000000', '-o:out2.mp4']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
     cmd = [mg, '-k:mux', '-i:out1.mp4', '-s:0', '-e:0', '-i:out2.mp4', '-s:0', '-e:0', '-o:out3.mp4']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
     cmd = [mg, '-k:pick', '-i:out3.mp4', '-s:0', '-e:200000000']
-    doit(cmd, None)
+    doit(cmd, rpl)
 
+    dash_i = os.path.join(root, 'tmp_dash')
+    cmd = [mg, '-k:moof', '-o:out_moof.mp4']
+    cmd2 = files2cmd(dash_i)
+    print cmd2
+    for stream in cmd2:
+        for key in sorted(stream.iterkeys()):
+            cmd.append(stream[key])
+    doit(cmd, rpl)
 
     for x in res:
         if not x:

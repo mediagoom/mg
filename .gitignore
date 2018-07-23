@@ -33,6 +33,7 @@ missing
 COPYING
 INSTALL
 /tmp*
+/test/*.mp4
 
 
 #generated files
