@@ -72,6 +72,24 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:all', '-i:' + ts]
     doit(cmd, rpl)
 
+    cmd = [mg, '-k:gop', '-i:' + mp4, '-s:0', '-e:0']
+    doit(cmd, None)
+
+    cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:200000000']
+    doit(cmd, None)
+
+    cmd = [mg, '-k:mux', '-i:' + mp4, '-s:0', '-e:100000000', '-o:out1.mp4']
+    doit(cmd, None)
+
+    cmd = [mg, '-k:mux', '-i:' + mp4, '-s:100000000', '-e:200000000', '-o:out2.mp4']
+    doit(cmd, None)
+
+    cmd = [mg, '-k:mux', '-i:out1.mp4', '-s:0', '-e:0', '-i:out2.mp4', '-s:0', '-e:0', '-o:out3.mp4']
+    doit(cmd, None)
+
+    cmd = [mg, '-k:pick', '-i:out3.mp4', '-s:0', '-e:200000000']
+    doit(cmd, None)
+
 
     for x in res:
         if not x:

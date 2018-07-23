@@ -35,10 +35,15 @@ if($perf -or $cov)
 }
 
 
-& "$path\mgtest.exe" $g $t
-
+& "$path\mgtest.exe" $g $t > mgtest.log
+$result = $LASTEXITCODE
 
 if($perf -or $cov)
 {
 	end_performance_session
+}
+
+if(0 -ne $result)
+{
+	write-error "test failed"
 }

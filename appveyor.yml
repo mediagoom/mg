@@ -199,7 +199,8 @@ after_build:
         - ps: cp "./mg.exe" "./mg"
         - sh: docker run --name mgtest mgi /bin/bash
         #- sh: mkdir -p ./test/bin/$PLATFORM/Release
-        - sh:  docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg 
+        - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg
+        - sh: docker cp mgtest:/build/mg/test/test_mg.log ./test_mg.log && appveyour PushArtifact ./test_mg.log
         - sh: touch ./mg.pdb
 
 #---------------------------------#
@@ -226,11 +227,12 @@ after_test:
 # to run your custom scripts instead of automatic tests
 test_script:
   - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2 -arch "$env:platform"
+  - ps: Push-AppveyorArtifact 'mgtest.log'
   - ps: cd test
   - ps: python test_dash.py --kind dash
   - ps: python test_dash.py --kind hls
   - ps: python test_dash.py --kind help
-  - ps: pwd;ls;"---" | oh;ls ../tmp;">>>" | oh
+  - ps: pwd;ls ..;"---" | oh;ls ../tmp;">>>" | oh
   - ps: python test_mg.py
  
 
