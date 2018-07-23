@@ -200,8 +200,8 @@ after_build:
         - sh: docker run --name mgtest mgi /bin/bash
         #- sh: mkdir -p ./test/bin/$PLATFORM/Release
         - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg
-        - sh: docker cp mgtest:/build/mg/test/test_mg.log ./testmglog
-        - sh: ls -l && appveyour PushArtifact ./testmglog
+        - sh: docker cp mgtest:/build/mg/test/test_mg.log ./test/test_mg.log
+        #- sh: ls -l && appveyour PushArtifact ./testmglog
         - sh: touch ./mg.pdb
 
 #---------------------------------#
@@ -231,9 +231,10 @@ test_script:
   - ps: Push-AppveyorArtifact 'mgtest.log'
   - ps: cd test
   - ps: python test_dash.py --kind dash
+  - ps: python test_dash.py --kind widevine
   - ps: python test_dash.py --kind hls
   - ps: ls ../tmp;
-  - ps: python test_mg.py
+  - ps: python test_mg.py > test_mg.log
  
 
 # to disable automatic tests
@@ -251,6 +252,8 @@ artifacts:
           name: mg.pdb
         - path: './mg'
           name: mg
+        - path: './test/test_mg.log'
+          name: test_mg.log
         #- path: win-release-$(PLATFORM).zip
         #  name: win-release-$(PLATFORM)
 
