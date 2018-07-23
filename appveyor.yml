@@ -230,6 +230,7 @@ test_script:
   - ps: python test_dash.py --kind dash
   - ps: python test_dash.py --kind hls
   - ps: python test_dash.py --kind help
+  - ps: ls ../tmp
   - ps: python test_mg.py
  
 

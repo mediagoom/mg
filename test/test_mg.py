@@ -64,11 +64,11 @@ def execmg(mg, mp4):
 
     root = test_core.getroot()
 
-    m4f = os.path.join(root, 'tmp_dash/video_750000_800000.m4v')
+    m4f = os.path.join(root, 'tmp_dash', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
     doit(cmd, rpl)
     
-    ts = os.path.join(root, 'tmp/video_750000_800000.ts')
+    ts = os.path.join(root, 'tmp', 'video_750000_800000.ts')
     cmd = [mg, '-k:all', '-i:' + ts]
     doit(cmd, rpl)
 
