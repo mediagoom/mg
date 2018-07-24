@@ -1,4 +1,5 @@
 import subprocess, os, shutil
+import re
 
 class TestError(Exception):
     def __init__(self, value):
@@ -10,6 +11,13 @@ def getfilestring(path):
     with open(path, 'r') as myfile:
         data = myfile.read()
         return data
+
+def is_new_mpd(mpdpath):
+    mpd = getfilestring(mpdpath)
+    m = re.match(".*ccff.*", mpd, re.S)
+    if m:
+        return False
+    return True
 
 def getsrcdir():
     srcdir=os.environ.get('srcdir')
@@ -29,7 +37,7 @@ def getmp4():
 def printcmd(cmd):
     line = ""
     for c in cmd:
-        line += "'" + c + "' "
+        line += '"' + c + '" '
     print line
 
 def getmg():

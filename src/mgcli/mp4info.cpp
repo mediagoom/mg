@@ -3940,7 +3940,7 @@ int do_moof_mux(console_command &c)
 					, 0
 					);
 
-				_ASSERTE(idx == k);
+				//_ASSERTE(idx == k);
 
 				mp4mux.set_auto_decoding_time(idx, true);
 
@@ -3955,14 +3955,14 @@ int do_moof_mux(console_command &c)
 
 				//_ASSERTE(1 == ae.get
 
-				int idx =
+				int adx =
 				mp4mux.add_audio_stream(ae.get_aac_info().object_type
 					, ae.get_aac_info().sample_rate
 					, ae.get_aac_info().channels
 					, 128000
 					, 0); //ae.get_aac_info().
 
-				_ASSERTE(idx == k);
+				//_ASSERTE(adx == k);
 
 				astream.push_back(true);
 
