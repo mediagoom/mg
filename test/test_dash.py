@@ -3,6 +3,13 @@
 import subprocess, os, shutil, re, sys, getopt
 import test_core
 
+def is_new_mpd(mpdpath):
+    mpd = test_core.getfilestring(mpdpath)
+    m = re.match(".*ccff.*", mpd, re.S)
+    if m:
+        return False
+    return True
+
 def get_i_anal(mg, i_file):
     cmd = [mg, '-k:analyze', '-i:' + i_file]
     print cmd
@@ -72,6 +79,15 @@ def docheck(kind):
         print do
         anal_2_file(mg, do, 'audio_96000_i.m4a', 'audio_96000_i.txt')
         anal_2_file(mg, do, 'video_750000_i.m4v', 'video_750000_i.txt')
+
+        mpd = os.path.join(do, 'index.mpd')
+        isnew = is_new_mpd(mpd)
+
+        print "mpd: ", mpd, " isnew: " , isnew
+        if isnew:
+            checkfile = "new_" + checkfile
+
+
     elif 'hls' == kind:
         exechls(mg, mp4, do)
     else:

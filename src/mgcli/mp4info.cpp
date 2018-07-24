@@ -5476,7 +5476,7 @@ int _tmain(int argc, TCHAR* argv[])
 				 CMP4FragmentValidation * p_validation = NULL;
 				 bool validate = false;
 
-#ifdef _DEBUG
+#ifdef FRAGMENTEDVALIDATION
 				 CMP4FragmentValidation vobj;
 #endif
 
@@ -5485,10 +5485,10 @@ int _tmain(int argc, TCHAR* argv[])
 				 
 				 if(validate)
 				 {
-#ifdef _DEBUG
+#ifdef FRAGMENTEDVALIDATION
 					 p_validation = &vobj;
 #else
-					 std::wcout << _T("WARNING: validate is disabled in release!") << std::endl;
+					 std::wcout << _T("WARNING: FRAGMENTEDVALIDATION validate is disabled!") << std::endl;
 #endif
 
 				 }

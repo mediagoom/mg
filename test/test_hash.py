@@ -50,7 +50,8 @@ def main(argv):
     exclude=r'((audio)|(video))_\d+_i\.m4[av]'
     try:
         opts, args = getopt.getopt(argv,"ohd:f:b:",["dir=","filter=","blueprint=","exclude="])
-    except getopt.GetoptError:
+    except getopt.GetoptError as e:
+      print e
       print 'test_hash.py --dir <directory> --filter <*.ts> --blueprint <blueprint-file-path> -o <output:true/false> --exclude <exclude-rx>'
       sys.exit(2)
     for opt, arg in opts:
@@ -76,11 +77,11 @@ def main(argv):
     print 'exclude : ', exclude
     hh = do_files(dir, filter, exclude)
     l = len(hh)
-    print 'dictonary len is ', l, hh
+    print 'dictonary len is ', l #, hh
 
     if out:
             out_hash(blueprint, hh)
-            print 'output hash to ', hh
+            #print 'output hash to ', hh
     else:
             zz = in_hash(blueprint)
             if len(zz) > len(hh):

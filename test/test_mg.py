@@ -81,7 +81,7 @@ def doit(cmd, rpl=None, hash=None):
 
 def execmg(mg, mp4):
     res = []
-    rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+', 'value mismatch']
+    rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+', 'value mismatch[^\n]+', 'Add File [^\n]+']
     
     cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:20000000']
     res.append(doit(cmd, rpl, '83e8b7d77b1da0d57f360613321a7c18ece8f4b8'))
@@ -110,10 +110,10 @@ def execmg(mg, mp4):
     doit(cmd, rpl)
 
     cmd = [mg, '-k:gop', '-i:' + mp4, '-s:0', '-e:0']
-    doit(cmd, rpl)
+    res.append(doit(cmd, rpl, '2f388d65750cce9954cc3a0bc6a6bd6f750f8c34'))
 
     cmd = [mg, '-k:pick', '-i:' + mp4, '-s:0', '-e:200000000']
-    doit(cmd, rpl)
+    doit(cmd, rpl) #, 'df3462ebd05e51d0b80eb2831da8bc50c2777d32')
 
     cmd = [mg, '-k:mux', '-i:' + mp4, '-s:0', '-e:100000000', '-o:out1.mp4']
     doit(cmd, rpl)
@@ -127,6 +127,12 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:pick', '-i:out3.mp4', '-s:0', '-e:200000000']
     doit(cmd, rpl)
 
+    cmd = [mg, '-k:test']
+    doit(cmd, rpl)
+
+    cmd = [mg, '-k:H264Header', '-i:' + mp4, '-s:0', '-e:200000000']
+    doit(cmd, rpl) 
+   
     dash_i = os.path.join(root, 'tmp_dash')
     cmd = [mg, '-k:moof', '-o:out_moof.mp4']
     cmd2 = files2cmd(dash_i)

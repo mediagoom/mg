@@ -34,6 +34,14 @@
 #endif
 #endif
 
+#ifndef FRAGMENTEDVALIDATION
+#ifdef DEBUG
+#define FRAGMENTEDVALIDATION
+#else
+#define FRAGMENTEDVALIDATION
+#endif
+#endif
+
 #include <mg/media/mp4/cenc.h>
 #include <mg/media/mp4parse.h>
 #include <mg/media/mp4write.h>

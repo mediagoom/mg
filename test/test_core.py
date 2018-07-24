@@ -6,6 +6,11 @@ class TestError(Exception):
     def __str__(self):
         return repr(self.value)
 
+def getfilestring(path):
+    with open(path, 'r') as myfile:
+        data = myfile.read()
+        return data
+
 def getsrcdir():
     srcdir=os.environ.get('srcdir')
     if(srcdir == None):
