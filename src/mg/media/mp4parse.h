@@ -176,9 +176,9 @@ public:
 			return 1;
 		}
 
-		unsigned int idx   = _vector_data.size() / 2;
+		unsigned int idx   = ST_U32(_vector_data.size() / 2);
 		unsigned int lower = 0;
-		unsigned int upper = _vector_data.size() - 1;
+		unsigned int upper = ST_U32(_vector_data.size() - 1);
 
 		while(idx < (_vector_data.size())
 			    //&& idx > 0
@@ -963,7 +963,7 @@ class CMP4TimeManager
 
 			//a.composition_time < b.composition_time
 
-			unsigned int idx = comp.size();
+			size_t idx = comp.size();
 
 			if(0 == idx) //first element
 			{
@@ -1125,7 +1125,7 @@ public:
 			   else
 			   {
 				   fprintf(stdout
-					   , ">invalid composition sample: decoding samples: %lu vs %" PRIu64 "\r\n"
+					   , ">invalid composition sample: decoding samples: %zu vs %" PRIu64 "\r\n"
 								, _p_sample_2composition->size()
 								, total_samples);
 
@@ -2697,7 +2697,7 @@ public:
 		return pt->get_sample_size(sample);
 	}
 
-	int stream_count() const{return _streams.size();}
+	size_t stream_count() const{return _streams.size();}
 
 	const CMP4VisualEntry & get_visual_entry(const int idx, unsigned int stream_number) const
 	{
@@ -2819,7 +2819,7 @@ public:
 	uint64_t get_decoding_end_time_plus_duration(const unsigned int stream_number) const
 	{
 		_ASSERTE(stream_number < _streams.size());
-		return get_decoding_end_time(_streams.size() - 1) + get_sample_duration(_streams.size() - 1);
+		return get_decoding_end_time(ST_U32(_streams.size() - 1)) + get_sample_duration(ST_U32(_streams.size() - 1));
 	}
 
 
@@ -3111,7 +3111,7 @@ public:
 
 	}
 
-	int get_root_meta_count() const {return _meta_position.size();}
+	size_t get_root_meta_count() const {return _meta_position.size();}
 	uint64_t get_meta_position(const unsigned int idx) const {return _meta_position[idx];}
 
 	const TCHAR * get_language(const unsigned int stream_number) 

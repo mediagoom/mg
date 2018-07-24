@@ -585,15 +585,15 @@ protected:
 
 		mp4w.write_uint(0xFFFFFFFF);
 
-		int last = _chunks.size() -1;
+		size_t last = _chunks.size() -1;
 
-		for(int i = 0; i < last; i++)
+		for(size_t i = 0; i < last; i++)
 		{			
 			uint64_t current_sample_count = _chunks[i].samples;
 			
 			if(0 == i)
 			{
-				chunk_start = i + 1;
+				chunk_start = ST_U32(i + 1);
 				sample_count = static_cast<uint32_t>(current_sample_count);
 			}
 
@@ -610,7 +610,7 @@ protected:
 				entry_count++;
 
 				sample_count = static_cast<uint32_t>(current_sample_count);
-				chunk_start = i + 1;
+				chunk_start = ST_U32(i + 1);
 			}
 	
 		}
@@ -640,7 +640,7 @@ protected:
 
 		if(_chunks.size() || !_allow_empty_stream)
 		{
-			mp4w.write_uint(last + 1);
+			mp4w.write_uint(ST_U32(last + 1));
 			mp4w.write_uint(static_cast<uint32_t>(_chunks[last].samples));
 			mp4w.write_uint(1);
 
@@ -670,7 +670,7 @@ protected:
 		//else
 		//	mp4w.write_uint(_samples[0].size);
 
-		mp4w.write_uint(_samples.size());
+		mp4w.write_uint(ST_U32(_samples.size()));
 
 		if(_has_size)
 		{
@@ -740,7 +740,7 @@ protected:
 		mp4w.open_box(box_stco);
 		mp4w.write_box(stco);
 
-		mp4w.write_uint(_chunks.size());
+		mp4w.write_uint(ST_U32(_chunks.size()));
 
 		_stco_position = mp4w.get_position();
 
@@ -760,7 +760,7 @@ protected:
 		mp4w.open_box(box_stss);
 		mp4w.write_box(stss);
 
-		mp4w.write_uint(_iframes.size());
+		mp4w.write_uint(ST_U32(_iframes.size()));
 
 		for(uint32_t i = 0; i < _iframes.size(); i++)
 		{
@@ -1054,7 +1054,7 @@ public:
 
 
 
-	void set_stream_id(int id){_stream_id = id;}
+	void set_stream_id(const uint32_t id){_stream_id = id;}
 	int  get_stream_id(){return _stream_id;}
 
 	void set_time_scale(const uint64_t time_scale){_time_scale = time_scale;}
@@ -1073,7 +1073,7 @@ public:
 		return _ctts_offset;
 	}
 
-	int get_sample_count()
+	size_t get_sample_count()
 	{
 		return _samples.size();
 	}
@@ -1806,7 +1806,7 @@ public:
 		
 		_streams.push_back(ps);
 
-		ps->set_stream_id(_streams.size() - 1);
+		ps->set_stream_id(ST_U32(_streams.size() - 1));
 		return ps->get_stream_id();
 	}
 
@@ -2011,7 +2011,7 @@ public:
 
 		ps->set_mvhd_time_scale(_mvhd.get_timescale());
 	
-		ps->set_stream_id(_streams.size() -1);
+		ps->set_stream_id(ST_U32(_streams.size() -1));
 		return ps->get_stream_id();
 	}
 
@@ -2101,7 +2101,7 @@ public:
 		if(time_scale)
 			ps->set_time_scale(time_scale);
 	
-		ps->set_stream_id(_streams.size() -1);
+		ps->set_stream_id(ST_U32(_streams.size() -1));
 		return ps->get_stream_id();
 	}		
 	

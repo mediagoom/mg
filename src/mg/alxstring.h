@@ -214,7 +214,7 @@ public:
 		if(!m_str)
 			return operator=(str);			
 	
-		uint32_t size = _tcslen(str);		
+		size_t size = _tcslen(str);		
 		m_str->add(str, size);
 			return *this;
 	}
@@ -556,7 +556,7 @@ public:
 		}
 #endif
 		
-		uint32_t size = _tcslen(sz);		
+		size_t size = _tcslen(sz);		
 		m_str->add(sz, size);
 			return *this;
 	}

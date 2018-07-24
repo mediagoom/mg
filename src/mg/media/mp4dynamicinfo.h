@@ -57,7 +57,7 @@ public:
 	}
 
 	unsigned char * CodecPrivateData(){return _codec_private_data.get();}
-	uint32_t CodecPrivateDataSize() {return _codec_private_data.size();}
+	uint32_t CodecPrivateDataSize() {return ST_U32(_codec_private_data.size());}
 
 	CCodecPrivateData():_codec_private_data(1024)
 	{}

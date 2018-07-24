@@ -177,7 +177,7 @@ public:
 
 		while(start < end)
 		{
-			start =  process_nal(start, end - start, IFrame, composition_time, decoding_time);
+			start =  process_nal(start, ST_U32(end - start), IFrame, composition_time, decoding_time);
 		}
 
 		_header.flush();

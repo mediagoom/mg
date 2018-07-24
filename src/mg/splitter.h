@@ -94,7 +94,7 @@ public:
 		return m_locator.size();
 	}
 
-	Cstring operator[](int index)
+	Cstring operator[](size_t index)
 	{
 		CResource<CBuffer<TCHAR> > res = new CBuffer<TCHAR>(m_locator[index].nLen + 1);
 
