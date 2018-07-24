@@ -45,5 +45,6 @@ if($perf -or $cov)
 
 if(0 -ne $result)
 {
+	Get-Content mgtest.log | out-host
 	write-error "test failed"
 }
