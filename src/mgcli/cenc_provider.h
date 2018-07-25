@@ -510,7 +510,7 @@ public:
 
 		strClear.updatePosition(written);
 		
-		_body.write(reinterpret_cast<unsigned char*>(strClear.get()), strClear.size());
+		_body.write(reinterpret_cast<unsigned char*>(strClear.get()), ST_U32(strClear.size()));
 		
 
 	}
@@ -583,7 +583,7 @@ public:
 		
 		cp += _T("<cenc:pssh>");
 		
-		cp += PlayReadyCencProvider::Base64(m.get_buffer(), U64_ST(m.get_size()));
+		cp += PlayReadyCencProvider::Base64(m.get_buffer(), ST_U32(m.get_size()));
 
 		cp += _T("</cenc:pssh>");
 		cp += _T("</ContentProtection>");

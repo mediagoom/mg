@@ -46,18 +46,25 @@ def getmg():
 
     mg = os.path.join(cwd, 'src', 'mgcli', 'mg')
 
-    print mg
-
+    
     if not os.path.exists(mg):
+        print "mg not found in ", mg
         mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
     if not os.path.exists(mg):
+        print "mg not found in ", mg
         mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
     if not os.path.exists(mg):
+        print "mg not found in ", mg
         mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Release', 'mg.exe')
     if not os.path.exists(mg):
+        print "mg not found in ", mg
+        mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Debug', 'mg.exe')
+    if not os.path.exists(mg):
+        print "mg not found in ", mg
         mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe')
     
     if not os.path.exists(mg):
+        print "mg not found in ", mg
         raise TestError('mg executable not found')
 
     return mg

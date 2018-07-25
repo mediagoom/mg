@@ -149,6 +149,9 @@ def execmg(mg, mp4):
 
     cmd = [mg, '-k:H264Header', '-i:' + mp4, '-s:0', '-e:200000000']
     doit(cmd, rpl) 
+
+    cmd = [mg, '-k:testvideoindex', '-i:' + mp4]
+    doit(cmd, rpl) 
    
     dash_i = os.path.join(root, 'tmp_dash')
     cmd = [mg, '-k:moof', '-o:out_moof.mp4']

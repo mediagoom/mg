@@ -159,10 +159,26 @@ __MGCORE_END_NAMESPACE
 #endif
 #endif
 
+
+
+inline int32_t ST_i32(size_t rhs)
+{
+	_ASSERTE(rhs <= INT32_MAX);
+	if (rhs > INT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<int32_t>(rhs);
+}
+
+#define ST_I32(K) ST_i32(K)
+
 #ifdef ENVIRONMENT64
 
 
 #define U64_ST
+
 
 inline uint32_t ST_u32(size_t rhs)
 {
@@ -175,8 +191,21 @@ inline uint32_t ST_u32(size_t rhs)
 	return static_cast<uint32_t>(rhs);
 }
 #define ST_U32(K) ST_u32(K)
+#define SIGNEDSIZET int64_t
 
 #else
+
+inline size_t u64_ST(uint64_t rhs)
+{
+	_ASSERTE(rhs <= UINT32_MAX);
+	if (rhs > UINT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<size_t>(rhs);
+}
+
 inline size_t u64_ST(uint64_t rhs)
 {
 	_ASSERTE(rhs <= UINT32_MAX);
@@ -189,5 +218,21 @@ inline size_t u64_ST(uint64_t rhs)
 }
 #define U64_ST(K) u64_ST(K)
 #define ST_U32
+#define SIGNEDSIZET int32_t
 
 #endif
+
+
+inline uint32_t is_u32(SIGNEDSIZET rhs)
+{
+	_ASSERTE(rhs <= INT32_MAX);
+	if (rhs > INT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<int32_t>(rhs);
+}
+
+#define IS_U32(K) is_u32(K)
+

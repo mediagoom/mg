@@ -4643,11 +4643,11 @@ int _tmain(int argc, TCHAR* argv[])
 #endif
 				//std::wcout << reinterpret_cast<const char*>(strClear.get()) << std::endl;
 
-				std::wcout << hexformat(reinterpret_cast<unsigned char*>(strClear.get()), strClear.size())
+				std::wcout << hexformat(reinterpret_cast<unsigned char*>(strClear.get()), ST_U32(strClear.size()))
 					<< std::endl;
 
 				Cstring hex;
-				hex.append_hex_buffer(reinterpret_cast<unsigned char*>(strClear.get()), strClear.size());
+				hex.append_hex_buffer(reinterpret_cast<unsigned char*>(strClear.get()), ST_U32(strClear.size()));
 
 				std::wcout << hex << std::endl;
 

@@ -585,15 +585,16 @@ protected:
 
 		mp4w.write_uint(0xFFFFFFFF);
 
-		size_t last = _chunks.size() -1;
 
-		for(size_t i = 0; i < last; i++)
+		int last = ST_I32(_chunks.size()) -1;
+
+		for(int i = 0; i < last; i++)
 		{			
 			uint64_t current_sample_count = _chunks[i].samples;
 			
 			if(0 == i)
 			{
-				chunk_start = ST_U32(i + 1);
+				chunk_start = IS_U32(i + 1);
 				sample_count = static_cast<uint32_t>(current_sample_count);
 			}
 
@@ -610,7 +611,7 @@ protected:
 				entry_count++;
 
 				sample_count = static_cast<uint32_t>(current_sample_count);
-				chunk_start = ST_U32(i + 1);
+				chunk_start = IS_U32(i + 1);
 			}
 	
 		}

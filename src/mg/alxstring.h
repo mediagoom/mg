@@ -649,7 +649,7 @@ public:
 	const uint32_t size() const
 	{
 		CstringT &s = const_cast<CstringT&>(*this);
-		return s.m_str->getFull();
+		return ST_U32(s.m_str->getFull());
 	}
 
 	const size_t len() const
