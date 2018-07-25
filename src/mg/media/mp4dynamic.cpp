@@ -42,8 +42,10 @@ void CMP4Dynamic::move_to_read(  uint64_t start
 	uint64_t last_composition = 0;
 
 	uint64_t computed_start_time = UINT64_MAX;
+    
+    int stream_count =  ST_i32(reader.stream_count());
 
-	for(int idx = 0; idx < reader.stream_count(); idx++)
+	for(int idx = 0; idx < stream_count; idx++)
 	{
 		uint64_t t_composition    = UINT64_MAX;
 

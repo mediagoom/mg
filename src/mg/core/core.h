@@ -160,6 +160,16 @@ __MGCORE_END_NAMESPACE
 #endif
 
 
+inline uint32_t U64_U32(uint64_t rhs)
+{
+	_ASSERTE(rhs <= UINT32_MAX);
+	if (rhs > UINT32_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<uint32_t>(rhs);
+}
 
 inline int32_t ST_i32(size_t rhs)
 {
@@ -195,16 +205,6 @@ inline uint32_t ST_u32(size_t rhs)
 
 #else
 
-inline size_t u64_ST(uint64_t rhs)
-{
-	_ASSERTE(rhs <= UINT32_MAX);
-	if (rhs > UINT32_MAX)
-	{
-		throw MGCORE::mgexceptionbase(E_OVERFLOW);
-	}
-
-	return static_cast<size_t>(rhs);
-}
 
 inline size_t u64_ST(uint64_t rhs)
 {

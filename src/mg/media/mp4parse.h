@@ -2834,7 +2834,7 @@ public:
 	{
 		int v_stream = -1;
 
-		for(int i = 0; i < stream_count(); i++)
+		for(int i = 0; i < ST_I32(stream_count()); i++)
 		{
 			if(IsVisual(i))
 			{
