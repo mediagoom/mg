@@ -763,7 +763,7 @@ public:
 		   if(get_position() - init_pos != 188)
 		   {
 			   _ASSERTE(false);
-			   DBGC1(_T("invalid packet %lld\n"), init_pos);
+			   DBGC1("invalid packet %lld\n", init_pos);
 		   }
 
 		   init_pos = get_position();
