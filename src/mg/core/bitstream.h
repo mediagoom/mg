@@ -853,7 +853,7 @@ public:
 			_tot_bits = (rhs << 3);
 
 			FDBGC5(BITSTREAM_POSITION_DEBUG
-                , _T("SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d")
+                , "SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d"
                 , rhs
                 , _cur_bit
                 , _shadow_len
