@@ -855,7 +855,7 @@ protected:
 					if(_samples[_samples.size()-1].decoding
 						>= decoding)
 					{
-						DBGC5(_T("INVALID DECODING SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n")
+						DBGC5("INVALID DECODING SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n"
 							, HNS(ms.composition_time)
 							, HNS(ms.decoding_time)
 							, HNS(ms.duration)
@@ -869,7 +869,7 @@ protected:
 						(decoding - _samples[_samples.size()-1].decoding)
 					)
 					{
-						DBGC5(_T("INVALID DISTANCE SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n")
+						DBGC5("INVALID DISTANCE SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n"
 							, HNS(ms.composition_time)
 							, HNS(ms.decoding_time)
 							, HNS(ms.duration)
@@ -1314,7 +1314,7 @@ public:
 				{
 					if(tot - _samples[i].composition > decoding_offset)
 					{
-						DBGC5(_T("AUTO DECODING\t%s\t%s\t%s\t%s\t%d\r\n")
+						DBGC5("AUTO DECODING\t%s\t%s\t%s\t%s\t%d\r\n"
 							, HNS(_samples[i].composition)
 							, HNS(tot)
 							, HNS(tot - _samples[i].composition)
@@ -2164,7 +2164,7 @@ public:
 					
 					w = 0;
 
-					DBGC5(_T("MAX DISTANCE FORCED INCREASE\t%d\t%s\t%s\t%s\t%s")
+					DBGC5("MAX DISTANCE FORCED INCREASE\t%d\t%s\t%s\t%s\t%s"
 						, stream_id
 						, HNS(composition_time)
 						, HNS(decoding_time)
