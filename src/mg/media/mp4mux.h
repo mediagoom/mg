@@ -146,7 +146,7 @@ public:
 
 		copy_stream(_headers.storage(), full, chunk_size);
 
-		DBGC2(_T("HEADERS COPIED %llu %llu"), headers_size, full.get_position());
+		DBGC2("HEADERS COPIED %llu %llu", headers_size, full.get_position());
 
 		copy_stream(body_read, full, chunk_size);
 
