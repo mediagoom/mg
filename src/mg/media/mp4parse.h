@@ -111,7 +111,7 @@ public:
 			   _vector_data[_vector_data.size() - 1].k >= k
 			)
 			{
-				DBGC2(_T("INVALID MAPRANGE k1 %s k2 %s \n\r")
+				DBGC2("INVALID MAPRANGE k1 %s k2 %s \n\r"
 					, HNS(_vector_data[_vector_data.size() - 1].k)
 					, HNS(k)
 					);
