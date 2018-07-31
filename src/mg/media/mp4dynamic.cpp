@@ -43,10 +43,13 @@ void CMP4Dynamic::move_to_read(  uint64_t start
 
 	uint64_t computed_start_time = UINT64_MAX;
     
-    int stream_count =  ST_i32(reader.stream_count());
+    size_t stream_count =  reader.stream_count();
 
-	for(int idx = 0; idx < stream_count; idx++)
+	for(size_t idx = 0; idx < stream_count; idx++)
 	{
+        if(!reader.IsValidStream(idx))
+            continue;
+
 		uint64_t t_composition    = UINT64_MAX;
 
 		begin_stream(idx);
@@ -92,7 +95,7 @@ void CMP4Dynamic::move_to_read(  uint64_t start
 
 			if(UINT64_MAX == computed_start_time) //we have not found an I frame stream yet look for it.
 			{
-				for(int idx = 0; idx < reader.stream_count(); idx++)
+				for(int idx = 0; idx < ST_I32(reader.stream_count()); idx++)
 				{
 					if(!reader.IsLTC(idx) && reader.has_random_access_point(idx))
 					{

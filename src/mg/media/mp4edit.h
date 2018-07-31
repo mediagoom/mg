@@ -400,7 +400,7 @@ class CMP4EditConsole: public CMP4Edit
 protected:
 	virtual void info_input_stream(const MP4Reader &reader) const
 	{
-		for(int i = 0; i < reader.stream_count(); i++)
+		for(int i = 0; i < ST_I32(reader.stream_count()); i++)
 		{		
 				std::wcout << i
 				<< L") offset: "

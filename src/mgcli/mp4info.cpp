@@ -2382,7 +2382,7 @@ int do_edit_header(  CMP4 &mp4
 
 	mp4w.write_ftyp(mem);
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
 		_ASSERTE(1 == reader.entry_count(i));
 
@@ -2424,7 +2424,7 @@ int do_edit_header2( CMP4 &mp4
 
 	mp4w.write_ftyp(mem);
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
 		_ASSERTE(1 == reader.entry_count(i));
 
@@ -3109,7 +3109,7 @@ int h264_frame_list(uint64_t start, uint64_t end
 
 		unsigned int video(UINT32_MAX);
 	
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
 		if(reader.IsVisual(i))
 		{
@@ -3352,7 +3352,7 @@ int timecode(uint64_t start, uint64_t end
 
 	int ltc_stream = -1;
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
 		if(reader.IsLTC(i))
 		{
@@ -3459,7 +3459,7 @@ int timecode2(uint64_t start, uint64_t end
 
 	int ltc_stream = -1;
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
 		if(reader.IsLTC(i))
 		{
@@ -3921,7 +3921,7 @@ int do_moof_mux(console_command &c)
 		MP4ReaderConsole reader;
 		reader.parse(mp4);
 		
-		for(int k = 0 ; k < reader.stream_count(); k++)
+		for(size_t k = 0 ; k < reader.stream_count(); k++)
 		{
 			if(reader.IsVisual(k))
 			{				
@@ -5737,7 +5737,7 @@ int _tmain(int argc, TCHAR* argv[])
 				MP4Reader reader;
 				reader.parse(mp4);
 
-				for(int i = 0; i < reader.get_root_meta_count(); i++)
+				for(size_t i = 0; i < reader.get_root_meta_count(); i++)
 				{
 					uint64_t meta_position = reader.get_meta_position(i);
 					

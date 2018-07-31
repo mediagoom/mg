@@ -2015,6 +2015,37 @@ public:
 	virtual bool has_one() const {return _has_one;}
 };
 
+class CMP4HandlerNULL: public CMP4Handler
+{
+	
+protected:
+	virtual bool parse_header(CMP4& mp4)
+	{
+		mp4.skip_current();
+
+		return true;
+	}
+
+	virtual void not_sample_description_found(CMP4 &mp4)
+	{
+		mp4.skip_current();
+		
+	}
+
+	virtual void parse_sample_description(CMP4& mp4)
+	{
+		mp4.skip_current();
+	}
+    	
+
+	virtual ~CMP4HandlerNULL()
+	{
+
+	}
+public:
+	
+};
+
 
 class CPM4Track
 {
@@ -2031,6 +2062,8 @@ class CPM4Track
 
 	uint64_t  _current_sample;
 	uint64_t  _mvhd_time_scale;
+
+    bool            _can_be_parsed;
 
 protected:
 	
@@ -2066,8 +2099,12 @@ protected:
 				case BOX('s', 'o','u','n'):
 					_p_media = new CMP4HandlerSoun;
 					break;
+                case BOX('t', 'e','x','t'):
+                    this->set_not_parsable_thrack();
+					_p_media = new CMP4HandlerNULL;
+					break;
 				default:
-					MP4ERROR(_T("unknowed handler type"));
+					MP4ERROR(_T("Unknown handler type"));
 					break;
 				}
 
@@ -2103,7 +2140,8 @@ protected:
 			_time_manager.set_sample_count(_sample_manager.get_sample_count());
 			break;
 		default:
-			_ASSERTE(false);
+			//_ASSERTE(false);
+            DBGC1("Unknown box found: %s", mp4.get_box().get_type_string());
 			mp4.skip_current();
 			break;
 		}
@@ -2137,6 +2175,7 @@ public:
      , _p_media(NULL)
 	 , _current_sample(0)
 	 , _mvhd_time_scale(mvhd_time_scale)
+     , _can_be_parsed(true)
 	{}
 
     void close()
@@ -2231,6 +2270,16 @@ public:
 	{
 		_ASSERTE(_p_hdlr);
 		return _p_hdlr->handler_type == BOX('s', 'o','u','n');
+	}
+
+    void set_not_parsable_thrack()
+    {
+        _can_be_parsed = false;
+    }
+
+    virtual bool can_be_parsed() const
+	{
+		return _can_be_parsed;
 	}
 
 	virtual bool IsLTC() const
@@ -2699,6 +2748,16 @@ public:
 
 	size_t stream_count() const{return _streams.size();}
 
+    size_t parsable_stream_count() const
+    {
+        size_t count(0);
+        for(size_t i = 0; i < _streams.size(); i++)
+            if(this->IsValidStream(i))
+                count++;
+
+        return count;
+    }
+
 	const CMP4VisualEntry & get_visual_entry(const int idx, unsigned int stream_number) const
 	{
 		_ASSERTE(stream_number < _streams.size());
@@ -2864,11 +2923,17 @@ public:
 		return _streams[stream_number]->IsLTC();
 	}
 
+    bool IsValidStream(const unsigned int stream_number) const
+	{
+		_ASSERTE(stream_number < _streams.size());
+		return _streams[stream_number]->can_be_parsed();
+	}
+
 	int LTCStream() const
 	{
 		int ltc_stream = -1;
 
-		for(int i = 0; i < stream_count(); i++)
+		for(int i = 0; i < ST_I32(stream_count()); i++)
 		{
 			if(IsLTC(i))
 			{

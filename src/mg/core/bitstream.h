@@ -852,7 +852,13 @@ public:
 
 			_tot_bits = (rhs << 3);
 
-			DBGC5(_T("SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d"), rhs, _cur_bit, _shadow_len, _buf_len, do_reload);
+			FDBGC5(BITSTREAM_POSITION_DEBUG
+                , _T("SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d")
+                , rhs
+                , _cur_bit
+                , _shadow_len
+                , _buf_len
+                , do_reload);
 
 		}
 
@@ -1277,7 +1283,7 @@ template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_
 		_buf_len += read;
 	}
 
-	DBGC0("READ_CB_SIGNAL");
+	FDBGC0(BITSTREAM_READ_DEBUG, "READ_CB_SIGNAL");
 	_pending_read = false;
 	_load_event.signal();
 }

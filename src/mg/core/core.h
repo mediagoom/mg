@@ -91,7 +91,7 @@ inline void MGBASECHECK(int num){ if (num < 0){ throw MGCORE::mgexceptionbase(nu
 __MGCORE_END_NAMESPACE
 
 
-#ifdef _DEBUGx
+#ifdef _DEBUG
 #define DBGC9(L, p0, p1, p2, p3, p4, p5, p6, p7, p9) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6, p7, p9)
 #define DBGC8(L, p0, p1, p2, p3, p4, p5, p6, p7) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6, p7)
 #define DBGC7(L, p0, p1, p2, p3, p4, p5, p6) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6)

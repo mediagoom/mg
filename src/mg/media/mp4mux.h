@@ -150,7 +150,7 @@ public:
 
 		copy_stream(body_read, full, chunk_size);
 
-		DBGC2(_T("BODY COPIED %llu %llu"), body_read.size(), full.get_position());
+		//DBGC2(_T("BODY COPIED %llu %llu"), body_read.size(), full.get_position());
 
 	}
 

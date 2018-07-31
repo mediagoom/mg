@@ -1001,7 +1001,7 @@ public:
 								p_dynamic_bitrate = _presentation.get_by_index(i)->AddBitRate(bitrate);
 								DynamicBitrateVideo * p_dynamic_video = static_cast<DynamicBitrateVideo *>(p_dynamic_bitrate);
 
-								if (reader.stream_count() <= i)
+								if (ST_I32(reader.stream_count()) <= i)
 									ALXTHROW("invalid file stream count");
 
 								if (!reader.IsVisual(i))

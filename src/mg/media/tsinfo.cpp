@@ -720,7 +720,14 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				cnt != c.get_command_count(_T("endtime")))
 			{
 				std::wcerr << 
-					_T("ee: input start and end must be specified for every input")
+					_T("Error: input start and end must be specified for every input. ")
+                    << _T("Input: ")
+                    << cnt
+                    << _T(" Starts: ")
+                    << c.get_command_count(_T("starttime"))
+                    << _T(" Ends: ")
+                    << c.get_command_count(_T("endtime"))
+                    << _T(".")
 					<< std::endl;
 
 				ost << static_cast<const TCHAR*>(c.get_help())
