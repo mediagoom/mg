@@ -19,22 +19,32 @@ ENV ENV_COMMIT_HASH="${ENV_COMMIT_HASH}"
 ARG ENV_BRANCH="dev"
 ENV ENV_BRANCH="${ENV_BRANCH}"
 
+ARG ENV_CONFIGURATION=""
+ENV ENV_CONFIGURATION="${ENV_CONFIGURATION}"
+
+ARG ENV_CLONE=""
+ENV ENV_CLONE="${ENV_CLONE}"
+
+RUN echo 'set number\n\
+colorscheme torte' >> ~/.vimrc
+
 RUN apt-get update \
     && apt-get install -y software-properties-common \ 
     && add-apt-repository ppa:ubuntu-toolchain-r/test \
     && apt-get update \
     && apt-get install -y gcc-5 g++-5 \
     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5 \
-    && apt-get install -y --force-yes make git autoconf libtool gyp lcov curl 
+    && apt-get install -y --force-yes make git autoconf libtool gyp lcov curl vim
+
+####
     
 COPY . local
 
-RUN if [ $ENV_COMMIT_HASH ] ; then cp --recursive local mg \
-    ; else git clone --recursive https://github.com/mediagoom/mg.git \
+RUN if [ $ENV_CLONE ] ; then git clone --recursive https://github.com/mediagoom/mg.git \
         && cd mg \
         && git checkout $ENV_BRANCH \
+        ; else cp --recursive local mg \
     ; fi
-
 
 RUN cd mg/deps/libuv/ \
     && ./autogen.sh \
@@ -59,10 +69,10 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 
 RUN cd mg \
     && ./bootstrap \
-    && if [ "$ENV_CODECOV_MG" ]; then ./configure --enable-debug; else ./configure ; fi \
+    && if [ "$ENV_CONFIGURATION" = "Debug" -o "$ENV_CODECOV_MG" ]; then echo "DEBUG BUILD" && ./configure --enable-debug; else ./configure ; fi \
     && make check 
 
-RUN if [ "$ENV_CODECOV_MG" ]; then \
+RUN if [ "$ENV_CONFIGURATION" = "Debug" -o "$ENV_CODECOV_MG" ]; then \
        cd mg/src/b64 \
     && find . -type f -name '*.gcda' -exec gcov {} + \
     && cd ../mg/core \
@@ -80,7 +90,7 @@ RUN curl -s https://codecov.io/bash > codecov \
 
 RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then \
                 if [ $ENV_COMMIT_HASH ] ; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout -C $ENV_COMMIT_HASH -B $ENV_BRANCH \
-                ; else ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout \
+                ; else if [ $ENV_CLONE ] ; then ../codecov -t "$ENV_CODECOV_MG" -X gcov -X gcovout; fi \
                 ; fi \
              ; fi
 

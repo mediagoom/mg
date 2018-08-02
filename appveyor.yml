@@ -67,6 +67,7 @@ max_jobs: 1
 # Build worker image (VM template)
 image: 
   - Visual Studio 2015
+  - Visual Studio 2017
   - Ubuntu
 
 # scripts that are called at very beginning, before repo cloning
@@ -183,7 +184,7 @@ before_package:
 # to run your custom scripts instead of automatic MSBuild
 build_script:
   - ps: msbuild mg.msbuild.proj
-  - sh: if [ $PLATFORM = "x64" ] ; then docker build --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT -t mgi .; fi
+  - sh: if [ $PLATFORM = "x64" ] ; then docker build -t mgi .; fi
   - sh: if [ $PLATFORM = "Win32" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT -t mgi .; fi
 
 # to disable automatic builds
