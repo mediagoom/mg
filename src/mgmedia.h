@@ -26,12 +26,17 @@
 #include "aes.h"
 #endif
 
+#define FRAGMENTEDSTYP
+#define FRAGMENTEDVALIDATION
+
 #ifndef FRAGMENTEDSTYP
 #ifdef DEBUG
 #define FRAGMENTEDSTYPTRUE
 #else
 #define FRAGMENTEDSTYPFALSE
 #endif
+#else
+#define FRAGMENTEDSTYPTRUE
 #endif
 
 #ifndef FRAGMENTEDVALIDATION

@@ -172,11 +172,8 @@ public:
 		if(_maxHeight < Height)
 			_maxHeight = Height;
 
-
-
 		_rappresentation_xml += _T("\t\t\t<Representation id=\"");
 		_rappresentation_xml += _stream_id;
-
 
 #ifdef FRAGMENTEDSTYPFALSE	
 
@@ -186,6 +183,9 @@ public:
 		_rappresentation_xml += _group_id;
 		_rappresentation_xml += "\" bandwidth=\"";
 #else
+        _rappresentation_xml += _T("_");
+		_rappresentation_xml += bit_rate;
+
         _rappresentation_xml += "\" frameRate=\"25\" sar=\"1:1\" startWithSAP=\"1\" bandwidth=\"";
 #endif
 		_rappresentation_xml += bit_rate;
@@ -215,9 +215,9 @@ public:
 		{
 			_codecs = _T("mp4a.40.2");
 
-#ifndef FRAGMENTEDSTYPFALSE
-            _rappresentation_xml += _T("\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"6\"/>\r\n");
-#endif
+//#ifndef FRAGMENTEDSTYPFALSE
+//            _rappresentation_xml += _T("\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"6\"/>\r\n");
+//#endif
 		}
 
 		_rappresentation_xml += _T("\t\t\t<Representation id=\"");
@@ -332,7 +332,8 @@ public:
 				_stream_xml += _maxHeight;
 			}
 
-			_stream_xml += _T("\" startWithSAP=\"1\" >");
+			//_stream_xml += _T("\" startWithSAP=\"1\" >");
+            _stream_xml += _T("\" >");
 
 			_stream_xml += _T("\r\n");
 
