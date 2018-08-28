@@ -233,7 +233,7 @@ test_script:
   - ps: Push-AppveyorArtifact 'mgtest.log'
   - ps: cd test
   - ps: python test_dash.py --kind dash
-  - ps: python test_dash.py --kind widevine
+  #- ps: python test_dash.py --kind widevine
   - ps: python test_dash.py --kind hls
   - ps: ls ../tmp;
   - ps: python test_mg.py > test_mg.log
