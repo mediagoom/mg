@@ -237,6 +237,7 @@ test_script:
   - ps: python test_dash.py --kind hls
   - ps: ls ../tmp;
   - ps: python test_mg.py > test_mg.log
+  - ps: python test_appveyor.py
  
 
 # to disable automatic tests
