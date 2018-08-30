@@ -38,33 +38,51 @@ def printcmd(cmd):
     line = ""
     for c in cmd:
         line += '"' + c + '" '
-    print line
+    print(line)
 
 def getmg():
     cwd = getroot()
-    print cwd
+    print(cwd)
 
     mg = os.path.join(cwd, 'src', 'mgcli', 'mg')
 
+    failure = []
     
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        failure.append("mg not found in " + mg)
         mg = os.path.join(cwd, 'test', 'out', 'Release', 'mg')
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        failure.append("mg not found in "+ mg)
         mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Debug', 'mg.exe')
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        failure.append("mg not found in " + mg)
         mg = os.path.join(cwd, 'test', 'bin', 'Win32', 'Release', 'mg.exe')
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        failure.append("mg not found in " + mg)
         mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Debug', 'mg.exe')
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        failure.append("mg not found in " + mg)
         mg = os.path.join(cwd, 'test', 'bin', 'x64', 'Release', 'mg.exe')
     
     if not os.path.exists(mg):
-        print "mg not found in ", mg
+        print("mg not found!")
+        for x in failure:
+            print("\t    ", x)
         raise TestError('mg executable not found')
 
     return mg
+
+def get_i_anal(mg, i_file):
+    cmd = [mg, '-k:analyze', '-i:' + i_file]
+    printcmd(cmd)
+    res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    #print res
+    return res
+
+def anal_2_file(mg, do, n, nn):
+    aia = get_i_anal(mg, os.path.join(do, n))
+    aia = aia.replace('\r', '')
+    kia = re.split('\n', aia)
+    naia = '\n'.join(kia[1:len(kia)-2])
+    with open( os.path.join(do, nn), 'wb') as target:
+            target.write(naia)
