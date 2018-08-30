@@ -19,7 +19,7 @@ def files2cmd(path):
         xline += ":"
         xline += file
         line[0] = xline
-        print filename
+        print(filename)
         globname = re.sub("_i", "*", filename)
         dash_s = os.path.join(path, globname)
         print dash_s
@@ -63,18 +63,18 @@ def doit(cmd, rpl=None, hash=None):
     h =  hashres(res)
     if not hash is None:
         if not hash == h:
-            print "invalid hash found " + h + " expected " + hash
-            print ">---------------------------------------------"
-            print res
-            print "<---------------------------------------------"
+            print("invalid hash found " + h + " expected " + hash)
+            print(">---------------------------------------------")
+            print(res)
+            print("<---------------------------------------------")
         else:
-            print 'hash matched'
+            print('hash matched')
             testok=True
     else:
-        print "NO HASH: " + h
-        print "//>---------------------------------------------"
-        print res
-        print "//<---------------------------------------------"
+        print("NO HASH: " + h)
+        print("//>---------------------------------------------")
+        print(res)
+        print("//<---------------------------------------------")
 
     return testok
 
@@ -84,7 +84,7 @@ def execmg(mg, mp4):
     rpl = ['Edit add time \d\d:\d\d:\d\d.\d\d\d', 'Opening File [^\n]+', 'value mismatch[^\n]+', 'Add File [^\n]+']
     
     root = test_core.getroot()
-    mpd = os.path.join(root, 'tmp_dash', 'index.mpd')
+    mpd = os.path.join(root, 'tmp', 'dash', 'index.mpd')
     isnew = test_core.is_new_mpd(mpd)
 
     dashhash = 'ae52490e5b4a7fad52580e9d92d127c5cc798dcf'
@@ -107,15 +107,15 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:help', '-i:' + mp4 ]
     doit(cmd, None)
     
-    m4f = os.path.join(root, 'tmp_dash', 'video_750000_800000.m4v')
+    m4f = os.path.join(root, 'tmp', 'dash', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
     res.append(doit(cmd, rpl, dashhash))
 
-    m4f = os.path.join(root, 'tmp_widevine', 'video_750000_800000.m4v')
+    m4f = os.path.join(root, 'tmp', 'widevine', 'video_750000_800000.m4v')
     cmd = [mg, '-k:analyze', '-i:' + m4f]
     doit(cmd, rpl)
     
-    ts = os.path.join(root, 'tmp', 'video_750000_800000.ts')
+    ts = os.path.join(root, 'tmp', 'hls', 'video_750000_800000.ts')
     cmd = [mg, '-k:PES', '-i:' + ts]
     doit(cmd, rpl)
 
@@ -153,7 +153,7 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:testvideoindex', '-i:' + mp4]
     doit(cmd, rpl) 
    
-    dash_i = os.path.join(root, 'tmp_dash')
+    dash_i = os.path.join(root, 'tmp', 'dash')
     cmd = [mg, '-k:moof', '-o:out_moof.mp4']
     cmd2 = files2cmd(dash_i)
     print cmd2
