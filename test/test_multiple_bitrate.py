@@ -15,45 +15,59 @@ import test_core, test_hash
 #002569741225_Sintel_2010_1080p_mkv_1690_720_2000.mp4
 #002569741225_Sintel_2010_1080p_mkv_1690_720_3500.mp4
 
-
-
-def execdash(mg, files, bitrates, do):
-    print mg
-    cmd = [mg, '-k:adaptive', '-s:0', '-e:0', '-o:' + do]
-    
+def addfiles2cmd(files, bitrates):
+    cmd = []
     l = len(files)
     x = 0
     add = '-i:'
     while x < l: 
-        print 'add', files[x]
+        print('add', files[x])
         cmd.append(add + files[x])
         cmd.append('-b:' + str(bitrates[x]))
         add = '-j:'
         x += 1
+    return cmd
 
-    test_core.printcmd(cmd)    
+def execdashjoins(mg, files, bitrates, do):
+    print(mg)
+                              #01:28          #2:30
+    cmd = [mg, '-k:adaptive', '-s:880000000', '-e:1500000000', '-o:' + do]
+    
+    cmd2 = addfiles2cmd(files,bitrates)
+    cmd += cmd2
 
-    try:
-        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as e:
-        print e.output
-        raise
+            #12:26
+    cmd3 = ['-s:7460000000', '-e:0']
+    cmd += cmd3
+
+    cmd += cmd2
+    
+    test_core.execcmd(cmd)
+
+def execdash(mg, files, bitrates, do):
+    print(mg)
+    cmd = [mg, '-k:adaptive', '-s:0', '-e:0', '-o:' + do]
+    
+    cmd2 = addfiles2cmd(files,bitrates)
+    cmd += cmd2
+    
+    test_core.execcmd(cmd)
 
 def dlfile(url, dest):
     # Open the url
     try:
         f = urlopen(url)
-        print "downloading " + url
+        print("downloading " + url)
 
         # Open our local file for writing
         with open(dest, "wb") as local_file:
             local_file.write(f.read())
     #handle errors
     except HTTPError, e:
-        print "HTTP Error:", e.code, url
+        print("HTTP Error:", e.code, url)
         raise
     except URLError, e:
-        print "URL Error:", e.reason, url
+        print("URL Error:", e.reason, url)
         raise
 
 def dofile(url, name, thedir):
@@ -70,7 +84,7 @@ def main(argv):
     mg = test_core.getmg()    
     cwd = test_core.getroot()
 
-    thedir = os.path.join(cwd, 'tmp_multi')
+    thedir = os.path.join(cwd, 'tmp','multi')
 
     files = ["002569741225_Sintel_2010_1080p_mkv_338_144_120.mp4", "002569741225_Sintel_2010_1080p_mkv_676_288_320.mp4"]
     files.append("002569741225_Sintel_2010_1080p_mkv_1352_576_750.mp4")
@@ -83,29 +97,27 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hufrdb",["url=","dir="])
     except getopt.GetoptError:
-        print 'test_dash.py --kind <dash|hls>'
+        print('test_dash.py --kind <dash|hls>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print 'test_multiple_bitrate.py -u <url> -f <files> -r <bitrate> -d <directory> -b <blueprint>'
+            print('test_multiple_bitrate.py -u <url> -f <files> -r <bitrate> -d <directory> -b <blueprint>')
             sys.exit()
         elif opt in ("-u", "--url"):
             url = arg
         elif opt in ("-d", "--dir"):
             thedir = arg
 
-    print 'url: ', url
-    print 'dir: ', thedir
-    print 'mg: ', mg
+    print( 'url: ', url)
+    print( 'dir: ', thedir)
+    print( 'mg: ', mg)
 
     if not os.path.exists(thedir):
         os.makedirs(thedir)
 
-    dt = os.path.join(thedir, 'STATIC')
-    
-    if os.path.exists(dt):
-        shutil.rmtree(dt)    
-    os.makedirs(dt)
+    srcd = test_core.getsrcdir()
+
+    #>----------FILES FULL-----------------
 
     targets = []
     l = len(files)
@@ -116,6 +128,37 @@ def main(argv):
         targets.append(dofile(url, files[x], thedir))
         x += 1
 
+    dt = os.path.join(thedir, 'STATIC')
+    
+    test_core.recreatedir(dt)
+
+    dj = os.path.join(thedir, 'JOIN')
+    
+    test_core.recreatedir(dj)
+
+
     execdash(mg, targets, bitrates, dt)
+    test_core.sanitize_i_files(dt)
+
+    checkfile = 'multibitrate.txt'
+
+    res = test_hash.hash_check(dt, "*.*", test_hash.exclude, os.path.join(srcd, 'test_assets', checkfile), False, False)
+
+    
+
+    execdashjoins(mg, targets, bitrates, dj)
+    test_core.sanitize_i_files(dj)
+
+    checkfile = 'join.txt'
+
+    res = test_hash.hash_check(dj, "*.*", test_hash.exclude, os.path.join(srcd, 'test_assets', checkfile), False, False)
+
+
+
+    if(not res):
+        print('FAILED')
+        sys.exit(45)
+    else:
+        print('OK')
 
 main(sys.argv[1:])

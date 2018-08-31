@@ -74,6 +74,7 @@ def docheck(kind):
         exechls(mg, mp4, do)
     else:
         exechelp(mg)
+    
     srcd = test_core.getsrcdir()
     
     cmd = ['python', os.path.join(srcd, 'test_hash.py'), '--dir', do, '--filter', '*.*', '--blueprint', os.path.join(srcd, 'test_assets', checkfile)]

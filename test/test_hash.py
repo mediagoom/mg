@@ -43,8 +43,8 @@ def do_files(dir, filter, excl):
                 dic[os.path.basename(file)] = hx
         return dic
 
-def hash_check(dir, filter, exlude, blueprint, out, verbose):
-    hh = do_files(dir, filter, exclude)
+def hash_check(dir, filter, excludeexpr, blueprint, out, verbose):
+    hh = do_files(dir, filter, excludeexpr)
     l = len(hh)
     print('dictonary len is ', l) #, hh
 
@@ -64,7 +64,7 @@ def hash_check(dir, filter, exlude, blueprint, out, verbose):
                             return False
     return True
 
-    
+
 
 def main(argv):
     """main program function"""
@@ -73,6 +73,8 @@ def main(argv):
     blueprint=''
     out=False
     
+    excludeexpr = exclude
+
     try:
         opts, args = getopt.getopt(argv,"ohd:f:b:",["dir=","filter=","blueprint=","exclude="])
     except getopt.GetoptError as e:
@@ -90,7 +92,7 @@ def main(argv):
       elif opt in ("-b", "--blueprint"):
          blueprint = arg
       elif opt in ("--exclude"):
-          exclude = arg
+          excludeexpr = arg
       elif opt == '-o':
               out=True
     print('dir is : ', dir)
@@ -99,9 +101,9 @@ def main(argv):
             blueprint = os.path.dirname(os.path.realpath(__file__))
             blueprint = os.path.join(blueprint, 'test_assets', 'hls_full.txt')
     print('file blueprint is: ', blueprint)
-    print('exclude : ', exclude)
+    print('exclude : ', excludeexpr)
     
-    check = hash_check(dir, filter, exclude, blueprint, out, True)
+    check = hash_check(dir, filter, excludeexpr, blueprint, out, True)
     if(not check):
         sys.exit(9)
     
