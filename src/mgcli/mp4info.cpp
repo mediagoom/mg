@@ -5179,10 +5179,10 @@ int _tmain(int argc, TCHAR* argv[])
 					<< std::endl;
 
 
-				CBuffer<dynamic_item> ditem(npaths + 1);
-				                      ditem.updatePosition(npaths + 1);
+				CBuffer<dynamic_item> ditem((npaths/cnt) + 1);
+				                      ditem.updatePosition((npaths/cnt) + 1);
 
-				for(unsigned int pp = 0; pp <= npaths; pp++)
+				for(unsigned int pp = 0; pp <= (npaths/cnt); pp++)
 				{
 					ditem.getAt(pp).bitrate       = c.get_integer64_value(_T("bitrate"), bitrate_idx++) * 1000UL;
 					ditem.getAt(pp).audio_bitrate = audio_bitrate;

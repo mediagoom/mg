@@ -1,4 +1,4 @@
-import subprocess, os, shutil
+import subprocess, os, shutil, time
 import re, glob, datetime, json, urllib2
 
 class TestError(Exception):
@@ -164,7 +164,8 @@ def sanitize_i_files(thepath):
 
 def recreatedir(dt):
     if os.path.exists(dt):
-        shutil.rmtree(dt)    
+        shutil.rmtree(dt)
+            
     
     j = 0
     done = False
@@ -173,11 +174,15 @@ def recreatedir(dt):
     while(j < 10):
         try:
             os.makedirs(dt)
+            break
             done = True
         except Exception as e:
-            print(e.output)
+            print(e)
+            time.sleep(1)
+            if(j == 9):
+                raise
         j += 1
 
-    if Not done:
-        raise
+    
+        
         

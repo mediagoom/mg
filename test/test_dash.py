@@ -53,9 +53,7 @@ def docheck(kind):
         widevinebody = '-widevinebody:CAESEOtnarvLNF6Wu89hZjDxo9oaDXdpZGV2aW5lX3Rlc3QiEGZrajNsamFTZGZhbGtyM2oqAkhEMgA='
         extra = [key, keyid, widevinebody]
     do = os.path.join(cwd, 'tmp', mdir)
-    if os.path.exists(do):
-        shutil.rmtree(do)    
-    os.makedirs(do)
+    test_core.recreatedir(do)
     if 'dash' == kind or 'widevine' == kind:
         execdash(mg, mp4, do, extra)
         print(do)
