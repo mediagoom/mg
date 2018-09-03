@@ -22,7 +22,7 @@ mgtest_LDADD =  $(top_builddir)/src/mg/core/libmgcore.a \
 TOUCH_TEST = BITSTREAM RESOURCES UV THREAD MP4
 
 #TESTS = $(TOUCH_TEST) test_hls.py test_dash.py test_wine.py test_mg.py
-TESTS = $(TOUCH_TEST) test_hls.py test_dash.py test_mg.py
+TESTS = $(TOUCH_TEST) test_hls.py test_dash.py test_mg.py test_multiple_bitrate.py
 TEST_EXTENSIONS = .py
 PY_LOG_COMPILER = $(PYTHON)
 LOG_COMPILER = ./mgtest

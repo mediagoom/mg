@@ -60,7 +60,7 @@ def hash_check(dir, filter, excludeexpr, blueprint, out, verbose):
                     if(verbose):
                         print(k, ' ', zz[k], ' ', hh[k])
                     if(zz[k] != hh[k]):
-                            print('invalid k ', k)
+                            print('invalid k ', k, zz[k], hh[k])
                             return False
     return True
 

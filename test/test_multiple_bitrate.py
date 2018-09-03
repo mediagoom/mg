@@ -144,7 +144,10 @@ def main(argv):
 
     res = test_hash.hash_check(dt, "*.*", test_hash.exclude, os.path.join(srcd, 'test_assets', checkfile), False, False)
 
-    
+    testresult = test_core.TestResult()
+    testresult.name = "Multibirate"
+    testresult.result = res
+    test_core.reporttest(testresult)
 
     execdashjoins(mg, targets, bitrates, dj)
     test_core.sanitize_i_files(dj)
@@ -153,12 +156,11 @@ def main(argv):
 
     res = test_hash.hash_check(dj, "*.*", test_hash.exclude, os.path.join(srcd, 'test_assets', checkfile), False, False)
 
+    testresult2 = test_core.TestResult()
+    testresult2.name = "Multibirate-Join"
+    testresult2.result = res
+    test_core.reporttest(testresult2)
 
 
-    if(not res):
-        print('FAILED')
-        sys.exit(45)
-    else:
-        print('OK')
 
 main(sys.argv[1:])
