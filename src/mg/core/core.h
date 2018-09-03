@@ -159,6 +159,16 @@ __MGCORE_END_NAMESPACE
 #endif
 #endif
 
+inline int64_t U64_i64(uint64_t rhs)
+{
+	_ASSERTE(rhs <= INT64_MAX);
+	if (rhs > INT64_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<int64_t>(rhs);
+}
 
 inline uint32_t U64_U32(uint64_t rhs)
 {

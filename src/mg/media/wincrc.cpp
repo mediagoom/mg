@@ -29,7 +29,7 @@ int av_crc_init(AVCRC *ctx, int le, int bits, unsigned int poly, int ctx_size)
     for (i = 0; i < 256; i++) {
         if (le) {
             for (c = i, j = 0; j < 8; j++)
-                c = (c >> 1) ^ (poly & (-(c & 1)));
+                c = (c >> 1) ^ (poly & (-((int)c & 1)));
             ctx[i] = c;
         } else {
             for (c = i << 24, j = 0; j < 8; j++)

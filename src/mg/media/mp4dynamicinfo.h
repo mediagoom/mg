@@ -82,7 +82,10 @@ public:
 
 		
 		if(_paths.end() == _paths.find(start_computed_time))
-			_paths[start_computed_time] = path;
+            _paths[start_computed_time] = path;
+        /*else
+        {_ASSERTE(false);}
+        */
 	}
 
 	void rebase(int64_t offset)
@@ -106,21 +109,23 @@ public:
 
 	}
 
-	const Cstring & get_path(uint64_t computed_time) const
-	{
-		/*
-		std::map<int64_t, Cstring>::const_iterator it = _paths.lower_bound(computed_time);
-
-		if(it == _paths.end())
-		   it--;
-
-		 */
-
-		std::map<int64_t, Cstring>::const_iterator it = _paths.lower_bound(computed_time);
+    std::map<int64_t, Cstring>::const_iterator get_iterator_path(uint64_t computed_time) const
+    {
+        std::map<int64_t, Cstring>::const_iterator it = _paths.lower_bound(computed_time);
 		
 		if(it != _paths.begin() && (it == _paths.end() || it->first != computed_time))
 		   it--;
 
+        _ASSERTE(it->first <= U64_i64(computed_time));
+
+        return it;
+    }
+
+
+	const Cstring & get_path(uint64_t computed_time) const
+	{
+        std::map<int64_t, Cstring>::const_iterator it = get_iterator_path(computed_time);
+		
 		return it->second;
 	}
 
@@ -155,6 +160,8 @@ class DynamicPoints
 	std::map<int64_t, int64_t> _computed;
 
 	std::map<int64_t, CrossPoint> _computed_cross;
+
+    std::set<int64_t> _file_cross;
 	
 
 public:
@@ -165,6 +172,11 @@ public:
 	{
 		_computed[computed_time] = composition;
 	}
+
+    void AddFileCross(int64_t computed_time)
+    {
+        _file_cross.insert(computed_time);
+    }
 
 	void AddCross(uint64_t computed_time
 		, uint64_t composition
@@ -303,8 +315,11 @@ public:
 			iter++;
 		//}
 		
+        std::set<int64_t>::const_iterator ifilecross1 = _file_cross.upper_bound(comp);
+        std::set<int64_t>::const_iterator ifilecross2 = _file_cross.upper_bound(iter->first);
 
-		if(orig > iter->second //changed file
+		//if(orig > iter->second //changed file
+        if(ifilecross1 != ifilecross2 //changed file
 			) 
 		{
 			//return INT64_MAX; //get all file to the end
@@ -373,7 +388,24 @@ public:
 			_computed[iter->first] = iter->second;
 		}
 
+        //////////////////////////////////////////////////////////////
 
+         std::set<int64_t> file_cross;
+
+         std::set<int64_t>::const_iterator ifilecross;
+
+         for(ifilecross = _file_cross.begin(); ifilecross != _file_cross.end(); ifilecross++)
+         {
+             file_cross.insert((*ifilecross) + offset);
+         }
+
+         _file_cross.clear();
+
+         for(ifilecross = file_cross.begin(); ifilecross != file_cross.end(); ifilecross++)
+         {
+             _file_cross.insert((*ifilecross));
+         }
+         
 		///////////////////////////////////////////////
 		std::map<int64_t, CrossPoint> cross;
 
@@ -517,6 +549,11 @@ public:
 		_points.Add(computed_time, composition);
 	}
 
+    void AddPointFileCross(int64_t computed_time)
+    {
+        _points.AddFileCross(computed_time);
+    }
+
 	void AddPointCross(int64_t computed_time, int64_t composition, int64_t computed_time_2, int64_t composition_2)
 	{
 		_points.AddCross(computed_time, composition, computed_time_2, composition_2);
@@ -592,7 +629,11 @@ public:
 
 	uint64_t get_end_original_time(uint64_t computed_time) const
 	{
-		return _points.get_end(computed_time);
+        
+        //std::map<int64_t, Cstring>::const_iterator & _bitrates.begin()->second->get_iterator_path(computed_time)
+		
+            
+         return _points.get_end(computed_time);
 	}
 
 	uint64_t get_end_computed_time(uint64_t computed_time) const
@@ -1072,6 +1113,13 @@ public:
 									  _presentation.get_by_index(i)->get_current_end()
 									, p_dynamic_items[k].psz_path);
 
+
+                                if(0 == k)//first bitrate only
+                                {
+                                    pStream->AddPointFileCross(
+                                        _presentation.get_by_index(i)->get_current_end()
+                                    );
+                                }
 
 						}//if(pStream)
 
