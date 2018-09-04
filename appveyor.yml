@@ -205,6 +205,8 @@ after_build:
         - sh: sed -i '/\r/! s/$/\r/' ./test/test_mg.log
         #- sh: ls -l && appveyour PushArtifact ./testmglog
         - sh: touch ./mg.pdb
+        - sh: ip addr show
+        - sh: ip route
 
 #---------------------------------#
 #       tests configuration       #
@@ -238,6 +240,7 @@ test_script:
   - ps: ls ../tmp;
   - ps: python test_mg.py > test_mg.log
   - ps: python test_multiple_bitrate.py
+  - ps: cd ..; 7z a multibirate.zip tmp/multi/STATIC; Push-AppveyorArtifact multibirate.zip; 7z a join.zip tmp/multi/JOIN; Push-AppveyorArtifact join.zip;
  
 
 # to disable automatic tests
