@@ -98,10 +98,18 @@ protected:
 
 	virtual void addPayload(const BYTE* source, size_t size)
 	{
+		if(!size)
+			return;
+
 		_payload.add(source, size);
 		_gotfirst = true;
 	}
 
+	virtual void set_first_adaptation()
+	{
+		_HasFirstAdaptation = true;
+		_FirstAdaptation.random_access_indicator = 1;
+	}
 	
 	
 public:
@@ -151,14 +159,19 @@ public:
 			if(ts.adaptation_flag)
 			{
 				_Adaptation = *ts.adaptation_field;
-				
-				addPayload(ts.payload_after_adaptation_byte, (183 - ts.adaptation_field->adaptation_field_length));
 
-				if(!_HasFirstAdaptation)
+				unsigned int size = 183 - ts.adaptation_field->adaptation_field_length;
+				
+				if(size)
 				{
-					_adaptation_packet = _packet_count;
-					_FirstAdaptation   = _Adaptation;
-					_HasFirstAdaptation = true;
+					addPayload(ts.payload_after_adaptation_byte, size);
+
+					if(!_HasFirstAdaptation)
+					{
+						_adaptation_packet = _packet_count;
+						_FirstAdaptation   = _Adaptation;
+						_HasFirstAdaptation = true;
+					}
 				}
 				
 			}
@@ -770,6 +783,7 @@ public:
 	TSProgramElementaryStream():
 	   _hasReceiver(false)
 	  , _offset(0)
+	  , _receiver_written(false)
 	{}
     void SetReceiver(T pStreamData)
 	{

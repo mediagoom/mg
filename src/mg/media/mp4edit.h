@@ -348,7 +348,7 @@ class CMP4Edit: public CMP4Edit_
 
 protected:
 	
-	virtual IMP4Mux3 & get_mux(){ return _mp4mux; }
+	virtual IMP4Mux4 & get_mux(){ return _mp4mux; }
 	virtual void set_ctts_offset_(bool rhs){_mp4mux.set_ctts_offset(rhs);}
 
 public:
@@ -360,7 +360,7 @@ public:
 
 	virtual void set_max_distance(uint64_t max_distance){get_mux().set_max_distance(max_distance);}
 	virtual void set_use_composition_in_distance(bool rhs){get_mux().set_use_composition_in_distance(rhs);}
-	
+	virtual void set_aac_audio_fix(bool rhs){get_mux().set_aac_audio_fix(rhs);}
 };
 
 

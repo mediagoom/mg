@@ -33,6 +33,8 @@
 
 #define BASEPID  0x100
 
+#define DBGCTSMUXINFO 1
+
 class TSMuxStream:public CPESWrite
 {
 
@@ -53,6 +55,8 @@ public:
 	int  get_pid(){return _pid;}
 
 	virtual ~TSMuxStream(){}
+
+	virtual void set_pcr() { } 
 	
 };
 
@@ -190,25 +194,25 @@ public:
 		if(IFrame)
 		{
 			WritePesHeader(224
-			, composition_time, decoding_time, -1
-				, static_cast<uint32_t>(_header.get_position())
+			, composition_time, decoding_time, UINT64_MAX
+				, U64_U32(_header.get_position())
 				, _pes);
 
 			PCR = decoding_time;
 
 			_pes.write_bytes(_header.get_buffer()
-				, static_cast<uint32_t>(_header.get_position())
+				, U64_U32(_header.get_position())
 			);
 		}
 		else
 		{
 			WritePesHeader(224
-			, composition_time, decoding_time, -1, 
-				static_cast<uint32_t>(_body.get_position())
+			, composition_time, decoding_time, UINT64_MAX, 
+				U64_U32(_body.get_position())
 				, _pes);
 
 			_pes.write_bytes(_body.get_buffer()
-				, static_cast<uint32_t>(_body.get_position())
+				, U64_U32(_body.get_position())
 			);
 		}
 
@@ -217,7 +221,7 @@ public:
 		_pes.flush();
 
 		tswrite.output_ts(get_pid(), _pes.get_buffer()
-			, static_cast<uint32_t>(size)
+			, U64_U32(size)
 			, TSW, IFrame, PCR); 
 	}
 public:
@@ -258,6 +262,10 @@ class TSMuxAACStream:public TSMuxStream
 	int _pes_frames;
 	int _pes_current_frame;
 
+	bool     _pcr_output;
+	int64_t  _pcr_distance;
+	int      _pcr_count;
+
 public:
 
 	TSMuxAACStream(
@@ -265,7 +273,7 @@ public:
 	, const unsigned int sample_rate
     , const unsigned int channels
 	, const unsigned int target_bit_rate
-	):_pes_frames(1), _pes_current_frame(0)
+	):_pes_frames(1), _pes_current_frame(0), _pcr_output(false), _pcr_distance(20000000), _pcr_count(-1)
 	{
 		//_body.open(1024);
 		//_pes.open(1024);
@@ -273,6 +281,9 @@ public:
 		_adts.set_mpeg_4_audio_object(object_type);
 		_adts.mpeg_4_sampling_frequency = sample_rate;
 		_adts.channel_configuration     = channels;
+
+		_adts.mpeg_version = 0;
+		_adts.buffer_fullnes = 0x7FF;
 	
 	}
 
@@ -299,14 +310,24 @@ public:
 
 		_body.flush();
 
+		__int64 PCR = UINT64_MAX;
+		
+
+		if(_pcr_output) // && ( ( ((__int64)decoding_time) / _pcr_distance) > _pcr_count) ) 
+		{
+			//PCR = _body_presentation_time;
+			PCR = decoding_time;
+			_pcr_count++;
+		}
+
 		if(++_pes_current_frame >= _pes_frames)
 		{
 			_pes.set_position(0);
 
 			WritePesHeader(192
-			, _body_presentation_time, -1, -1, 
-				static_cast<uint32_t>(_body.get_position())
-				, _pes);
+			, _body_presentation_time
+			, (_pcr_output)?decoding_time:UINT64_MAX
+				, UINT64_MAX, U64_U32(_body.get_position()), _pes);
 
 			_pes.write_bytes(_body.get_buffer()
 				, static_cast<uint32_t>(_body.get_position())
@@ -318,7 +339,7 @@ public:
 
 			tswrite.output_ts(get_pid(), _pes.get_buffer()
 				, static_cast<uint32_t>(size)
-				, TSW, IFrame);
+				, TSW, IFrame, PCR);
 
 			_body.set_position(0);
 			_pes_current_frame = 0;
@@ -326,6 +347,8 @@ public:
 
 
 	}
+
+	virtual void set_pcr(){_pcr_output = true;}
 
 	virtual ~TSMuxAACStream()
 	{}
@@ -345,6 +368,8 @@ class TSMux: public IMP4Mux2
 	bool _only_table_at_beginning;
 
 	bool _is_first_sample;
+
+	//bool _only_audio;
 	
 	uint64_t _presentation_offset;
 	uint64_t _decoding_offset;
@@ -376,6 +401,7 @@ public:
 		, _use_memory(false)
 		, _only_table_at_beginning(false)
 		, _is_first_sample(true)
+		//, _only_audio(false)
 	{
 	}
 
@@ -526,6 +552,13 @@ public:
 		   || ((!_only_table_at_beginning) && _repeat_pid == stream_id && IFrame)
 		   )
 		{
+            FDBGC3(DBGCTSMUXINFO
+                , _T("OUTPUT-TABLES %d %d %d\r\n")
+				, _is_first_sample
+                , _only_table_at_beginning
+                , ((!_only_table_at_beginning) && _repeat_pid == stream_id && IFrame)
+				);
+
 			_tswrite.output_sections_tables(*_pctsw);
 		}
 
@@ -554,6 +587,11 @@ public:
 	void set_presentation_offset(const uint64_t presentation_offset)
 	{_presentation_offset = presentation_offset;}
 
+	unsigned __int64 get_presentation_offset() const {return _presentation_offset;}
+
+	void set_decoding_offset(const unsigned __int64 decoding_offset)
+	{_decoding_offset = decoding_offset;}
+
 	virtual uint64_t get_memory_size()
 	{
 		_ASSERTE(_use_memory == true);
@@ -567,6 +605,16 @@ public:
 
 		return static_cast<CTSWriteMemory *>(_pctsw)->get_buffer();
 	}
+
+	virtual void set_stream_pcr(int stream_id)
+	{
+		_streams[stream_id]->set_pcr();
+		_tswrite.set_pcr_pid(
+			_streams[stream_id]->get_pid()
+			);
+	}
+
+	
 };
 
 class MP42TS: public CMP4Edit_
@@ -607,6 +655,11 @@ public:
 		for(int i = 0; i < 64; i++)
 			_last[i] = 0;
 
+		set_only_table_at_beginning(true);
+	}
+#else
+    HLSMux()
+	{
 		set_only_table_at_beginning(true);
 	}
 #endif

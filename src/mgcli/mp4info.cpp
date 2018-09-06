@@ -3688,6 +3688,14 @@ int do_mp4_mux(console_command &c, CMP4Edit & mp4edit)
 
 				std::wcout << _T("SETTING VIDEO TIMESCALE ") << videotimescale << std::endl;
 			}
+
+            if(c.command_specified(_T("aacfix")))
+			{
+				bool use_aacfix = c.get_value(_T("aacfix"));
+				mp4edit.set_aac_audio_fix(use_aacfix);
+
+				std::wcout << _T("SETTING AAC FIX ") << use_aacfix << std::endl;
+			}
 			
 
 			if(c.command_specified(_T("ctts")))

@@ -65,7 +65,6 @@ def hash_check(dir, filter, excludeexpr, blueprint, out, verbose):
     return True
 
 
-
 def main(argv):
     """main program function"""
     dir=''
@@ -102,6 +101,7 @@ def main(argv):
             blueprint = os.path.join(blueprint, 'test_assets', 'hls_full.txt')
     print('file blueprint is: ', blueprint)
     print('exclude : ', excludeexpr)
+    print('out', out)
     
     check = hash_check(dir, filter, excludeexpr, blueprint, out, True)
     if(not check):

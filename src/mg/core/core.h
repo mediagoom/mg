@@ -30,6 +30,7 @@
 #include <exception>
 #include <type_traits>
 #include <stdint.h>
+#include <float.h>
 
 #ifndef _ASSERTE
 #if _DEBUG
@@ -90,8 +91,14 @@ inline void MGBASECHECK(int num){ if (num < 0){ throw MGCORE::mgexceptionbase(nu
 
 __MGCORE_END_NAMESPACE
 
-
 #ifdef _DEBUG
+#ifndef DBGCOUT
+#define DBGCOUT
+#endif
+#endif
+
+
+#ifdef DBGCOUT
 #define DBGC9(L, p0, p1, p2, p3, p4, p5, p6, p7, p9) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6, p7, p9)
 #define DBGC8(L, p0, p1, p2, p3, p4, p5, p6, p7) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6, p7)
 #define DBGC7(L, p0, p1, p2, p3, p4, p5, p6) _ftprintf(stdout, L "\r\n", p0, p1, p2, p3, p4, p5, p6)
@@ -117,7 +124,7 @@ __MGCORE_END_NAMESPACE
 
 
 
-#ifdef _DEBUG
+#ifdef DBGCOUT
 #define FDBGC9(B, L, p0, p1, p2, p3, p4, p5, p6, p7, p9) if(B){_ftprintf(stdout, _T( L "\r\n" ), p0, p1, p2, p3, p4, p5, p6, p7, p9);}
 #define FDBGC8(B, L, p0, p1, p2, p3, p4, p5, p6, p7) if(B){_ftprintf(stdout, _T( L "\r\n" ), p0, p1, p2, p3, p4, p5, p6, p7);}
 #define FDBGC7(B, L, p0, p1, p2, p3, p4, p5, p6) if(B){_ftprintf(stdout, _T( L "\r\n" ), p0, p1, p2, p3, p4, p5, p6);}
@@ -158,6 +165,28 @@ __MGCORE_END_NAMESPACE
 #define ENVIRONMENT32
 #endif
 #endif
+
+inline double U64_DBL(uint64_t rhs)
+{    
+    _ASSERTE(rhs <= DBL_MAX);
+	if (rhs > DBL_MAX)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<double>(rhs);
+}
+
+inline uint64_t DBL_U64(double rhs)
+{    
+    _ASSERTE(rhs >= 0);
+	if (rhs < 0)
+	{
+		throw MGCORE::mgexceptionbase(E_OVERFLOW);
+	}
+
+	return static_cast<uint64_t>(rhs);
+}
 
 inline int64_t U64_i64(uint64_t rhs)
 {

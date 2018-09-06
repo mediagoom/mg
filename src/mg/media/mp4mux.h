@@ -25,6 +25,7 @@
 
 #include "mp4parse.h"
 #include "mp4write.h"
+#include "aac_time_fix.h"
 
 #define ASYNC
 
@@ -102,7 +103,13 @@ public:
 	virtual void set_use_composition_in_distance(bool rhs) = 0;
 };
 
-class MP4Mux: public IMP4Mux3
+class IMP4Mux4: public IMP4Mux3
+{
+public:
+    virtual void set_aac_audio_fix(bool rhs) = 0;
+};
+
+class MP4Mux: public IMP4Mux4
 {
 #ifdef _DEBUG
 public:
@@ -112,6 +119,9 @@ public:
 	CMP4WriteMemory _headers;
 	Cstring         _file_out;
 	Cstring         _tmp_file_out;
+
+    CAACFix         _audio_fix;
+    bool            _apply_audio_fix;
 	
 
 	bool			_ctts_offset;
@@ -164,6 +174,7 @@ public:
 	MP4Mux(::mg::uv::loopthread & loop):_ctts_offset(false), _loop(loop)
 		, _pbody(new CMP4WriteFile(_loop))
 		, _body((*_pbody))
+        , _apply_audio_fix(false)
 	{
 
 	}
@@ -171,6 +182,7 @@ public:
 	MP4Mux():_ctts_offset(false)
 		, _pbody(new SYNCMP4WriteFile())
 		, _body((*_pbody))
+        , _apply_audio_fix(false)
 	{
 
 	}
@@ -189,6 +201,11 @@ public:
 	{
 		_write.set_use_composition_in_distance(rhs);
 	}
+
+    virtual void set_aac_audio_fix(bool rhs)
+    {
+        _apply_audio_fix = rhs;
+    }
 
 	virtual int add_visual_stream
 	(
@@ -224,13 +241,29 @@ public:
 		/*if(!time_scale)
 			time_scale = 10000000.00 / info.samplerate;
 		*/
-		return
+		
+        int idx =
 		_write.add_audio_stream(
 			  object_type
 			, sample_rate
 			, channels
 			, target_bit_rate
 			, time_scale);
+
+        if(_apply_audio_fix)
+        {
+            if(sample_rate == time_scale)
+                _audio_fix.set_info(sample_rate, idx);
+            else
+            {
+                _ASSERTE(false);
+                DBGC0(_T("CANNOT USE AAC FIX. INVALID TIME SCALE VS SAMPE RATE"));
+                _apply_audio_fix = false;
+            }
+        }
+
+
+        return idx;
 	}
 
 	virtual int add_extension_ltc_stream(
@@ -272,6 +305,15 @@ public:
 		, uint64_t duration
 		)
 	{
+        if(_apply_audio_fix)
+        {
+            uint64_t pre_composition_time = composition_time;
+            composition_time = DBL_U64(_audio_fix.fix_audio_frequency_timing(U64_DBL(composition_time), stream_id));
+
+            if(composition_time != pre_composition_time && decoding_time == pre_composition_time)
+                decoding_time = composition_time;
+        }
+
 		_write.add_sample(stream_id
 			, body
 			, body_size

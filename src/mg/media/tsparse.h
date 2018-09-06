@@ -130,6 +130,8 @@ public:
 					<< "\t"
 					<< pesdata.PES_header_data_length
 					<< "\t"
+					<< pesdata.PES_packet_length
+					<< "\t"
 					<< std::endl;
 
 
@@ -240,7 +242,8 @@ public:
 	{
 		bool ret = BaseProgramElementaryStreamData::ReceiveElementaryStreamData(Packet, pesdata, payload, offset);
 
-		//std::wcout << L"\t";
+		if(get_pes_detail())
+			std::wcout << L"AAC\t";
 
 		int frame_count(0);
 
@@ -254,6 +257,8 @@ public:
 
 		while(!ms.atend())
 		{
+			bool full_body = false;
+
 			while(ms.has_bits(12) && ms.nextbits(12) != 0x000FFF)
 			{
 				if(!ms.atend())
@@ -264,15 +269,20 @@ public:
 
 			if(!ms.atend())
 			{
-				_adts.get(ms);
+				if(ms.has_bits(9 * 8)){
+						_adts.get(ms);
 
-				_payload.SetPosition(0);
-				_payload.Reset();
+						_payload.SetPosition(0);
+						_payload.Reset();
 
-				BYTE b = 0;
+						BYTE b = 0;
 
 				for(uint32_t i = 0; i < _adts.get_body_length(); i++)
 				{
+							full_body = ((i + 1) == _adts.get_body_length());
+
+							if(!ms.has_bits(8))
+								break;
 					b = ms.getbits(8);
 					_payload.add(&b, 1);
 
@@ -280,7 +290,84 @@ public:
 						break;
 				}
 
-				AACPayload(_adts, Packet, pesdata, _payload, frame_count++);
+						if(full_body)
+						{
+
+								if(get_pes_detail())
+								{
+									std::wcout << frame_count << _T("\tsize:\t") << _payload.size() 
+									<< "\t"
+									<< HNS(pesdata.GetTime())
+									<< "\t"
+									<< ( (pesdata.DTS_flags)?HNS(pesdata.GetDTSTime()):_T("--") )
+									<< "\t"
+									<< _adts.get_body_length()
+									<< "\t"
+									<< pesdata.getBodySize()
+									<< "\t"
+									<< pesdata.getHeaderSize()
+									<< "\t"
+									<< payload.size()
+									<< std::endl;
+
+									std::wcout << "ADTS" 
+										<< "\t"
+										<< _adts.syncword
+										<< "\t"
+										<< _adts.mpeg_version
+										<< "\t"
+										<< _adts.layer
+										<< "\t"
+										<< _adts.missing_protection
+										<< "\t"
+										<< _adts.mpeg_4_audio_object_minus_1
+										<< "\t"
+										<< _adts.mpeg_4_sampling_frequency
+										<< "\t"
+										<< _adts.private_bit
+ 										<< "\t"
+										<< _adts.channel_configuration
+										<< "\t"
+										<< _adts.private_bit_2
+										<< "\t"
+										<< _adts.home
+										<< "\t"
+										<< _adts.copyrighted
+										<< "\t"
+										<< _adts.copyrighted_start
+										<< "\t"
+										<< _adts.frame_length
+										<< "\t"
+										<< _adts.buffer_fullnes
+										<< "\t"
+										<< _adts.aac_frames_minus_1
+										<< "\t"
+										<< _adts.CRC
+										<< std::endl;
+
+								}
+
+								AACPayload(_adts, Packet, pesdata, _payload, frame_count++);
+						}//full_body
+
+				}
+				//else //if(ms.has_bits(9 * 8)){
+				if(!full_body)
+				{
+					std::wcerr << L"MISMATCHED-ADTS-SIZE-VS-PES-SIZE\t" 
+							<< HNS(pesdata.GetTime())
+							<< L"\t"
+						    << pesdata.getBodySize()
+							<< L"\t"
+							<< pesdata.getHeaderSize()
+							<< L"\t"
+							<< payload.size()
+							<< L"\t"
+							<< _adts.frame_length
+						
+						<< std::endl;
+					break;
+				}
 
 			}
 
@@ -464,6 +551,7 @@ class CTSProcessor: public ITSProcessor
 
 	std::map<int, ts_pes*>           _pes;
 		//TSProgramElementaryStreamAnalyze<SequenceHeader>
+	std::map<int, int>               _pes_type;
 
 	
 
@@ -519,7 +607,7 @@ protected:
 		clean_up_map(&_pmts);
 	}
 
-	void clean_up_pes()
+	virtual void clean_up_pes()
 	{
 		/*std::map<int, ProgramMapTable *>::iterator iter;
 
@@ -541,6 +629,7 @@ protected:
 	{return !(_pes.find(pid) == _pes.end());}
 
 	virtual ts_pes * get_pes(int pid){return _pes[pid];}
+	virtual int get_pes_type(int pid){return _pes_type[pid];}
 
 public:
 
@@ -620,6 +709,7 @@ public:
 						*/
 
 						_pes[pid] = ppes;
+						_pes_type[pid] = type;
 
 					}
 
