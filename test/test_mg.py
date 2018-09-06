@@ -155,6 +155,9 @@ def execmg(mg, mp4):
     cmd = [mg, '-k:test', '-test:parse_date_time', '-time:2018-07-24 15:13:23.012']
     res.append(doit('parsedatetime', cmd, rpl))
 
+    cmd = [mg, '-k:test', '-test:time']
+    res.append(doit('test-ts-time', cmd, rpl))
+
     cmd = [mg, '-k:H264Header', '-i:' + mp4, '-s:0', '-e:200000000']
     res.append(doit('h264header', cmd, rpl))
 

@@ -3632,6 +3632,31 @@ int auto_test(const STDTSTRING & test_name, console_command & c)
 		return 0;
 	}
 
+    if(test_name == _T("time"))
+	{
+			unsigned __int64 mpeg_time = 29825950000;
+
+			PesData pes;
+
+			for(int i = 0; i < 100; i++)
+			{
+				MpegTime::ToMpegTime(mpeg_time
+					, pes.PTS_32_30,
+							   pes.PTS_29_15,
+							   pes.PTS_14_0);
+
+				if(pes.GetTime() != mpeg_time)
+				{
+					std::wcerr << L"Failed time " << mpeg_time << std::endl;
+					return 2;
+				}
+
+				mpeg_time += 400000;
+			}
+
+            return 0;
+	}
+
 	std::wcout << _T("invalid test name") << std::endl;
 
 	return 12;

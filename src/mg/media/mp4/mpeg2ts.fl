@@ -137,7 +137,7 @@ class MpegTime{
 			uint64_t pcr_ext  =  (time * system_clock_frequency)%300;//((system_clock_frequency * time)%(300*2^33)) - (pcr_base*300);
     
 			t32_30 = static_cast<uint32_t>( pcr_base >> 30 );
-			t29_15 = (pcr_base & 0x2FFFFFFF) >> 15;
+			t29_15 = (pcr_base  >> 15) & 0x2FFFFFFF;
 			t14_0  = (pcr_base & 0x00007FFF);
 			ext    =  static_cast<uint32_t>(pcr_ext);
 
