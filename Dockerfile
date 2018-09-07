@@ -132,6 +132,8 @@ cd /build/mg/src/mg/media \
 && ../../../../../codecov -t "$ENV_CODECOV_MP4" -X gcov -X gcovout \
 ; fi
 
+RUN cd mg/test && python ./test_multiple_bitrate.py
+
 RUN ln -s /build/mg/src/mgcli/mg /usr/local/mg
 
  

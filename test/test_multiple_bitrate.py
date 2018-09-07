@@ -136,7 +136,6 @@ def main(argv):
     
     test_core.recreatedir(dj)
 
-
     execdash(mg, targets, bitrates, dt)
     test_core.sanitize_i_files(dt)
 
