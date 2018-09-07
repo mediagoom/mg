@@ -206,7 +206,7 @@ after_build:
         #- sh: ls -l && appveyour PushArtifact ./testmglog
         - sh: touch ./mg.pdb
         - sh: ip addr show
-        - sh: echo "API URL: $APPVEYOR_API_URL"
+        - sh: echo $APPVEYOR_API_URL
 
 #---------------------------------#
 #       tests configuration       #
