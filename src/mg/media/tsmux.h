@@ -310,7 +310,7 @@ public:
 
 		_body.flush();
 
-		__int64 PCR = UINT64_MAX;
+		uint64_t PCR = UINT64_MAX;
 		
 
 		if(_pcr_output) // && ( ( ((__int64)decoding_time) / _pcr_distance) > _pcr_count) ) 
