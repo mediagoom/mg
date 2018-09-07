@@ -257,7 +257,7 @@ public:
             else
             {
                 _ASSERTE(false);
-                DBGC0(_T("CANNOT USE AAC FIX. INVALID TIME SCALE VS SAMPE RATE"));
+                DBGC0("CANNOT USE AAC FIX. INVALID TIME SCALE VS SAMPE RATE");
                 _apply_audio_fix = false;
             }
         }
