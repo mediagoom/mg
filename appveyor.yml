@@ -190,7 +190,7 @@ build_script:
   - sh: echo $APPVEYOR_API_URL
   - sh: echo http://172.17.0.1:$(echo $APPVEYOR_API_URL | grep '[0-9]*' -o)
   - sh: if [ $PLATFORM = "x64" ] ; then docker build -t mgi .; fi
-  - sh: if [ $PLATFORM = "Win32" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT --build-arg APPVEYOR_API_URL=http://172.17.0.1:$(echo $APPVEYOR_API_URL | grep '[0-9]*' -o) -t mgi .; fi
+  - sh: if [ $PLATFORM = "Win32" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT --build-arg APPVEYOR_API_URL=http://172.17.0.1:$(echo $APPVEYOR_API_URL | grep '[0-9]*' -o)/ -t mgi .; fi
 
 # to disable automatic builds
 #build: off
