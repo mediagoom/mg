@@ -1,4 +1,4 @@
-import subprocess, os, shutil, time
+import subprocess, os, shutil, time, sys
 import re, glob, datetime, json, urllib2
 
 class TestError(Exception):
@@ -23,18 +23,20 @@ class TestResult:
 def appveyourapicall(path, values):
     appurl = os.environ.get('APPVEYOR_API_URL')
     r = json.dumps(values)
+    try:
+        if not None == appurl:
+            url = appurl + path
+            
+            print('APIREQUEST', url, r)
 
-    if not None == appurl:
-        url = appurl + path
-        
-        print('APIREQUEST', url, r)
-
-        req = urllib2.Request(url, r , headers={'Content-type': 'application/json', 'Accept': 'application/json'})
-        response = urllib2.urlopen(req)
-        the_page = response.read()
-        print(the_page)
-    else:
-        print('NO API SERVER', path, r)
+            req = urllib2.Request(url, r , headers={'Content-type': 'application/json', 'Accept': 'application/json'})
+            response = urllib2.urlopen(req)
+            the_page = response.read()
+            print(the_page)
+        else:
+            print('NO API SERVER', path, r)
+    except:
+        print('API SERVER FAILED', path, r, sys.exc_info()[0])
 
 def reporttest(testresult):
     name = testresult.name
