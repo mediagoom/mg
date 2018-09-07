@@ -3634,7 +3634,7 @@ int auto_test(const STDTSTRING & test_name, console_command & c)
 
     if(test_name == _T("time"))
 	{
-			unsigned __int64 mpeg_time = 29825950000;
+			uint64_t mpeg_time = 29825950000;
 
 			PesData pes;
 

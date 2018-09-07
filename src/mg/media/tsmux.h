@@ -313,7 +313,7 @@ public:
 		uint64_t PCR = UINT64_MAX;
 		
 
-		if(_pcr_output) // && ( ( ((__int64)decoding_time) / _pcr_distance) > _pcr_count) ) 
+		if(_pcr_output) 
 		{
 			//PCR = _body_presentation_time;
 			PCR = decoding_time;
@@ -587,9 +587,9 @@ public:
 	void set_presentation_offset(const uint64_t presentation_offset)
 	{_presentation_offset = presentation_offset;}
 
-	unsigned __int64 get_presentation_offset() const {return _presentation_offset;}
+	uint64_t get_presentation_offset() const {return _presentation_offset;}
 
-	void set_decoding_offset(const unsigned __int64 decoding_offset)
+	void set_decoding_offset(const uint64_t decoding_offset)
 	{_decoding_offset = decoding_offset;}
 
 	virtual uint64_t get_memory_size()
