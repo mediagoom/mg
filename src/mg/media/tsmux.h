@@ -553,7 +553,7 @@ public:
 		   )
 		{
             FDBGC3(DBGCTSMUXINFO
-                , _T("OUTPUT-TABLES %d %d %d\r\n")
+                , "OUTPUT-TABLES %d %d %d\r\n"
 				, _is_first_sample
                 , _only_table_at_beginning
                 , ((!_only_table_at_beginning) && _repeat_pid == stream_id && IFrame)
