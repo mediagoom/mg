@@ -107,6 +107,10 @@ public:
 	int _progressive;
 
 	signal_event _ended;
+
+    test_lock():_progressive(0)
+    {}
+
 protected:
 
 	virtual void run()
