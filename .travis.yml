@@ -29,7 +29,7 @@ script:
 - "./test_dash.py"
 - "./test_hls.py"
 - "./test_mg.py"
-- "./test_multiple_bitrate.py"
+- python ./test_multiple_bitrate.py
 after_script:
 - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash -c ./boxupload.sh'
 deploy:
