@@ -1,7 +1,7 @@
 # mg
 
 [![Build Status](https://travis-ci.org/mediagoom/mg.svg?branch=master)](https://travis-ci.org/mediagoom/mg)
-[![Win Build Status](https://ci.appveyor.com/api/projects/status/github/mediagoom/mg?branch=dev-win&svg=true)](https://ci.appveyor.com/project/aseduto/mg)
+[![Win Build Status](https://ci.appveyor.com/api/projects/status/github/mediagoom/mg?branch=master&svg=true)](https://ci.appveyor.com/project/aseduto/mg)
 
 ## Essential Open Source Web Media Streaming
 
@@ -25,11 +25,8 @@ In order to produce mp4 file to be consumed by mg you can follow this guide:  [H
 
 mg  allows you to package your MP4 files. In this way you they can be effectively streamed on the Internet.
 
-Packaging features:
+Packaging format:
 
-
-[comment]: <> (https://en.wikipedia.org/wiki/HTTP_Live_Streaming">HTTP Live Streaming also known as HLS)
- * Statically package your mp4 files as:
  1. [Dynamic Adaptive Streaming over HTTP (DASH)](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP)
  2. [Http Live Stream (HLS)](https://en.wikipedia.org/wiki/HTTP_Live_Streaming)
  2. [Smooth Streaming](https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming#Microsoft_Smooth_Streaming)
