@@ -99,7 +99,7 @@ RUN cd mg && if [ "$ENV_CODECOV_MG" ]; then \
 
 RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/mg/media/mp4tmp \
 && cd /build/mg/src/mg/media \
-&& msg="$(git log -1 --pretty=format:%s | sed 's/\//---/'')" \
+&& msg="$(git log -1 --pretty=format:%s | sed 's/\//---/')" \
 && git clone https://github.com/mediagoom/mp4.git \
 && mv /build/mg/src/mg/media/mp4tmp/* /build/mg/src/mg/media/mp4 \
 && rm mp4tmp -r \
