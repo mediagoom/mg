@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Main">
+ <!--
+USAGE:
+
+LOCAL TEST WITH POWERSHELL:
+$gypmain = "a:\data\code\gyp\tools\gyp\gyp_main.py" # PUT HERE YOUR PATH TO GYP
+$env:GYP_MSVS_VERSION=2015
+$env:WindowsSdkDir="C:\Program Files (x86)\Windows Kits\10"
+$env:TargetPlatformVersion="10.0.10240.0" # ls "$env:WindowsSdkDir\lib"
+msbuild /p:Configuration=Release /p:Platform=Win32 /p:gyp=$gypmain
+
+-->
+ 
+   <PropertyGroup>
+       <gyp>../gyp/gyp_main.py</gyp>
+   </PropertyGroup>
+
+  <ItemGroup>
+        <ProjectToBuild Include="$(MSBuildProjectDirectory)\test\mgtest.sln"/>
+   </ItemGroup>
+
+<Target Name="GYP32" Condition="'Win32'==$(Platform)">
+    <Exec Command='python $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi' WorkingDirectory=".\test" />
+</Target>
+
+<Target Name="GYP64" Condition="'x64'==$(Platform)">
+    <Exec Command='python $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi' WorkingDirectory=".\test" />
+</Target>
+
+<Target Name="Main" >
+    <CallTarget Targets="GYP32" ContinueOnError="false" />
+    <CallTarget Targets="GYP64" ContinueOnError="false" />
+
+     <MSBuild Projects="@(ProjectToBuild)"
+          Properties="Configuration=$(Configuration);Platform=$(Platform)" 
+             BuildInParallel="false"
+	    />
+</Target>
+
+</Project>
+   
+
+
+
+

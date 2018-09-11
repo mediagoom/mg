@@ -67,6 +67,7 @@ struct sample_stream_info: public sample_info
 
 #define MP4ERROR(msg) ALXTHROW_T(msg)
 #define MP4CHECK(box) _ASSERTE(box == mp4.get_box().get_type()); if(box != mp4.get_box().get_type()) MP4ERROR(_T(#box " expected"));
+#define MP4CHECK2(box1, box2) _ASSERTE(box1 == mp4.get_box().get_type() || box2 == mp4.get_box().get_type()); if(box1 != mp4.get_box().get_type() && box2 != mp4.get_box().get_type()) MP4ERROR(_T(#box1 " expected or " #box2));
 template <typename K, typename T>
 class CRangeMap
 {
@@ -110,7 +111,7 @@ public:
 			   _vector_data[_vector_data.size() - 1].k >= k
 			)
 			{
-				DBGC2(_T("INVALID MAPRANGE k1 %s k2 %s \n\r")
+				DBGC2("INVALID MAPRANGE k1 %s k2 %s \n\r"
 					, HNS(_vector_data[_vector_data.size() - 1].k)
 					, HNS(k)
 					);
@@ -175,9 +176,9 @@ public:
 			return 1;
 		}
 
-		unsigned int idx   = _vector_data.size() / 2;
+		unsigned int idx   = ST_U32(_vector_data.size() / 2);
 		unsigned int lower = 0;
-		unsigned int upper = _vector_data.size() - 1;
+		unsigned int upper = ST_U32(_vector_data.size() - 1);
 
 		while(idx < (_vector_data.size())
 			    //&& idx > 0
@@ -244,7 +245,7 @@ class CMP4SampleManager;
 class CMP4
 {
 	Box              _current_box;
-	uint64_t _box_position;
+	uint64_t         _box_position;
 	unsigned int     _last_handler_type;
 	FullBox          _current_full_box;
 
@@ -294,9 +295,17 @@ public:
 		{
 			skip(max);
 			to_do_bits -= max;
+
+            if(_p_f->eof())
+            {                
+                to_do_bits = 0;
+                break;
+            }
+
 		}
 		
-		skip(static_cast<short>(to_do_bits));
+        if(to_do_bits)
+		    skip(static_cast<short>(to_do_bits));
 	}
 
 	void set_position(uint64_t position)
@@ -428,7 +437,7 @@ public:
 
 	void parse_file_type_box(FileTypeBox &box)
 	{
-        _ASSERTE(ALX::Equals(_T("ftyp"), _last_box_type));
+        _ASSERTE(ALX::Equals(_T("ftyp"), _last_box_type) || ALX::Equals(_T("styp"), _last_box_type));
 		box.get(*_p_f);
 	}
 	void parse_sound_header_box(SoundMediaHeaderBox &box)
@@ -954,7 +963,7 @@ class CMP4TimeManager
 
 			//a.composition_time < b.composition_time
 
-			unsigned int idx = comp.size();
+			size_t idx = comp.size();
 
 			if(0 == idx) //first element
 			{
@@ -1116,7 +1125,7 @@ public:
 			   else
 			   {
 				   fprintf(stdout
-					   , ">invalid composition sample: decoding samples: %lu vs %" PRIu64 "\r\n"
+					   , ">invalid composition sample: decoding samples: %zu vs %" PRIu64 "\r\n"
 								, _p_sample_2composition->size()
 								, total_samples);
 
@@ -1445,7 +1454,7 @@ protected:
 
 	bool _has_sample_description;
 
-	virtual void parse_header(CMP4& mp4) = 0;
+	virtual bool parse_header(CMP4& mp4) = 0;
 	virtual void parse_sample_description(CMP4& mp4) = 0;
 
 	virtual void not_sample_description_found(CMP4 &mp4)
@@ -1503,8 +1512,8 @@ public:
 		_minf_size     = mp4.get_box().get_size();
 
 		mp4.do_box();
-		parse_header(mp4);
-		mp4.do_box();
+		if(parse_header(mp4))
+			mp4.do_box();
 
 		parse_boxes(mp4);
 	}
@@ -1861,10 +1870,16 @@ class CMP4HandlerVide: public CMP4Handler
 	std::vector<CMP4VisualEntry*> _entries;
 	
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
-		MP4CHECK(box_vmhd);
-		mp4.parse_video_header_box(_vmhd);
+		//MP4CHECK(box_vmhd);
+		if (box_vmhd == mp4.get_box().get_type())
+		{
+			mp4.parse_video_header_box(_vmhd);
+			return true;
+		}
+
+		return false;
 	}
 
 	virtual void parse_sample_description(CMP4& mp4)
@@ -1906,10 +1921,17 @@ class CMP4HandlerSoun: public CMP4Handler
 	SoundMediaHeaderBox _smhd;
 	std::vector<CMP4AudioEntry*> _entries;
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
-		MP4CHECK(box_smhd);
-		mp4.parse_sound_header_box(_smhd);
+		//MP4CHECK(box_smhd);
+		if (box_smhd == mp4.get_box().get_type())
+		{
+			mp4.parse_sound_header_box(_smhd);
+			return true;
+		}
+		
+		return false;
+		
 	}
 
 	virtual void parse_sample_description(CMP4& mp4)
@@ -1949,12 +1971,14 @@ class CMP4HandlerLTC: public CMP4Handler
 	bool _has_one;
 
 protected:
-	virtual void parse_header(CMP4& mp4)
+	virtual bool parse_header(CMP4& mp4)
 	{
 		MP4CHECK(box_smhd);
 		mp4.parse_sound_header_box(_smhd);
 
 		_has_one = true;
+
+		return true;
 	}
 
 	virtual void not_sample_description_found(CMP4 &mp4)
@@ -1991,6 +2015,37 @@ public:
 	virtual bool has_one() const {return _has_one;}
 };
 
+class CMP4HandlerNULL: public CMP4Handler
+{
+	
+protected:
+	virtual bool parse_header(CMP4& mp4)
+	{
+		mp4.skip_current();
+
+		return true;
+	}
+
+	virtual void not_sample_description_found(CMP4 &mp4)
+	{
+		mp4.skip_current();
+		
+	}
+
+	virtual void parse_sample_description(CMP4& mp4)
+	{
+		mp4.skip_current();
+	}
+    	
+
+	virtual ~CMP4HandlerNULL()
+	{
+
+	}
+public:
+	
+};
+
 
 class CPM4Track
 {
@@ -2007,6 +2062,8 @@ class CPM4Track
 
 	uint64_t  _current_sample;
 	uint64_t  _mvhd_time_scale;
+
+    bool            _can_be_parsed;
 
 protected:
 	
@@ -2042,8 +2099,12 @@ protected:
 				case BOX('s', 'o','u','n'):
 					_p_media = new CMP4HandlerSoun;
 					break;
+                case BOX('t', 'e','x','t'):
+                    this->set_not_parsable_thrack();
+					_p_media = new CMP4HandlerNULL;
+					break;
 				default:
-					MP4ERROR(_T("unknowed handler type"));
+					MP4ERROR(_T("Unknown handler type"));
 					break;
 				}
 
@@ -2079,7 +2140,8 @@ protected:
 			_time_manager.set_sample_count(_sample_manager.get_sample_count());
 			break;
 		default:
-			_ASSERTE(false);
+			//_ASSERTE(false);
+            DBGC1("Unknown box found: %s", mp4.get_box().get_type_string());
 			mp4.skip_current();
 			break;
 		}
@@ -2097,7 +2159,6 @@ protected:
 		_trak_size = mp4.get_box().get_size();
 		_trak_position = mp4.get_box_position();
 
-		
 	}
 public:
 	virtual void parse(CMP4 &mp4)
@@ -2114,6 +2175,7 @@ public:
      , _p_media(NULL)
 	 , _current_sample(0)
 	 , _mvhd_time_scale(mvhd_time_scale)
+     , _can_be_parsed(true)
 	{}
 
     void close()
@@ -2208,6 +2270,16 @@ public:
 	{
 		_ASSERTE(_p_hdlr);
 		return _p_hdlr->handler_type == BOX('s', 'o','u','n');
+	}
+
+    void set_not_parsable_thrack()
+    {
+        _can_be_parsed = false;
+    }
+
+    virtual bool can_be_parsed() const
+	{
+		return _can_be_parsed;
 	}
 
 	virtual bool IsLTC() const
@@ -2389,6 +2461,16 @@ public:
 		return (1000UL * 10000UL * time) / _mdhd.get_timescale() ;
 	}
 
+    uint64_t get_raw_composition_time(const uint64_t sample_number) const
+	{
+		return _time_manager.get_composition_time(sample_number);
+	}
+
+	uint64_t get_raw_decoding_time(const uint64_t sample_number) const
+	{
+		return _time_manager.get_decoding_time(sample_number);
+	}
+
 };
 
 
@@ -2536,7 +2618,8 @@ private:
 
 		switch(mp4.get_box().get_type())
 		{
-		case box_ftyp:
+        case box_ftyp:
+        case box_STYP:
 			_p_ftyp = new FileTypeBox(static_cast<uint32_t>(mp4.get_box().get_size()));
 			mp4.parse_file_type_box(*_p_ftyp);
 			break;
@@ -2608,7 +2691,7 @@ public:
 
 		mp4.do_box();
 
-		MP4CHECK(box_ftyp);
+		MP4CHECK2(box_ftyp, box_STYP);
 
 		parse_boxes(mp4);
 
@@ -2663,7 +2746,17 @@ public:
 		return pt->get_sample_size(sample);
 	}
 
-	int stream_count() const{return _streams.size();}
+	size_t stream_count() const{return _streams.size();}
+
+    size_t parsable_stream_count() const
+    {
+        size_t count(0);
+        for(size_t i = 0; i < _streams.size(); i++)
+            if(this->IsValidStream(i))
+                count++;
+
+        return count;
+    }
 
 	const CMP4VisualEntry & get_visual_entry(const int idx, unsigned int stream_number) const
 	{
@@ -2693,6 +2786,18 @@ public:
 	{	
 	   _ASSERTE(stream_number < _streams.size());
 	   return _streams[stream_number]->get_decoding_time(sample_number);
+	}
+
+    uint64_t get_raw_composition_time(const uint64_t sample_number, const unsigned int stream_number) const
+	{	
+	   _ASSERTE(stream_number < _streams.size());
+	   return _streams[stream_number]->get_raw_composition_time(sample_number);
+	}
+
+	uint64_t get_raw_decoding_time(const uint64_t sample_number, const unsigned int stream_number) const
+	{	
+	   _ASSERTE(stream_number < _streams.size());
+	   return _streams[stream_number]->get_raw_decoding_time(sample_number);
 	}
 
 	uint64_t get_composition_sample_number(const uint64_t time, const unsigned int stream_number) const
@@ -2773,7 +2878,7 @@ public:
 	uint64_t get_decoding_end_time_plus_duration(const unsigned int stream_number) const
 	{
 		_ASSERTE(stream_number < _streams.size());
-		return get_decoding_end_time(_streams.size() - 1) + get_sample_duration(_streams.size() - 1);
+		return get_decoding_end_time(ST_U32(_streams.size() - 1)) + get_sample_duration(ST_U32(_streams.size() - 1));
 	}
 
 
@@ -2788,7 +2893,7 @@ public:
 	{
 		int v_stream = -1;
 
-		for(int i = 0; i < stream_count(); i++)
+		for(int i = 0; i < ST_I32(stream_count()); i++)
 		{
 			if(IsVisual(i))
 			{
@@ -2818,11 +2923,17 @@ public:
 		return _streams[stream_number]->IsLTC();
 	}
 
+    bool IsValidStream(const unsigned int stream_number) const
+	{
+		_ASSERTE(stream_number < _streams.size());
+		return _streams[stream_number]->can_be_parsed();
+	}
+
 	int LTCStream() const
 	{
 		int ltc_stream = -1;
 
-		for(int i = 0; i < stream_count(); i++)
+		for(int i = 0; i < ST_I32(stream_count()); i++)
 		{
 			if(IsLTC(i))
 			{
@@ -3065,7 +3176,7 @@ public:
 
 	}
 
-	int get_root_meta_count() const {return _meta_position.size();}
+	size_t get_root_meta_count() const {return _meta_position.size();}
 	uint64_t get_meta_position(const unsigned int idx) const {return _meta_position[idx];}
 
 	const TCHAR * get_language(const unsigned int stream_number) 

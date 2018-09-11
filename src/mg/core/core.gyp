@@ -9,17 +9,17 @@
        		 ['OS == "win"', {
 	
                'sources':[
-                   'win/win-util.h'
-                 , 'win/util.cpp'
-                 , 'win/ctime.cpp'
-				 , 'win/console_color.h' 
+                       'win/win-util.h'
+                     , 'win/util.cpp'
+                     , 'win/ctime.cpp'
+				     , 'win/console_color.h' 
                 ]
            }
            ,{
-              'sources':[
-                   'nx/util.cpp'
-                 , 'nx/ctime.cpp'
-				 , 'nx/console_color.h'
+               'sources':[
+                       'nx/util.cpp'
+                     , 'nx/ctime.cpp'
+				     , 'nx/console_color.h'
                 ]
              }
            

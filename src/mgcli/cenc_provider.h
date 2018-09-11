@@ -21,7 +21,25 @@
  *****************************************************************************/
 #pragma once
 
+inline Cstring kid_to_string(unsigned char * pKid)
+{
+	Cstring kid;
+	kid.append_hex_buffer(pKid, 4);
+	kid.append(_T("-"));
 
+	kid.append_hex_buffer(pKid + 4, 2);
+	kid.append(_T("-"));
+
+	kid.append_hex_buffer(pKid + 6, 2);
+	kid.append(_T("-"));
+
+	kid.append_hex_buffer(pKid + 8, 2);
+	kid.append(_T("-"));
+
+	kid.append_hex_buffer(pKid + 10, 6);
+
+	return kid;
+}
 
 class ICencProvider
 {
@@ -69,25 +87,7 @@ class PlayReadyCencProvider: public ICencProvider
                  retVal[pos++] = guid[j]; 
 	}
 
-	Cstring kid_to_string(unsigned char * pKid)
-	{
-		Cstring kid;
-		        kid.append_hex_buffer(pKid, 4);
-				kid.append(_T("-"));
-				
-				kid.append_hex_buffer(pKid + 4, 2);
-				kid.append(_T("-"));
-
-				kid.append_hex_buffer(pKid + 6, 2);
-				kid.append(_T("-"));
-
-				kid.append_hex_buffer(pKid + 8, 2);
-				kid.append(_T("-"));
-
-				kid.append_hex_buffer(pKid + 10, 6);
-		
-		return kid;
-	}
+	
 
 	
 	CstringT<wchar_t> Checksum(unsigned char * pKey, unsigned char * pKid)
@@ -450,6 +450,145 @@ public:
                     json += _T("\"}]}");
 
 			return json;
+	}
+};
+
+class WidevineBoyProvider : public ICencProvider
+{
+
+	unsigned char _key[BLOCK_LEN];
+	unsigned char _kid[BLOCK_LEN];
+	
+	unsigned char _system_id[BLOCK_LEN];
+
+	//CBuffer<unsigned char> _body;
+
+	WriteMemoryBitstream _body;
+
+public:
+	
+	WidevineBoyProvider(unsigned char * pKey
+		, unsigned char * pKid
+		, const char * body64
+		, uint32_t body_size) :_body(body_size)
+	{
+
+		unsigned char system_id[] = { 
+			  0xED
+			, 0xEF
+			, 0x8B
+			, 0xA9
+			, 0x79
+			, 0xD6
+			, 0x4A
+			, 0xCE
+			, 0xA3
+			, 0xC8
+			, 0x27
+			, 0xDC
+			, 0xD5
+			, 0x1D
+			, 0x21
+			, 0xED
+		};
+
+		::memcpy(_system_id, system_id, BLOCK_LEN);
+		::memcpy(_key, pKey, BLOCK_LEN);
+		::memcpy(_kid, pKid, BLOCK_LEN);
+
+		CBuffer<char>  strClear(body_size);
+
+		base64_decodestate state_in;
+
+		base64_init_decodestate(&state_in);
+
+		int written = base64_decode_block(
+			  body64
+			, body_size
+			, strClear.get()
+			, &state_in);
+
+		strClear.updatePosition(written);
+		
+		_body.write(reinterpret_cast<unsigned char*>(strClear.get()), ST_U32(strClear.size()));
+		
+
+	}
+
+	void fill(ProtectionSystemSpecificHeaderBox & pssh)
+	{
+		pssh.set_version(0);
+		pssh.KID_count = 0;
+
+		
+		::memcpy(&pssh.SystemID, _system_id, BLOCK_LEN);
+
+		pssh._p_data = new unsigned char[static_cast<uint32_t>(_body.get_size())];
+		pssh.DataSize = static_cast<uint32_t>(_body.get_size());
+
+		::memcpy(pssh._p_data, _body.get_buffer(), pssh.DataSize);
+	}
+
+	virtual void add_pssh(std::vector<ProtectionSystemSpecificHeaderBox *> &  vpssh)
+	{
+		
+		ProtectionSystemSpecificHeaderBox * ppssh = new ProtectionSystemSpecificHeaderBox;
+
+		fill(*ppssh);
+
+		vpssh.push_back(ppssh);
+	}
+
+	virtual void add_ContentProtection(std::vector<Cstring> & vContentProtection)
+	{
+		
+
+		Cstring kid = kid_to_string(_kid);
+
+		Cstring cp = _T("<ContentProtection value=\"Widevine\" schemeIdUri=\"urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed\" >");
+
+		ProtectionSystemSpecificHeaderBox pssh;
+		fill(pssh);
+
+		/*
+
+		CMP4WriteMemory & m = _bit_stream;
+		//m.Open(&_bit_stream);
+		m.open(1024);
+
+		m.open_box(box_pssh);
+
+		m.write_box(pssh);
+
+		m.close_box(box_pssh);
+
+		//_bit_stream.flush();
+
+		m.flush();
+		*/
+
+		//WriteMemoryBitstream stream(1024);
+
+		CMP4WriteMemory m;
+		m.open(1024);
+		m.open_box(box_pssh);
+		m.write_box(pssh);
+		m.close_box(box_pssh);
+
+		//pssh.put(stream);
+
+		//stream.flush();
+
+		m.flush();
+		
+		cp += _T("<cenc:pssh>");
+		
+		cp += PlayReadyCencProvider::Base64(m.get_buffer(), U64_U32(m.get_size()));
+
+		cp += _T("</cenc:pssh>");
+		cp += _T("</ContentProtection>");
+
+		vContentProtection.push_back(cp);
 	}
 };
 

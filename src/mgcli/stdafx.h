@@ -47,10 +47,8 @@
 #ifdef _WIN32
 #include <wmsdkidl.h>
 //#include "MP4EditAACReplace.h"
-#include "atlenc.h"
+//#include "atlenc.h"
 #else
-#define ATL_BASE64_FLAG_NOPAD  0
-#define ATL_BASE64_FLAG_NOCRLF 0
 
 
 typedef struct _WMT_TIMECODE_EXTENSION_DATA
@@ -64,4 +62,6 @@ typedef struct _WMT_TIMECODE_EXTENSION_DATA
 
 #endif
 
+#define ATL_BASE64_FLAG_NOPAD  0
+#define ATL_BASE64_FLAG_NOCRLF 0
 

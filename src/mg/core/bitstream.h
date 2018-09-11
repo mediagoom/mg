@@ -710,6 +710,7 @@ public:
 			
 			//buffer start
 			uint64_t epos = _p_cb->get_position();
+            
 			uint64_t kpos  = epos;
 			kpos -= _buf_len;
 			kpos -= _shadow_len;
@@ -791,10 +792,24 @@ public:
 
 				}
 			}
+            else if(_p_cb->eof() && epos < rhs)
+            {
+                //move to the end
+                if(pos < epos)
+                {
+                    uint64_t n = (epos - pos) << 3;
+                    _cur_bit += n;
+                    _tot_bits += n;
+
+                    _ASSERTE((_cur_bit >> 3) <= _buf_size);
+                }
+            }
 			else
 			{
+                
+
 				//reset
-				_p_cb->set_position(rhs);
+                _p_cb->set_position(rhs);
 				_tot_bits = rhs << 3;
 
 				do_reload = true;
@@ -837,7 +852,13 @@ public:
 
 			_tot_bits = (rhs << 3);
 
-			DBGC5(_T("SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d"), rhs, _cur_bit, _shadow_len, _buf_len, do_reload);
+			FDBGC5(BITSTREAM_POSITION_DEBUG
+                , "SET-POSITION-WRITE-END\t%" PRIu64 "\t%" PRIu64 "\t%" PRIu32 "\t%" PRIu32 "\t%d"
+                , rhs
+                , _cur_bit
+                , _shadow_len
+                , _buf_len
+                , do_reload);
 
 		}
 
@@ -888,6 +909,8 @@ protected:
 
 		uint64_t bit_len = _buf_len << 3;
 
+        _ASSERTE(bit_len >= _cur_bit);
+
 		uint64_t bit_ava = bit_len - _cur_bit;
 
 		if (bit_ava < n)
@@ -906,7 +929,7 @@ protected:
 				_cur_bit += (n - bit_ava);
 				_tot_bits += n;
 			}
-			else
+            else if(has_bits(n))
 			{
 				uint64_t pos = _getpos();
 				         pos += n;
@@ -917,10 +940,23 @@ protected:
 
 						 _ASSERTE(_cur_bit == 0);
 
+                         _ASSERTE((_buf_len << 3) >= (_cur_bit + remain));
+
 						 _cur_bit += remain;
 						 _tot_bits += remain;
 						 
 			}
+            else
+            {
+                //we are at the end
+                if(!atend())
+                {
+                    _cur_bit += bit_ava;
+				    _tot_bits += bit_ava; 
+                }
+
+                _ASSERTE(atend());
+            }
 
 		}
 		else
@@ -986,8 +1022,9 @@ private:
 			this->_cur_bit += (todo << 3);
 			this->_tot_bits += (todo << 3);
 
-			this->_nextbits(32); //reload buffer if needed
-
+			if(!this->atend())
+				this->_nextbits(32); //reload buffer if needed
+			
 			(*read) = available + todo;
 
 		}
@@ -1195,6 +1232,8 @@ template<class Type> void bitstream_base<Type>::fill_buf()
 	_load_shadow = true;
 	internal_read(_buf_size - _shadow_len, true);
 
+    _ASSERTE(((_cur_bit) >> 3) <= _buf_len);
+
 }
 
 template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_val, uint32_t read)
@@ -1228,7 +1267,7 @@ template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_
 
 			//_ASSERTE( (_shadow_len == _buf_size) || _p_cb->eof() );
 		
-		}INVALIDELSE;
+		}//INVALIDELSE;
 	}
 	else
 	{
@@ -1244,7 +1283,7 @@ template<class Type> void bitstream_base<Type>::read_cb(const unsigned char * p_
 		_buf_len += read;
 	}
 
-	DBGC0("READ_CB_SIGNAL");
+	FDBGC0(BITSTREAM_READ_DEBUG, "READ_CB_SIGNAL");
 	_pending_read = false;
 	_load_event.signal();
 }

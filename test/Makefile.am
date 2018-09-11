@@ -19,7 +19,10 @@ mgtest_SOURCES =  test_bitstream.cpp \
 mgtest_LDADD =  $(top_builddir)/src/mg/core/libmgcore.a \
 		$(top_builddir)/src/mg/media/libmgmedia.a
 
-TESTS = BITSTREAM RESOURCES UV THREAD MP4 test_hls.py test_dash.py
+TOUCH_TEST = BITSTREAM RESOURCES UV THREAD MP4
+
+#TESTS = $(TOUCH_TEST) test_hls.py test_dash.py test_wine.py test_mg.py test_multiple_bitrate.py
+TESTS = $(TOUCH_TEST) test_hls.py test_dash.py test_mg.py 
 TEST_EXTENSIONS = .py
 PY_LOG_COMPILER = $(PYTHON)
 LOG_COMPILER = ./mgtest
@@ -31,7 +34,7 @@ $(TESTS):
 
 
 
-MOSTLYCLEANFILES = $(CLEAN_GCOV) $(TESTS) 
+MOSTLYCLEANFILES = $(CLEAN_GCOV) $(TOUCH_TEST) 
 
 #lib_LTLIBRARIES = libmdcore.la
 #libmdcore_la_CFLAGS = @CFLAGS@

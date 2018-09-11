@@ -71,6 +71,7 @@
         , 'mp4/mpeg4_odf.fl'
         , 'mp4/mpeg2au.fl'
         , 'mp4/mpeg2ts.fl'
+        , 'aac_time_fix.h'
         , 'mp4fragmented.h'
         , 'media_parser.h'
         , 'MP4Mux.h'

@@ -391,13 +391,29 @@ protected:
 
 	virtual void write_stsd(CMP4W &mp4w)
 	{
+        //TODO: CHECK CENC 2 entry
 		SampleDescriptionBox stsd;
+#ifdef FRAGMENTEDSTYPFALSE
 		                     stsd.entry_count = 1;
+#else
+                             stsd.entry_count = (has_cenc_id())?2:1;
+#endif
 
 		mp4w.open_box(box_stsd);
 		mp4w.write_box(stsd);
 
-		write_stream_entry(mp4w);
+        write_stream_entry(mp4w);
+
+#ifdef FRAGMENTEDSTYPTRUE
+
+        if(has_cenc_id())
+        {
+            _has_cenc_id = false;
+            write_stream_entry(mp4w);
+            _has_cenc_id = true;
+        }
+
+#endif
 
 		mp4w.close_box(box_stsd);
 	}
@@ -569,7 +585,8 @@ protected:
 
 		mp4w.write_uint(0xFFFFFFFF);
 
-		int last = _chunks.size() -1;
+
+		int last = ST_I32(_chunks.size()) -1;
 
 		for(int i = 0; i < last; i++)
 		{			
@@ -577,7 +594,7 @@ protected:
 			
 			if(0 == i)
 			{
-				chunk_start = i + 1;
+				chunk_start = IS_U32(i + 1);
 				sample_count = static_cast<uint32_t>(current_sample_count);
 			}
 
@@ -594,7 +611,7 @@ protected:
 				entry_count++;
 
 				sample_count = static_cast<uint32_t>(current_sample_count);
-				chunk_start = i + 1;
+				chunk_start = IS_U32(i + 1);
 			}
 	
 		}
@@ -624,7 +641,7 @@ protected:
 
 		if(_chunks.size() || !_allow_empty_stream)
 		{
-			mp4w.write_uint(last + 1);
+			mp4w.write_uint(ST_U32(last + 1));
 			mp4w.write_uint(static_cast<uint32_t>(_chunks[last].samples));
 			mp4w.write_uint(1);
 
@@ -654,7 +671,7 @@ protected:
 		//else
 		//	mp4w.write_uint(_samples[0].size);
 
-		mp4w.write_uint(_samples.size());
+		mp4w.write_uint(ST_U32(_samples.size()));
 
 		if(_has_size)
 		{
@@ -724,7 +741,7 @@ protected:
 		mp4w.open_box(box_stco);
 		mp4w.write_box(stco);
 
-		mp4w.write_uint(_chunks.size());
+		mp4w.write_uint(ST_U32(_chunks.size()));
 
 		_stco_position = mp4w.get_position();
 
@@ -744,7 +761,7 @@ protected:
 		mp4w.open_box(box_stss);
 		mp4w.write_box(stss);
 
-		mp4w.write_uint(_iframes.size());
+		mp4w.write_uint(ST_U32(_iframes.size()));
 
 		for(uint32_t i = 0; i < _iframes.size(); i++)
 		{
@@ -838,7 +855,7 @@ protected:
 					if(_samples[_samples.size()-1].decoding
 						>= decoding)
 					{
-						DBGC5(_T("INVALID DECODING SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n")
+						DBGC5("INVALID DECODING SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n"
 							, HNS(ms.composition_time)
 							, HNS(ms.decoding_time)
 							, HNS(ms.duration)
@@ -852,7 +869,7 @@ protected:
 						(decoding - _samples[_samples.size()-1].decoding)
 					)
 					{
-						DBGC5(_T("INVALID DISTANCE SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n")
+						DBGC5("INVALID DISTANCE SEQUENCE\t%s\t%s\t%s\t%d\t%s\r\n"
 							, HNS(ms.composition_time)
 							, HNS(ms.decoding_time)
 							, HNS(ms.duration)
@@ -1038,7 +1055,7 @@ public:
 
 
 
-	void set_stream_id(int id){_stream_id = id;}
+	void set_stream_id(const uint32_t id){_stream_id = id;}
 	int  get_stream_id(){return _stream_id;}
 
 	void set_time_scale(const uint64_t time_scale){_time_scale = time_scale;}
@@ -1057,7 +1074,7 @@ public:
 		return _ctts_offset;
 	}
 
-	int get_sample_count()
+	size_t get_sample_count()
 	{
 		return _samples.size();
 	}
@@ -1297,7 +1314,7 @@ public:
 				{
 					if(tot - _samples[i].composition > decoding_offset)
 					{
-						DBGC5(_T("AUTO DECODING\t%s\t%s\t%s\t%s\t%d\r\n")
+						DBGC5("AUTO DECODING\t%s\t%s\t%s\t%s\t%d\r\n"
 							, HNS(_samples[i].composition)
 							, HNS(tot)
 							, HNS(tot - _samples[i].composition)
@@ -1356,16 +1373,24 @@ protected:
 				
 		mp4w.write_box(const_cast<VisualSampleEntry &>(e));
 
+#ifdef CENC 
+#ifdef FRAGMENTEDSTYPTRUE
+         write_protected_sinf(mp4w);
+#endif
+#endif
+
 		mp4w.open_box(box_avcC);
 		   mp4w.write_bytes(_v.get_body(), static_cast<uint32_t>(_v.get_body_size()));
 	    mp4w.close_box(box_avcC);
 
-#ifdef CENC
-		   write_protected_sinf(mp4w);
-#endif
-	
 
-		mp4w.write_child_box(box_btrt, _v.get_btrt());
+#ifdef CENC
+#ifdef FRAGMENTEDSTYPFALSE
+		   write_protected_sinf(mp4w);
+           mp4w.write_child_box(box_btrt, _v.get_btrt());
+#endif
+#endif
+		
 
 #ifdef CENC
 		if(has_cenc_id())
@@ -1782,7 +1807,7 @@ public:
 		
 		_streams.push_back(ps);
 
-		ps->set_stream_id(_streams.size() - 1);
+		ps->set_stream_id(ST_U32(_streams.size() - 1));
 		return ps->get_stream_id();
 	}
 
@@ -1987,7 +2012,7 @@ public:
 
 		ps->set_mvhd_time_scale(_mvhd.get_timescale());
 	
-		ps->set_stream_id(_streams.size() -1);
+		ps->set_stream_id(ST_U32(_streams.size() -1));
 		return ps->get_stream_id();
 	}
 
@@ -2077,7 +2102,7 @@ public:
 		if(time_scale)
 			ps->set_time_scale(time_scale);
 	
-		ps->set_stream_id(_streams.size() -1);
+		ps->set_stream_id(ST_U32(_streams.size() -1));
 		return ps->get_stream_id();
 	}		
 	
@@ -2139,7 +2164,7 @@ public:
 					
 					w = 0;
 
-					DBGC5(_T("MAX DISTANCE FORCED INCREASE\t%d\t%s\t%s\t%s\t%s")
+					DBGC5("MAX DISTANCE FORCED INCREASE\t%d\t%s\t%s\t%s\t%s"
 						, stream_id
 						, HNS(composition_time)
 						, HNS(decoding_time)
@@ -2154,7 +2179,7 @@ public:
 
 	}
 
-	virtual void write_ftyp(CMP4W &mp4w)
+	virtual void write_ftyp(CMP4W &mp4w, uint32_t type = box_ftyp)
 	{
 		mp4w.write_child_box(box_ftyp, _ftyp);
 	}

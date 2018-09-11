@@ -59,6 +59,8 @@
 #define STREAM_TYPE_VIDEO_H264      0x1b
 #endif
 
+#define TIMESCALE(t, b) (b != 10000000)?CMP4Stream::time_scale(t, b):t
+
 __ALX_BEGIN_NAMESPACE
 
 class IMP4ReaderCallback
@@ -83,10 +85,13 @@ class CMP4Fragment
 	//CMP4WriteMemory       _headers;
 
 	uint64_t _baseMediaDecodeTime;
+    uint64_t _timescale;
 
 	CBuffer<unsigned char> _avcn;
 
 	bool _do_avcn;
+
+    
 
 #ifdef CENC
 	unsigned char _key[KEY_LEN];
@@ -120,8 +125,6 @@ class CMP4Fragment
 			buf[i] = r[count++];
 		}
 	}
-
-
 
 	void encrypt(unsigned char * buf, unsigned int clear, unsigned int protected_bytes)
 	{
@@ -195,6 +198,7 @@ public:
 		, _baseMediaDecodeTime(UINT64_MAX)
 		, _do_avcn(false)
 		, _avcn(1024)
+        , _timescale(10000000)
 #ifdef CENC
 	    , _encrypted(false)
 		, _encrypted_buffer(10240)
@@ -254,13 +258,10 @@ public:
 			counter8(&(cbuf[8]));
 		}
 	}
-
-
-
-	
+    	
 	void set_baseMediaDecodeTime(uint64_t baseMediaDecodeTime)
 	{
-		_baseMediaDecodeTime = baseMediaDecodeTime;
+		_baseMediaDecodeTime = TIMESCALE(baseMediaDecodeTime, _timescale);
 	}
 
 	void add_avcn_box(const unsigned char * body, int size)
@@ -274,6 +275,8 @@ public:
 
 	uint64_t get_baseMediaDecodeTime(){return _baseMediaDecodeTime;}
 	bool has_baseMediaDecodeTime(){return (UINT64_MAX != _baseMediaDecodeTime);}
+
+    void set_timescale(uint64_t timescale){_timescale = timescale;}
 
 #ifdef CENC
 	void set_encryption(unsigned char * p_key, unsigned int flags = 0x000002)
@@ -341,12 +344,13 @@ public:
 		)
 	{
 
-		uint64_t comp_diff = composition_time - decoding_time;
+		uint64_t comp_diff = TIMESCALE(composition_time - decoding_time, _timescale);
+
 		unsigned int     comp_diff_flag = 0x000800 & _trun.get_flags();
 
 		//_ASSERTE( ! ( comp_diff != 0 && comp_diff_flag == 0) );
 
-		_trun.add(static_cast<uint32_t>(duration)
+		_trun.add(static_cast<uint32_t>(TIMESCALE(duration, _timescale))
 			, body_size
 		  , 0x000100 //duration
 		    | 0x000200 //sample size
@@ -361,8 +365,7 @@ public:
 		if(_encrypted)
 		{
 			bool sub_sample_encryption = (_senc.get_flags() & 0x000002)?true:false;
-
-				 
+ 
 			if(sub_sample_encryption)
 			{
 
@@ -409,12 +412,60 @@ public:
 	
 	virtual void end(CMP4W & mp4w)
 	{
+        
+#ifdef FRAGMENTEDSTYPTRUE
+
+            FileTypeBox    ftyp;
+                                                       
+                           ftyp.set_major_brand(ftyp_isom); 
+		                   ftyp.set_minor_version(0);
+                           ftyp.add_brand(ftyp_ISO8);
+                           ftyp.add_brand(ftyp_mp41);
+                           ftyp.add_brand(ftyp_DASH); 
+		                   ftyp.add_brand(ftyp_avc1);
+                           ftyp.add_brand(ftyp_CMFS);
+		                  
+            mp4w.write_child_box(box_STYP, ftyp);
+
+            uint64_t sidx_referenced_size_position = mp4w.get_position();
+                     sidx_referenced_size_position += (12 + 16 + 4);
+
+            SegmentIndexBox sidx;
+                            
+                            sidx.reference_ID = _tfhd.track_ID;
+                            sidx.timescale = U64_ST(_timescale);//1000UL * 10000UL;
+                            sidx.set_earliest_presentation_time(
+                                    _trun.get_item(0).sample_composition_time_offset + _baseMediaDecodeTime
+                            );
+                            
+                            sidx.set_first_offset(0);
+
+                            sidx.reference_count = 1;
+
+                            uint32_t idx = _trun.get_sample_count() - 1;
+
+                            //sidx.reference_type[0] = 0;
+                            //sidx.referenced_size[0] = 0;
+                            sidx.subsegment_duration[0] = U64_ST(_trun.get_duration());// +
+                                //_trun.get_item(idx).sample_composition_time_offset + _trun.get_item(idx).sample_duration;
+                            sidx.starts_with_SAP[0] = 1;
+                            sidx.SAP_type[0] = 1;
+                            sidx.SAP_delta_time[0] = 0;
+
+            mp4w.write_child_box(box_sidx, sidx);
+
+
+#endif
+        
+        //sidx
+
+        uint64_t moof_position = mp4w.get_position();
+
 		mp4w.open_box(box_MOOF);
 		mp4w.write_child_box(box_MFHD, _mfhd);
 		mp4w.open_box(box_TRAF);
 		mp4w.write_child_box(box_TFHD, _tfhd);
 		
-
 		//tfdt
 		if(has_baseMediaDecodeTime())
 		{			
@@ -447,28 +498,44 @@ public:
 
 			_ASSERTE(_trun.sample_count == _senc.sample_count);
 
+#ifdef FRAGMENTEDSTYPFALSE
+
 			uint64_t senc_offset_position = mp4w.get_position() + 16;
 
 			mp4w.write_child_box(box_senc, _senc);
+#else
+            uint64_t senc_offset_position = 
+                mp4w.get_position() + 16 - moof_position
+                + 17 //saiz
+                + 20 //saio
+                ;
+#endif
+			    _saio.entry_count = 1;
+			    _saio._samples_offset.push_back(senc_offset_position);
 
-			_saio.entry_count = 1;
-			_saio._samples_offset.push_back(senc_offset_position);
+			    _saiz.default_sample_info_size = 16;
+			    _saiz.sample_count = _senc.sample_count;
 
-			_saiz.default_sample_info_size = 16;
-			_saiz.sample_count = _senc.sample_count;
+			    mp4w.write_child_box(box_saiz, _saiz);
+			    mp4w.write_child_box(box_saio, _saio);
 
-			mp4w.write_child_box(box_saiz, _saiz);
-			mp4w.write_child_box(box_saio, _saio);
-			
+#ifdef FRAGMENTEDSTYPTRUE
+                mp4w.write_child_box(box_senc, _senc);
+#endif
+
 		}
 #endif
 
-		if(_do_avcn)
+#ifdef FRAGMENTEDSTYPFALSE
+
+		if(_do_avcn)// && !_use_styp)
 		{
 			mp4w.open_box(box_AVCN);
 			   mp4w.write_bytes(_avcn.get(), _avcn.size());
 			mp4w.close_box(box_AVCN);
 		}
+
+#endif
 
 		mp4w.close_box(box_TRAF);
 		mp4w.close_box(box_MOOF);
@@ -485,13 +552,17 @@ public:
 		if(_trun.get_flags() & 0x000001)
 		{
 			mp4w.set_position(data_offset_position);
-			mp4w.write_uint(static_cast<uint32_t>(data_offset));
+			mp4w.write_uint(U64_ST(data_offset - moof_position));
 			mp4w.set_position(end_position);
 		}
+
+#ifdef FRAGMENTEDSTYPTRUE
+        mp4w.set_position(sidx_referenced_size_position);
+        mp4w.write_uint(U64_ST(end_position - moof_position));
+        mp4w.set_position(end_position);
+#endif
 	
 	}
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -658,19 +729,25 @@ public:
 		write.set_stream_track_id(track_id -1 , stream_id);
 		write.set_allow_empty_stream(true);
 
-		//write.set_
-
 		_ASSERTE(0 == stream_id);
 		
-
-		//write.set_ftyp(ftyp_DASH, 0);
-
+#ifdef FRAGMENTEDSTYPFALSE
+		
 		write.set_ftyp(BOX( 'c', 'c', 'f', 'f' ), 1);
 		write.add_brand(ftyp_ISO6);
+#else   
+
+        write.set_ftyp(ftyp_isom, 0);
+		write.add_brand(ftyp_ISO8);
+        write.add_brand(ftyp_mp41);
+        write.add_brand(ftyp_DASH); 
+		write.add_brand(ftyp_avc1);
+        write.add_brand(ftyp_CMFS);
+
+#endif
 		write.set_mvhd_timescale(static_cast<uint32_t>(time_scale));
 		write.set_mvhd_version(1);
-		//write.add_brand(ftyp_avc1);
-		//write.add_brand(ftyp_mp41);
+		
 
 
 		write.write_ftyp(output_stream);
@@ -730,11 +807,13 @@ public:
 					  , IMP4ReaderCallback * p_callback = NULL
 					  , unsigned char * p_key = NULL
 					  , DWORD senc_flags = 0
+                      , uint64_t timescale = 1000*10000
 					  )
 {
 	
 			CMP4Fragment m4f;
 
+            m4f.set_timescale(timescale);
 			m4f.start(track_id, sequence, ((AVCNBOX)?0xa600000:0));
 
 #ifdef CENC
@@ -782,6 +861,7 @@ public:
 		, IMP4ReaderCallback * p_callback = NULL
 		, unsigned char * p_key = NULL
 		, DWORD senc_flags = 0
+        , uint64_t timescale = 1000*10000
 		)
 	{
 		MP4Reader reader;
@@ -799,7 +879,9 @@ public:
 			, base_media_decode_time
 			, p_callback
 			, p_key
-			, senc_flags);
+			, senc_flags
+            , timescale
+        );
 	}
 
 
@@ -823,10 +905,13 @@ public:
 					  , IMP4ReaderCallback * p_callback = NULL
 					  , unsigned char * p_key = NULL
 					  , DWORD senc_flags = 0
+                      , uint64_t timescale = 1000*10000
 					  )
 {
 	
 			CMP4Fragment m4f;
+
+            m4f.set_timescale(timescale);
 
 			m4f.start(track_id, sequence, ((AVCNBOX)?0xa600000:0));
 
@@ -894,6 +979,7 @@ public:
 		, IMP4ReaderCallback * p_callback = NULL
 		, unsigned char * p_key = NULL
 		, DWORD senc_flags = 0
+        , uint64_t timescale = 1000*10000
 		)
 	{
 		MP4Reader reader;
@@ -918,7 +1004,9 @@ public:
 			, base_media_decode_time
 			, p_callback
 			, p_key
-			, senc_flags);
+			, senc_flags
+            , timescale
+        );
 	}
 };
 

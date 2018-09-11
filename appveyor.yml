@@ -58,14 +58,34 @@ skip_non_tags: false
 #skip_branch_with_pr: true
 
 # Maximum number of concurrent jobs for the project
-max_jobs: 1
+max_jobs: 2
 
 #---------------------------------#
 #    environment configuration    #
 #---------------------------------#
 
 # Build worker image (VM template)
-image: Visual Studio 2015
+image: 
+  #- Visual Studio 2015
+  - Visual Studio 2017
+  - Ubuntu
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform:
+    - Win32 
+    - x64
+
+# to add several platforms to build matrix:
+#platform:
+#  - x86
+#  - Any CPU
+
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
 
 # scripts that are called at very beginning, before repo cloning
 init:
@@ -87,12 +107,15 @@ hosts:
 
 # environment variables
 environment:
-  my_var1: value1
-  my_var2: value2
-  # this is how to set encrypted variable. Go to "Encrypt data" page in account menu to encrypt data.
-  #my_secure_var1:
-  #  secure: FW3tJ3fMncxvs58/ifSP7w==
-
+  APPVEYOR_YML_DISABLE_PS_LINUX: true
+  MG_TOKEN:
+    secure: LRFLcOTdHrSzJ4bTkjmgBbrtKXAvwayzeu1mv56UERsM3wvZqDX2jNxOTKKScHrb
+  MP4_TOKEN:
+    secure: CRpaujBNT3qH2TEm2kWITtlrZrdt68sezFvp32CcVI+zb8pGTKjLP81r5E0c3w2e
+  GH_TOKEN:
+    secure: RspSF6tUWqsRj3dFIAPknfrr3wyRnfLc1SZV6Vvny8/bqEtSIWHEvHyNFDSUh/HB
+  GH_U:
+    secure: DhrGIHb1DmF/B2DLxvmVMA==
 # environment:
 #  global:
 #    connection_string: server=12;password=13;
@@ -118,38 +141,27 @@ environment:
 
 # enable service required for build/tests
 services:
+  - docker
 #  - iis                 # start IIS
 
 
 # scripts that run after cloning repository
 install:
   # by default, all script lines are interpreted as batch
-  - choco install python2
+  #- cmd: choco install python2
    # to run script as a PowerShell command prepend it with ps:
   - git submodule update --init --recursive
   #- ps: if(-not (test-path gyp)){git clone https://chromium.googlesource.com/external/gyp.git gyp}
   - git clone https://chromium.googlesource.com/external/gyp.git gyp
-  - ps: $l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
+  #- ps: $l = gl;cd ./test;python ../gyp/gyp_main.py mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi;set-location $l;
   - ps: python ./version.py
+  - ps: echo "-->$($env:platform)<--"
 
 
 
 
 
-#---------------------------------#
-#       build configuration       #
-#---------------------------------#
 
-# build platform, i.e. x86, x64, Any CPU. This setting is optional.
-platform: Win32 
-
-# to add several platforms to build matrix:
-#platform:
-#  - x86
-#  - Any CPU
-
-# build Configuration, i.e. Debug, Release, etc.
-configuration: Release
 
 # to add several configurations to build matrix:
 #configuration:
@@ -158,9 +170,9 @@ configuration: Release
 
 build:
   parallel: true                  # enable MSBuild parallel builds
-  project: ./test/mgtest.sln      # path to Visual Studio solution or project
+  project: mg.msbuild.proj        # path to Visual Studio solution or project
 
-  # MSBuild verbosity level
+  # MSBuild verbosity level normal / detailed
   verbosity: normal
 
 
@@ -171,15 +183,34 @@ before_build:
 # , Azure Cloud Services)
 before_package:
 
-# scripts to run after build
-after_build:
-        - ps: 7z a win-release.zip ./test/bin/Win32/Release/mg.exe ./test/bin/Win32/Release/mg.pdb; 
-
 # to run your custom scripts instead of automatic MSBuild
 build_script:
+  - ps: msbuild mg.msbuild.proj
+  - sh: ip addr show
+  - sh: echo $APPVEYOR_API_URL
+  - sh: echo http://172.17.0.1:$(echo $APPVEYOR_API_URL | grep '[0-9]*' -o)
+  - sh: if [ $PLATFORM = "x64" ] ; then docker build -t mgi .; fi
+  - sh: if [ $PLATFORM = "Win32" ] ; then docker build --build-arg ENV_CODECOV_MG=$MG_TOKEN --build-arg ENV_GITHUB_USER=$GH_U --build-arg ENV_GITHUB_TOKEN=$GH_TOKEN --build-arg ENV_CODECOV_MP4=$MP4_TOKEN --build-arg ENV_BRANCH=$APPVEYOR_REPO_BRANCH --build-arg ENV_COMMIT_HASH=$APPVEYOR_REPO_COMMIT --build-arg APPVEYOR_API_URL=http://172.17.0.1:$(echo $APPVEYOR_API_URL | grep '[0-9]*' -o)/ -t mgi .; fi
 
 # to disable automatic builds
 #build: off
+
+
+# scripts to run after build
+after_build:
+        - ps: 7z a "win-release-$($env:platform).zip" "./test/bin/$($env:platform)/Release/mg.exe" "./test/bin/$($env:platform)/Release/mg.pdb"; 
+        - ps: Push-AppveyorArtifact "win-release-$($env:platform).zip"
+        - ps: cp "./test/bin/$($env:platform)/Release/mg.exe" ./
+        - ps: cp "./test/bin/$($env:platform)/Release/mg.pdb" ./
+        - ps: cp "./mg.exe" "./mg"
+        - sh: docker run --name mgtest mgi /bin/bash
+        #- sh: mkdir -p ./test/bin/$PLATFORM/Release
+        - sh: docker cp mgtest:/build/mg/src/mgcli/mg ./mg && cp ./mg ./mg.exe && appveyor PushArtifact ./mg
+        - sh: docker cp mgtest:/build/mg/test/test_mg.log ./test/test_mg.log
+        - sh: sed -i '/\r/! s/$/\r/' ./test/test_mg.log
+        #- sh: ls -l && appveyour PushArtifact ./testmglog
+        - sh: touch ./mg.pdb
+
 
 #---------------------------------#
 #       tests configuration       #
@@ -204,10 +235,17 @@ after_test:
 
 # to run your custom scripts instead of automatic tests
 test_script:
-  - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2
+  - ps: ./test/mgtest.ps1 -Configuration 'Release' -repeat 2 -arch "$env:platform"
+  - ps: Push-AppveyorArtifact 'mgtest.log'
   - ps: cd test
-  - ps: python test_dash.py
-  - ps: python test_hls.py
+  - ps: python test_dash.py --kind dash
+  #- ps: python test_dash.py --kind widevine
+  - ps: python test_dash.py --kind hls
+  - ps: ls ../tmp;
+  - ps: python test_mg.py > test_mg.log
+  - ps: python test_multiple_bitrate.py
+  #- ps: cd ..; 7z a multibirate.zip tmp/multi/STATIC; Push-AppveyorArtifact multibirate.zip; 7z a join.zip tmp/multi/JOIN; Push-AppveyorArtifact join.zip;
+ 
 
 # to disable automatic tests
 #test: off
@@ -218,12 +256,16 @@ test_script:
 #---------------------------------#
 
 artifacts:
-        - path: '.\test\bin\Win32\Release\mg.exe'
+        - path: './mg.exe'
           name: mg.exe
-        - path: '.\test\bin\Win32\Release\mg.pdb'
+        - path: './mg.pdb'
           name: mg.pdb
-        - path: win-release.zip
-          name: win-release
+        - path: './mg'
+          name: mg
+        - path: './test/test_mg.log'
+          name: test_mg.log
+        #- path: win-release-$(PLATFORM).zip
+        #  name: win-release-$(PLATFORM)
 
  
 
@@ -236,20 +278,48 @@ artifacts:
 # provider names are case-sensitive!
 deploy:
 
-  
-
     # Deploy to GitHub Releases
   - provider: GitHub
     release: $(appveyor_repo_tag_name)
-    artifact:  win-release.zip 
+    artifact:  win-release-$(PLATFORM).zip 
     draft: true
     prerelease: true
     auth_token:
         secure: 9yjv22hRjZGOLHgfKr8Z23OYU1Rlz+JSaYxZ8gJlF77DopqYpeyqo5hpL95Aiwnf
     on:
-     appveyor_repo_tag: true       # deploy on tag push only
+     APPVEYOR_REPO_TAG: true       # deploy on tag push only
+     CI_WINDOWS: true
+
+  - provider: AzureBlob
+    storage_account_name: defgroupdisks
+    storage_access_key:
+        secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
+    container: builds
+    folder: APPVEYOR\$(APPVEYOR_BUILD_WORKER_IMAGE)\$(PLATFORM)
+    artifact: mg.exe,mg
+    unzip: false
+    set_content_type: false
+
+
+  #- provider: AzureBlob
+  #  storage_account_name: defgroupdisks
+  #  storage_access_key:
+  #      secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
+  #  container: builds
+  #  folder: APPVEYOR\NX
+  #  artifact: mg
+  #  unzip: false
+  #  set_content_type: false
+  #  on:
+  #      CI_LINUX: true
+  #      PLATFORM: x64
+
+  
+  
 
    
+  
+
 
 # scripts to run before deployment
 before_deploy:
@@ -277,7 +347,7 @@ on_failure:
 
 # after build failure or success
 on_finish:
-  #- do something
+  #- ps: rm ".\bin\$env:platform\Release\*"
 
 
 #---------------------------------#

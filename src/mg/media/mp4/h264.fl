@@ -302,7 +302,7 @@ class pic_parameter_set_rbsp
 	         int chroma_qp_index_offset = 0;
 			 int second_chroma_qp_index_offset = 0;
 
-	unsigned int start_size = numbits();
+	uint64_t start_size = numbits();
 
 		%g{pic_parameter_set_id  = exp_ue_golomb(var_bs);%g}
 		%g{seq_parameter_set_id  = exp_ue_golomb(var_bs);%g}
@@ -363,7 +363,7 @@ class pic_parameter_set_rbsp
 
 	
 	/////extended///////
-	unsigned int end_size = numbits() + (numbits() % 8);
+	uint64_t end_size = numbits() + (numbits() % 8);
 	unsigned int extended = 0;
 
 	%g{ if(_size && 

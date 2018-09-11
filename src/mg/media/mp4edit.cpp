@@ -40,8 +40,12 @@ void CMP4EditBase::do_edit_header_mux( MP4Reader &reader
 	info.audio_streams_count = 0;
 	info.video_streams_count = 0;
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(size_t i = 0; i < reader.stream_count(); i++)
 	{
+
+        if(!reader.IsValidStream(i))
+            continue;
+        
 		_ASSERTE(1 == reader.entry_count(i));
 
 		if(reader.IsVisual(i))
@@ -183,7 +187,7 @@ void CMP4EditBase::do_edit_mux(
 		
 	//are the file compatibles?
 
-	if(reader.stream_count() != (info.audio_streams_count + info.video_streams_count))
+	if(reader.parsable_stream_count() != (info.audio_streams_count + info.video_streams_count))
 		ALXTHROW_T(_T("The files do not have an equal number of streams"));
 
 	int video_stream(0);
@@ -195,8 +199,11 @@ void CMP4EditBase::do_edit_mux(
 	if(!reader.HasLTC() && info.ltc > -1)
 		ALXTHROW_T(_T("The file does not have LTC"));
 
-	for(int i = 0; i < reader.stream_count(); i++)
+	for(int i = 0; i < ST_I32(reader.stream_count()); i++)
 	{
+        if(!reader.IsValidStream(i))
+            continue;
+
 		//if(!reader.IsLTC(i))
 		//{
 			if(info.map[i].video)
@@ -362,8 +369,11 @@ void CMP4EditBase::do_edit_mux(
 			{
 				current_look_head++;
 				
-				for(int i = 0; i < reader.stream_count(); i++)
+				for(size_t i = 0; i < reader.stream_count(); i++)
 				{
+                    if(!reader.IsValidStream(i))
+                        continue;
+
 					if(i != reader.LTCStream())
 					{
 						if(info.map[i].video)
@@ -400,8 +410,11 @@ void CMP4EditBase::do_edit_mux(
 
 #ifdef _DEBUG
 
-		for(int i = 0; i < reader.stream_count(); i++)
+		for(size_t i = 0; i < reader.stream_count(); i++)
 		{
+            if(!reader.IsValidStream(i))
+                continue;
+
 			if(i != reader.LTCStream())
 			{
 				if(info.map[i].video)
@@ -432,14 +445,17 @@ void CMP4EditBase::do_edit_mux(
 		CMediaJoin decoding;
 		CMediaJoin decoding_composition;
 
-		int stream_count = reader.stream_count() - ((-1 < info.ltc)?1:0);
+		size_t stream_count = reader.parsable_stream_count() - ((-1 < info.ltc)?1:0);
 
 				 composition.SetStreamCount(stream_count);
 				    decoding.SetStreamCount(stream_count);
 	    decoding_composition.SetStreamCount(stream_count * 2);
 
-		for(int i = 0; i < reader.stream_count(); i++)
+		for(size_t i = 0; i < reader.stream_count(); i++)
 		{
+            if(!reader.IsValidStream(i))
+                continue;
+
 			if(i != reader.LTCStream())
 			{
 				if(info.map[i].video)
@@ -480,8 +496,11 @@ void CMP4EditBase::do_edit_mux(
 
 		int64_t ltc_at_least(0);
 
-		for(int i = 0; i < reader.stream_count(); i++)
+		for(size_t i = 0; i < reader.stream_count(); i++)
 		{
+            if(!reader.IsValidStream(i))
+                continue;
+
 			stream_edit_info * ps(0);
 
 			
@@ -560,7 +579,7 @@ void CMP4EditBase::do_edit_mux(
 
 	std::vector<bool> streams(reader.stream_count());
 	
-	for(uint32_t i = 0; i < streams.size(); i++)
+	for(size_t i = 0; i < streams.size(); i++)
 		streams[i] = true;
 
 	ALX::wmt_timecode interpolated;
@@ -734,8 +753,11 @@ void CMP4EditBase::do_edit_mux(
 
 		info.file_count++;
 
-		for(int i = 0; i < reader.stream_count(); i++)
+		for(int i = 0; i < ST_I32(reader.stream_count()); i++)
 		{
+            if(!reader.IsValidStream(i))
+                continue;
+
 			if(info.map[i].video)
 			{
 				ps = &info.video_info[info.map[i].internal_index];

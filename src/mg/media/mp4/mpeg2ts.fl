@@ -1,4 +1,3 @@
-
 %pragma array=256
 %pragma get
 //%pragma trace
@@ -138,7 +137,7 @@ class MpegTime{
 			uint64_t pcr_ext  =  (time * system_clock_frequency)%300;//((system_clock_frequency * time)%(300*2^33)) - (pcr_base*300);
     
 			t32_30 = static_cast<uint32_t>( pcr_base >> 30 );
-			t29_15 = (pcr_base & 0x2FFFFFFF) >> 15;
+			t29_15 = (pcr_base  >> 15) & 0x2FFFFFFF;
 			t14_0  = (pcr_base & 0x00007FFF);
 			ext    =  static_cast<uint32_t>(pcr_ext);
 
@@ -468,7 +467,7 @@ public:
 	unsigned int(8)	 elementary_stream_id;
     unsigned int(16) elementary_stream_info_length;
     
-    unsigned int parsedBytes = 0;
+    uint64_t parsedBytes = 0;
     %p{ 
 			unsigned int descriptor_count = 0;
 		%p}
@@ -489,6 +488,7 @@ public:
 	}
 }
 
+
 ////////////////////////
 // Stream Descriptors //
 ////////////////////////
@@ -497,7 +497,7 @@ abstract class BaseStreamDescriptor : unsigned int(8) type = 0x00
     unsigned int(8) elementary_stream_id;
     unsigned int(16) elementary_stream_info_length;
 
-    unsigned int parsedBytes;
+    uint64_t parsedBytes;
     for (parsedBytes=0; parsedBytes < elementary_stream_info_length; ) {
         BaseProgramDescriptor descriptor;
         parsedBytes += lengthof(descriptor);
@@ -581,14 +581,14 @@ class PSMapTable extends PesBase //: const unsigned int(32) st_id = ST_PSMapTabl
     bit(1) marker = 0b1;
     unsigned int(16) program_stream_info_length;
 
-    unsigned int parsed;
+    uint64_t parsed;
     for (parsed=0; parsed < program_stream_info_length; ) {
         BaseProgramDescriptor program_descriptor;
         parsed += lengthof(program_descriptor);
     }
     
     unsigned int(16) elementary_stream_map_length;
-    unsigned int stream_map_ct;
+    uint64_t stream_map_ct;
     for (stream_map_ct=0; stream_map_ct < elementary_stream_map_length; ) {
         BaseStreamDescriptor stream_descriptor;
         stream_map_ct += lengthof(stream_descriptor);
@@ -964,7 +964,15 @@ class Adaptation_Field
 
 			total_bits += adaptation_field_extension_length/8;
 
-			skipbits(adaptation_field_extension_length*8);
+            %g{
+                    var_bs.skipbits(adaptation_field_extension_length * 8);
+            %g}
+            %p{
+               for(unsigned int dx = 0; dx < adaptation_field_extension_length; dx++)
+                    var_bs.putbits(0x0, 8);
+            %p}
+
+			//skipbits(adaptation_field_extension_length*8);
 		}
 		//for (i=0;i<N;i++){
 		//	stuffing_byte
@@ -972,7 +980,17 @@ class Adaptation_Field
 				
 
 		if((total_bits / 8) < adaptation_field_length)
-			skipbits((adaptation_field_length*8) - total_bits);
+        {
+			//skipbits((adaptation_field_length*8) - total_bits);
+
+            %g{
+                    var_bs.skipbits((adaptation_field_length*8) - total_bits);
+            %g}
+            %p{
+               for(unsigned int dx = 0; dx < (adaptation_field_length - (total_bits/8)); dx++)
+                    var_bs.putbits(0x0, 8);
+            %p}
+        }
 			
 		
 
@@ -1060,7 +1078,14 @@ class Adaptation_Field
 class Pointer_Field
 {
 	unsigned int(8) pointer_field;
-	skipbits(pointer_field / 8);
+    %g{
+       var_bs.skipbits(pointer_field * 8);
+    %g}
+    %p{
+       for(unsigned int dx = 0; dx < pointer_field; dx++)
+            var_bs.putbits(0x0, 8);
+    %p}
+
 }
 
 class BaseSection 

@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
 		ENDCASE;
 
-		std::cout << orig << std::endl;
+		
 
 	}
 	catch (::mg::core::mgexception & ex)

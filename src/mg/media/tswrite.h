@@ -398,13 +398,13 @@ public:
 		, int32_t size
 		, CTSW &TSW
 		, unsigned int random_access_indicator = 0
-		, int64_t      timePCR = -1
+		, int64_t      timePCR = UINT64_MAX
 		, unsigned int discontinuity_indicator = 0
 		)
 	{
 
 		//can set pcr only on random_access
-		_ASSERTE((-1 == timePCR) || (1 == random_access_indicator));
+		_ASSERTE((UINT64_MAX == timePCR) || (1 == random_access_indicator));
 
 		Adaptation_Field af;
 		
@@ -448,7 +448,7 @@ public:
 			first_ts_packet -= 2;
 			first_adaptation = true;
 
-			if(-1 < timePCR)
+			if(UINT64_MAX > timePCR)
 			{
 				af.PCR_flag  = 1;
 

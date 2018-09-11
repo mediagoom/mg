@@ -26,12 +26,36 @@
 #include "aes.h"
 #endif
 
+#define FRAGMENTEDSTYP
+#define FRAGMENTEDVALIDATION
+
+#ifndef FRAGMENTEDSTYP
+#ifdef DEBUG
+#define FRAGMENTEDSTYPTRUE
+#else
+#define FRAGMENTEDSTYPFALSE
+#endif
+#else
+#define FRAGMENTEDSTYPTRUE
+#endif
+
+#ifndef FRAGMENTEDVALIDATION
+#ifdef DEBUG
+#define FRAGMENTEDVALIDATION
+#else
+#define FRAGMENTEDVALIDATION
+#endif
+#endif
+
+#include <mg/media/mp4/cenc.h>
 #include <mg/media/mp4parse.h>
 #include <mg/media/mp4write.h>
 #include <mg/media/mp4fragmented.h>
 #include <mg/media/mp4edit.h>
 #include <mg/media/MOOFReader.h>
 #include <mg/media/mpd_renderer.h>
+#include <mg/media/tsparse.h>
+#include <mg/media/tsmux.h>
 #include <mg/media/tsinfo.h>
 
 

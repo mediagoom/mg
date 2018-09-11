@@ -214,7 +214,7 @@ public:
 		if(!m_str)
 			return operator=(str);			
 	
-		uint32_t size = _tcslen(str);		
+		size_t size = _tcslen(str);		
 		m_str->add(str, size);
 			return *this;
 	}
@@ -556,7 +556,7 @@ public:
 		}
 #endif
 		
-		uint32_t size = _tcslen(sz);		
+		size_t size = _tcslen(sz);		
 		m_str->add(sz, size);
 			return *this;
 	}
@@ -649,7 +649,7 @@ public:
 	const uint32_t size() const
 	{
 		CstringT &s = const_cast<CstringT&>(*this);
-		return s.m_str->getFull();
+		return ST_U32(s.m_str->getFull());
 	}
 
 	const size_t len() const
@@ -913,8 +913,10 @@ inline Cstring hexformat(const unsigned char *buffer
 	
 	unsigned long lines = buffer_size / (line_width_minus1 + 1);
 
-	Cstring out(lines * (line_width_minus1 + 5) * 2);
+	if(0 == lines)
+		lines = 1;
 
+	Cstring out(lines * (line_width_minus1 + 5) * 2);
 	
 
 	for (unsigned long i = 0; i <= lines; i++)
@@ -943,7 +945,14 @@ inline Cstring hexformat(const unsigned char *buffer
 					break;
 
 				case 1:
-					out.append_format(_T("%c"), (0 == c) ? '\0' : c);
+                    if(c == 10)
+                        out.append(_T("\\n"));
+                    else if(c == 13)
+                        out.append(_T("\\r"));
+                    else if(c == 0)
+                        out.append(_T("\\0"));
+                    else
+					    out.append_format(_T("%c"), c);
 					break;
 				default:
 

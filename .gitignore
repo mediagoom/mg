@@ -9,8 +9,11 @@
 
 *.tmp
 *.tmp.mp4
-
+*.gcda
+*.gcov
+*.gcno
 *.o
+*.pyc
 /ar-lib
 config.guess
 config.sub
@@ -30,14 +33,20 @@ missing
 COPYING
 INSTALL
 /tmp*
+/test/*.mp4
+
 
 #generated files
-*.sln
 *.vcxproj
 *.vcxproj.filters
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 *.vc.db
+
+# gyp generated
+*.sln
+*.vcproj
+*.rules
 
 # Build results
 [Dd]ebug/

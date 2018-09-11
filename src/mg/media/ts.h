@@ -98,10 +98,18 @@ protected:
 
 	virtual void addPayload(const BYTE* source, size_t size)
 	{
+		if(!size)
+			return;
+
 		_payload.add(source, size);
 		_gotfirst = true;
 	}
 
+	virtual void set_first_adaptation()
+	{
+		_HasFirstAdaptation = true;
+		_FirstAdaptation.random_access_indicator = 1;
+	}
 	
 	
 public:
@@ -151,14 +159,19 @@ public:
 			if(ts.adaptation_flag)
 			{
 				_Adaptation = *ts.adaptation_field;
-				
-				addPayload(ts.payload_after_adaptation_byte, (183 - ts.adaptation_field->adaptation_field_length));
 
-				if(!_HasFirstAdaptation)
+				unsigned int size = 183 - ts.adaptation_field->adaptation_field_length;
+				
+				if(size)
 				{
-					_adaptation_packet = _packet_count;
-					_FirstAdaptation   = _Adaptation;
-					_HasFirstAdaptation = true;
+					addPayload(ts.payload_after_adaptation_byte, size);
+
+					if(!_HasFirstAdaptation)
+					{
+						_adaptation_packet = _packet_count;
+						_FirstAdaptation   = _Adaptation;
+						_HasFirstAdaptation = true;
+					}
 				}
 				
 			}
@@ -260,11 +273,11 @@ protected:
 		{
 			if(s.section_length > payload.size())
 				return;
-			//ok we have the full table
+			//OK we have the full table
 
 			
 			//+1 step over the pointer field
-			//the section lenght must add the first 3 byte not included and exclude the crc ending field
+			//the section length must add the first 3 byte not included and exclude the crc ending field
 			_CRC = _crc.crc_32(payload.get() + 1, s.section_length + 3 - 4);
 
 			payload.SetPosition(0);
@@ -532,9 +545,9 @@ protected:
 	{_ASSERTE(false);}
 	///here you get just the payload
 	virtual void ReceivePesPayload(const BYTE* p_data
-		             , unsigned int length)
+		             , size_t length)
 	{}
-	///this is the function that receive the full pes body + header
+	///this is the function that receive the full PES body + header
 	virtual void Receive(CBufferRead &payload)
 	{
 		_ASSERTE(_data.PES_extension_flag == 0 || 0 == _data.pack_header_field_flag);
@@ -571,7 +584,7 @@ protected:
 
 				_data.get(ms);
 					
-				//reposition payload to the beginning of the pes packet after pes header
+				//reposition payload to the beginning of the PES packet after PES header
 				payload.SetPosition(ms.get_position());
 
 			}catch (EndOfData e) 
@@ -605,7 +618,7 @@ protected:
 
 		PesBase pb;
 
-		_ASSERTE(6 /*sizeof(PesBase)*/ <= payload.size());
+		_ASSERTE(6 /*size of(PesBase)*/ <= payload.size());
 
 		payload.SetPosition(0);
 
@@ -637,7 +650,7 @@ protected:
 		if((pb.PES_packet_length + 6) > (payload.size() - (skipped/8)))
 			return;
 
-		//ok we should have the full PES
+		//OK we should have the full PES
 		payload.SetPosition(0);
 
 		try{
@@ -770,6 +783,7 @@ public:
 	TSProgramElementaryStream():
 	   _hasReceiver(false)
 	  , _offset(0)
+	  , _receiver_written(false)
 	{}
     void SetReceiver(T pStreamData)
 	{
@@ -1167,7 +1181,7 @@ class CMpegAudioStream_old
     
 protected:
 	
-	virtual void process_left(IBitstream & bit_stream, const BYTE* p_data, unsigned int processed)
+	virtual void process_left(IBitstream & bit_stream, const BYTE* p_data, size_t processed)
 	{
 		_to_do_certified = (0 == _remaining)?true:false;
 
@@ -1190,8 +1204,8 @@ protected:
 	}
 	///huston we got frames
 	virtual void frames(const BYTE* p_data              ///[in] pointer to the start of the buffer
-		                , unsigned int frame_length ///[in] lenght of each frame in the buffer
-						, unsigned int frame_count  ///[in] number of frame in the buffer
+		                , size_t frame_length ///[in] lenght of each frame in the buffer
+						, size_t frame_count  ///[in] number of frame in the buffer
 						)
 	{}
 	///we found a discontinuity
@@ -1203,9 +1217,9 @@ protected:
 	///inform we are about to start processing the first valid 
 	///audio header in the buffer
 	virtual void pre_buffer_process(){}
-	///process at the beginnin of a segment
+	///process at the beginning of a segment
 	virtual bool process_begin(const BYTE* p_data
-		             , unsigned int length)
+		             , size_t length)
 	{
 		
         fixed_memory_bitstream bit_stream(p_data, length);

@@ -25,6 +25,8 @@
 #define COPY_STREAM_WAIT 0
 
 #define SMALL_WAIT 50
+#define NO_WAIT 0
+
 
 __MGCORE_BEGIN_NAMESPACE
 
@@ -77,11 +79,11 @@ public:
 		if (_read == _write)
 		{
 			//wait for the last call to read_cb to end
-			if(!_write_event.wait(SMALL_WAIT))
+            //we do not want to wait in case the call is synchronous
+			if(!_write_event.wait(NO_WAIT))
 			{
-			   _ASSERTE(false);
-
-		          MGCHECK(E_TIMEOUT);
+			   //_ASSERTE(false);
+		       //MGCHECK(E_TIMEOUT);
 			}
 
 			return;

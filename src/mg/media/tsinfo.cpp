@@ -604,7 +604,7 @@ int hls_encrypt(const TCHAR* ts_file, int sequence, unsigned char * pkey)
 
 	inf.close();
 
-	_ASSERTE(fr == size);
+	//_ASSERTE(fr == size);
 
 	CBuffer<unsigned char> encrypted(U64_ST(size));
 
@@ -720,7 +720,14 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 				cnt != c.get_command_count(_T("endtime")))
 			{
 				std::wcerr << 
-					_T("ee: input start and end must be specified for every input")
+					_T("Error: input start and end must be specified for every input. ")
+                    << _T("Input: ")
+                    << cnt
+                    << _T(" Starts: ")
+                    << c.get_command_count(_T("starttime"))
+                    << _T(" Ends: ")
+                    << c.get_command_count(_T("endtime"))
+                    << _T(".")
 					<< std::endl;
 
 				ost << static_cast<const TCHAR*>(c.get_help())
@@ -794,10 +801,10 @@ int do_hls_mux(console_command &c, std::ostream & ost)
 					<< std::endl;
 
 
-				CBuffer<dynamic_item> ditem(npaths + 1);
-				                      ditem.updatePosition(npaths + 1);
+				CBuffer<dynamic_item> ditem((npaths/cnt) + 1);
+				                      ditem.updatePosition((npaths/cnt) + 1);
 
-				for(unsigned int pp = 0; pp <= npaths; pp++)
+				for(unsigned int pp = 0; pp <= (npaths/cnt); pp++)
 				{
 					ditem.getAt(pp).bitrate = c.get_integer64_value(_T("bitrate"), bitrate_idx++) * 1000UL;
 					ditem.getAt(pp).audio_bitrate = 96000;
