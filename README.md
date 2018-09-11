@@ -87,6 +87,6 @@ mg -k:dash -o:./dash \
 -j:./test_512x288_h264-320Kb_aac-lc.mp4 -b:320
 ```
 
-Once you have your directory with *mpeg-dash* segment you can [publish](../../wiki/serve) then in a Web Server.
+Once you have your directory with *mpeg-dash* segment you can [publish](../../wiki/serve) them in a Web Server.
 
 
