@@ -57,12 +57,12 @@ mg -k:adaptive -o:<output directory> \
 ```
 
 For instance if you followed the [explanation to encode a media file](../../wiki/encode) you could have the following files:
- *  test_1024x576_h264-750Kb_aac-lc.mp4
- *  test_1280x720_h264-1200Kb_aac-lc.mp4
- *  test_1280x720_h264-2000Kb_aac-lc.mp4
- *  test_1280x720_h264-3500Kb_aac-lc.mp4
- *  test_256x144_h264-120Kb_aac-lc.mp4
- *  test_512x288_h264-320Kb_aac-lc.mp4
+- test_1024x576_h264-750Kb_aac-lc.mp4
+- test_1280x720_h264-1200Kb_aac-lc.mp4
+- test_1280x720_h264-2000Kb_aac-lc.mp4
+- test_1280x720_h264-3500Kb_aac-lc.mp4
+- test_256x144_h264-120Kb_aac-lc.mp4
+- test_512x288_h264-320Kb_aac-lc.mp4
 
 So your command line should be:
 
