@@ -106,9 +106,11 @@ RUN if [ $ENV_GITHUB_TOKEN ] ; then mv /build/mg/src/mg/media/mp4 /build/mg/src/
 && git config --global user.email "$ENV_GITHUB_USER@hotmail.com" \
 && git config --global user.name "$ENV_GITHUB_USER" \
 && cd mp4 \
+&& msg2="$(git log -1 --pretty=format:%s | sed 's/\//---/')" \
+&& echo "--[$msg]--[$msg2]--" \
 && sed -i "s/@mediagen/@mediagen - $msg -/" $(grep -l 'mediagen' ./*) \
 && git add *.cpp && git add *.h && git commit -m "$msg" \
-&& git push https://$ENV_GITHUB_USER:$ENV_GITHUB_TOKEN@github.com/mediagoom/mp4.git >/dev/null \
+&& if [ "$msg" -ne "$msg2" ] ; then git push https://$ENV_GITHUB_USER:$ENV_GITHUB_TOKEN@github.com/mediagoom/mp4.git; fi \
 ; fi
 
 

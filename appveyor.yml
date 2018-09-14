@@ -285,7 +285,7 @@ deploy:
     draft: true
     prerelease: true
     auth_token:
-        secure: 9yjv22hRjZGOLHgfKr8Z23OYU1Rlz+JSaYxZ8gJlF77DopqYpeyqo5hpL95Aiwnf
+        secure: kFn/+wrvO/2oJxXnzo1zcRt7A+yjfnEoSJeHd0FGLaBiTYIgtux97mZ/DYVXexp2
     on:
      APPVEYOR_REPO_TAG: true       # deploy on tag push only
      CI_WINDOWS: true
