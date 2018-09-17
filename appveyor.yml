@@ -295,7 +295,7 @@ deploy:
     storage_access_key:
         secure: 7X0QuwNaLFt6pZbICyXLo4GLXRNkr81jQiyeyHty8JVewLab06xgRFb0O/lsefRnEEUyahuW4nbQ4eM0qciypNzxfsnyqUfpvbueZysU6DrFuejXQX8CCesOtlTjfKHE
     container: builds
-    folder: APPVEYOR\$(APPVEYOR_BUILD_WORKER_IMAGE)\$(PLATFORM)
+    folder: APPVEYOR\$(APPVEYOR_BUILD_WORKER_IMAGE)\$(APPVEYOR_REPO_BRANCH)\$(PLATFORM)
     artifact: mg.exe,mg
     unzip: false
     set_content_type: false
