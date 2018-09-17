@@ -80,7 +80,7 @@ def dofile(url, name, thedir):
 
 def main(argv):
     """main program function"""
-    url = 'http://defgroupdisks.blob.core.windows.net/builds/PLAY'
+    url = 'http://defgroupdisks.blob.core.windows.net/builds/SINTEL'
     mg = test_core.getmg()    
     cwd = test_core.getroot()
 
