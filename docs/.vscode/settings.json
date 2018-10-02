@@ -4,4 +4,5 @@
     "files.exclude": {
         "_site/": true
     }
+    , "files.eol": "\n"
 }
