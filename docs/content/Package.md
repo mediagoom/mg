@@ -7,7 +7,7 @@ tags: [help]
 In order to generate the dash segments using mg you should have available one or more MP4 files.
 All this files should be *gop aligned*.
 
-[Read here](./encode) to know how to produce your files in case you do not have them.
+[Read here](./Encode.html) to know how to produce your files in case you do not have them.
 
 In order to verify that your files are *gop aligned* you can use this command:
 ```bash
@@ -64,7 +64,7 @@ mg -k:adaptive "-o:$dir" `
 
 ```
 
-Once you have your directory with *mpeg-dash* segment you can [publish](./serve) then in a Web Server.
+Once you have your directory with *mpeg-dash* segment you can [publish](./Serve.html) then in a Web Server.
 
 
 

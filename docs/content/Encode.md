@@ -85,4 +85,4 @@ encode $name $f 2000 1280 720
 encode $name $f 3500 1024 720
 ```
 
-Once you have your 6 files you can [generate the dash segments using **mg**](./package).
+Once you have your 6 files you can [generate the dash segments using **mg**](./Package.html).
