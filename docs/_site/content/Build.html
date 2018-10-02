@@ -1,0 +1,81 @@
+<p>mg can be built in Linux or Windows.
+In both cases you can use gyp to build mg. In linux you can also use autotools for building.
+For building mg in linux you need at least gcc 5 or later version since mg uses c++ 11.</p>
+
+<h1 id="get-mg">Get mg</h1>
+<p>First of all you need to get the code cloning mg and all sub-modules.</p>
+
+<p>execute <code class="highlighter-rouge">git clone --recursive https://github.com/mediagoom/mg.git</code> to get all 
+or execute <code class="highlighter-rouge">git clone https://github.com/mediagoom/mg.git</code> and then <code class="highlighter-rouge">git submodule update --init --recursive</code>.</p>
+
+<h1 id="building-using-gyp">Building using gyp</h1>
+<p>If you are in windows the following instruction will assume you are using <strong>powershell</strong> as your shell.
+First check gyp is available. In windows type `get-command gyp’ and in bash ‘which gyp’. If gyp is not available you have to install it. <em>TODO</em>: point to gyp installation info.</p>
+
+<p>Change folder to <code class="highlighter-rouge">cd ./mg/test</code>.</p>
+
+<h2 id="linux-build">Linux Build</h2>
+<p>In <em>linux</em> in the mg/test folder run :</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gyp mgtest.gyp <span class="nt">--depth</span><span class="o">=</span><span class="nb">.</span> <span class="nt">-Duv_library</span><span class="o">=</span>static_library <span class="se">\</span>
+<span class="s2">"-Dtarget_arch=x64"</span> <span class="nt">-I</span>../deps/libuv/common.gypi
+</code></pre></div></div>
+<p>If gyp finish without error run:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make
+</code></pre></div></div>
+<p>When make end you could run some validation test with:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">env </span><span class="nv">srcdir</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">"</span> out/Release/mgtest
+</code></pre></div></div>
+<h2 id="window-build-32-bit">Window Build 32 bit</h2>
+<p>In <em>window</em> in the mg\test folder run :</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gyp mgtest.gyp --depth 0 -Duv_library<span class="o">=</span>static_library <span class="se">`</span>
+<span class="s2">"-Dtarget_arch=ia32"</span> -I../deps/libuv/common.gypi<span class="se">`</span>
+<span class="c1">#then</span>
+msbuild /p:Configuration<span class="o">=</span>Release /p:Platform<span class="o">=</span>Win32
+</code></pre></div></div>
+<p>When msbuild finish you could run some validation test with: 
+<code class="highlighter-rouge">.\mgtest.ps1</code></p>
+
+<h3 id="window-build-64-bit">Window Build 64 bit</h3>
+<p>In <em>window</em> in the mg\test folder run :</p>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gyp mgtest.gyp --depth 0 -Duv_library<span class="o">=</span>static_library <span class="se">`</span>
+<span class="s2">"-Dtarget_arch=x64"</span> -I../deps/libuv/common.gypi<span class="se">`</span>
+<span class="c1">#then</span>
+msbuild /p:Configuration<span class="o">=</span>Release /p:Platform<span class="o">=</span>x64
+</code></pre></div></div>
+<p>When msbuild finish you could run some validation test with: 
+<code class="highlighter-rouge">.\mgtest.ps1</code></p>
+
+<h1 id="build-using-autotools">Build Using Autotools</h1>
+
+<p>First of all build libuv:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>deps/libuv/
+./autogen.sh
+./configure
+make
+<span class="nb">sudo </span>make <span class="nb">install
+</span>make <span class="nb">install</span>
+</code></pre></div></div>
+<p>Then build AES:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>deps/AES/
+./configure
+make
+<span class="nb">sudo </span>make <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>Then build flavor:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>deps/flavor/
+./configure
+make
+<span class="nb">sudo </span>make <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>Finally you can build mg:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./bootstrap
+./configure
+make
+make check
+</code></pre></div></div>

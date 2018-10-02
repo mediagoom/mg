@@ -1,0 +1,60 @@
+<p>In order to generate the dash segments using mg you should have available one or more MP4 files.
+All this files should be <em>gop aligned</em>.</p>
+
+<p><a href="./encode">Read here</a> to know how to produce your files in case you do not have them.</p>
+
+<p>In order to verify that your files are <em>gop aligned</em> you can use this command:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mg <span class="nt">-k</span>:gop <span class="nt">-i</span>:&lt;mp4 file&gt;
+</code></pre></div></div>
+<p>Running the same command on all file should result in the same gop list.</p>
+
+<p>Once you have verified the input file are correct you can use mg to produce the mpeg dash segments:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mg <span class="nt">-k</span>:dash <span class="nt">-o</span>:&lt;output directory&gt; <span class="se">\</span>
+<span class="nt">-i</span>:&lt;first file&gt; <span class="nt">-b</span>:&lt;first bitrate&gt; <span class="nt">-s</span>:0 <span class="nt">-e</span>:0 <span class="se">\</span>
+<span class="nt">-j</span>:&lt;second file&gt; <span class="nt">-b</span>:&lt;second bitrate&gt; <span class="se">\</span>
+<span class="nt">-j</span>:&lt;third file&gt; <span class="nt">-b</span>:&lt;therd bitrate&gt; <span class="se">\</span>
+<span class="nt">-j</span>:&lt;nth file&gt; <span class="nt">-b</span>&lt;nth bitrate&gt;
+</code></pre></div></div>
+
+<p>For instance if you followed the <a href="./encode">explanation to encode a media file</a> you could have the following files:</p>
+<ul>
+  <li>test_1024x576_h264-750Kb_aac-lc.mp4</li>
+  <li>test_1280x720_h264-1200Kb_aac-lc.mp4</li>
+  <li>test_1280x720_h264-2000Kb_aac-lc.mp4</li>
+  <li>test_1280x720_h264-3500Kb_aac-lc.mp4</li>
+  <li>test_256x144_h264-120Kb_aac-lc.mp4</li>
+  <li>test_512x288_h264-320Kb_aac-lc.mp4</li>
+</ul>
+
+<p>So your command line should be:</p>
+
+<h1 id="bash">Bash</h1>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>adaptive
+mg <span class="nt">-k</span>:adaptive <span class="nt">-o</span>:./dash <span class="se">\</span>
+<span class="nt">-i</span>:./test_1024x576_h264-750Kb_aac-lc.mp4 <span class="nt">-b</span>:750 <span class="nt">-s</span>:0 <span class="nt">-e</span>:0 <span class="se">\</span>
+<span class="nt">-j</span>:./test_1280x720_h264-1200Kb_aac-lc.mp4 <span class="nt">-b</span>:1200 <span class="se">\</span>
+<span class="nt">-j</span>:./test_1280x720_h264-2000Kb_aac-lc.mp4 <span class="nt">-b</span>:2000 <span class="se">\</span>
+<span class="nt">-j</span>:./test_1280x720_h264-3500Kb_aac-lc.mp4 <span class="nt">-b</span>:3500 <span class="se">\</span>
+<span class="nt">-j</span>:./test_256x144_h264-120Kb_aac-lc.mp4 <span class="nt">-b</span>:120 <span class="se">\</span>
+<span class="nt">-j</span>:./test_512x288_h264-320Kb_aac-lc.mp4 <span class="nt">-b</span>:320
+</code></pre></div></div>
+
+<h1 id="powershell">Powershell</h1>
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nv">$dir</span><span class="o">=[</span>path to the output directory] 
+<span class="nv">$name</span><span class="o">=</span><span class="s2">"test"</span>
+
+<span class="nb">mkdir</span> <span class="nv">$dir</span>
+mg -k:adaptive <span class="s2">"-o:</span><span class="nv">$dir</span><span class="s2">"</span> <span class="se">`</span>
+<span class="s2">"-i:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_1024x576_h264-750Kb_aac-lc.mp4"</span> -b:750 -s:0 -e:0 <span class="se">`</span>
+<span class="s2">"-j:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_256x144_h264-120Kb_aac-lc.mp4"</span> -b:120 <span class="se">`</span>
+<span class="s2">"-j:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_512x288_h264-320Kb_aac-lc.mp4"</span> -b:320 <span class="se">`</span>
+<span class="s2">"-j:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_1280x720_h264-1200Kb_aac-lc.mp4"</span> -b:1200 <span class="se">`</span>
+<span class="s2">"-j:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_1280x720_h264-2000Kb_aac-lc.mp4"</span> -b:2000 <span class="se">`</span>
+<span class="s2">"-j:./</span><span class="k">$(</span><span class="nv">$name</span><span class="k">)</span><span class="s2">_1280x720_h264-3500Kb_aac-lc.mp4"</span> -b:3500 
+
+</code></pre></div></div>
+
+<p>Once you have your directory with <em>mpeg-dash</em> segment you can <a href="./serve">publish</a> then in a Web Server.</p>
+
