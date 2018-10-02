@@ -18,14 +18,14 @@ Running the same command on all file should result in the same gop list.
 Once you have verified the input file are correct you can use mg to produce the mpeg dash segments:
 
 ```bash
-mg -k:dash -o:<output directory> \
+mg -k:adaptive -o:<output directory> \
 -i:<first file> -b:<first bitrate> -s:0 -e:0 \
 -j:<second file> -b:<second bitrate> \
 -j:<third file> -b:<therd bitrate> \
 -j:<nth file> -b<nth bitrate>
 ```
 
-For instance if you followed the [explanation to encode a media file](./encode) you could have the following files:
+For instance if you followed the [explanation to encode a media file](./Encode.html) you could have the following files:
  *  test_1024x576_h264-750Kb_aac-lc.mp4
  *  test_1280x720_h264-1200Kb_aac-lc.mp4
  *  test_1280x720_h264-2000Kb_aac-lc.mp4
