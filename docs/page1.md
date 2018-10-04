@@ -4,4 +4,9 @@ layout: default
 order: 2
 ---
 
-Page 1
+
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;

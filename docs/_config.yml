@@ -3,6 +3,7 @@ description: > # this means to ignore newlines until "baseurl:"
   This is a documentation site.
 title: Doc Template
 logo: https://mediagoom.com/img/mediagoom.png
+logourl: https://mediagoom.com
 url: http://mediagoom.com/mg
 xtwitter: mediagoom
 xgithubuser: mediagoom

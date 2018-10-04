@@ -1,5 +1,6 @@
 ---
 ate:   2016-12-20 13:29:16 +0100
+hide: true
 ---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"> 
@@ -12,10 +13,10 @@ ate:   2016-12-20 13:29:16 +0100
 	<priority>1.0</priority>
    </url>
    {% for my_page in site.pages %}
-   	 {% if my_page.date %}
+   	 {% unless my_page.path contains 'style'  %}
 	 	{% unless my_page.hide %}
     <url>
-          <loc>{{ my_page.url | prepend: site.url }}></loc>
+          <loc>{{ my_page.url | prepend: site.url }}</loc>
 	  <lastmod>{{ my_page.date | date: "%Y-%m-%d" }}</lastmod>
 	  {% if my_page.priority %}
 	  <priority>{{ my_page.priority }}</priority>
@@ -25,7 +26,7 @@ ate:   2016-12-20 13:29:16 +0100
 	  {% endif %}
     </url>
     		{% endunless %}
-	 {% endif %}
+	 {% endunless %}
 	 
     {% endfor %}
     {% for post in site.posts %}
