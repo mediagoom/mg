@@ -15,13 +15,14 @@ First of all you need to get the code cloning mg and all sub-modules.
 execute `git clone --recursive https://github.com/mediagoom/mg.git` to get all 
 or execute `git clone https://github.com/mediagoom/mg.git` and then `git submodule update --init --recursive`.
 
+
 # Building using gyp
 If you are in windows the following instruction will assume you are using **powershell** as your shell.
-First check gyp is available. In windows type `get-command gyp' and in bash 'which gyp'. If gyp is not available you have to install it. *TODO*: point to gyp installation info.
+First check gyp is available. In windows type `get-command gyp` and in bash `which gyp`. If gyp is not available you have to install it. *TODO*: point to gyp installation info.
 
 Change folder to `cd ./mg/test`.
 
-## Linux Build
+# Linux Build
 In *linux* in the mg/test folder run :
 ```bash
 gyp mgtest.gyp --depth=. -Duv_library=static_library \
