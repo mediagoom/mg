@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Server your media Content
+title: Serve your media Content
 tags: [help]
 ---
 

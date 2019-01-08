@@ -1,16 +1,16 @@
 ---
 layout: default
-title: Building mg on Linux or Windows
+title: Build MG
 tags: [help]
 ---
 
 
-mg can be built in Linux or Windows.
+MG can be built successfully using either Linux or Windows.
 In both cases you can use gyp to build mg. In linux you can also use autotools for building.
-For building mg in linux you need at least gcc 5 or later version since mg uses c++ 11.
+For building mg in linux you need at least gcc 5 or a later version since mg uses c++ 11.
 
 # Get mg
-First of all you need to get the code cloning mg and all sub-modules.
+First of all you need to get the code. Start cloning mg and all sub-modules.
 
 execute `git clone --recursive https://github.com/mediagoom/mg.git` to get all 
 or execute `git clone https://github.com/mediagoom/mg.git` and then `git submodule update --init --recursive`.
@@ -36,7 +36,7 @@ When make end you could run some validation test with:
 ```bash
 env srcdir="$(pwd)" out/Release/mgtest
 ```
-## Window Build 32 bit
+# Window Build 32 bit
 In *window* in the mg\test folder run :
 ```powershell
 gyp mgtest.gyp --depth 0 -Duv_library=static_library `
@@ -47,7 +47,7 @@ msbuild /p:Configuration=Release /p:Platform=Win32
 When msbuild finish you could run some validation test with: 
 `.\mgtest.ps1`
 
-### Window Build 64 bit
+# Window Build 64 bit
 In *window* in the mg\test folder run :
 ```powershell
 gyp mgtest.gyp --depth 0 -Duv_library=static_library `
