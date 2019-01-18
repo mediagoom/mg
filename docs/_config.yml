@@ -4,9 +4,11 @@ description: > # this means to ignore newlines until "baseurl:"
 title: Doc Template
 logo: https://mediagoom.com/img/mediagoom.png
 logourl: https://mediagoom.com
-url: http://mediagoom.com/mg
+url: https://mediagoom.com/mg
 xtwitter: mediagoom
 xgithubuser: mediagoom
 xfacebook: mediagoom
 ga: UA-59885635-2
+
+
 

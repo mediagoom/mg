@@ -57,7 +57,6 @@ In the web.config add the following:
         <handlers>
             <remove name="LiveStreamingHandler" />
             <remove name="SmoothHandler" />
-            <remove name="PippoSmoothHandler" />
         </handlers>
         <staticContent>
 		<remove fileExtension=".m4f" />
