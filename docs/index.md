@@ -1,6 +1,6 @@
 ---
 title: MG package MPEG-DASH and HLS
-menu: Home
+menu: MG
 layout: default
 order: 1
 ---
@@ -16,7 +16,7 @@ order: 1
 
 **Use MPEG-DASH and HLS to effectively serve your video.**
 
- mg packages MP4 files in order to be streamed on web.
+ mg packages MP4 files in order to be streamed to the web.
 Once they are packaged you may deploy your video to any web server to stream it.
 
 Add or improve your video communication.
