@@ -815,6 +815,7 @@ protected:
 		_HasStruct = false;
 	};
 	virtual uint64_t getMinAnalyzeSize(){return 100;}
+	virtual uint64_t getMinAnalyzePayloadSize(){return 25;}
 	/**
 	Identify the starting point of the stream
 	*/
@@ -829,7 +830,7 @@ protected:
 	{
 		//payload.ByteToRead() + ms.getUnreadBufferSize())
 
-		while(25 <= payload.size() - ms.get_position())
+		while(getMinAnalyzePayloadSize <= payload.size() - ms.get_position())
 		{
 			if(IsHim(ms))
 				return true;

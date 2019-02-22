@@ -213,6 +213,10 @@ class TSProgramElementaryStreamAnalyzeAAC: public TSProgramElementaryStreamAnaly
 
 
 protected:
+	
+	virtual uint64_t getMinAnalyzeSize(){return 30;}
+	virtual uint64_t getMinAnalyzePayloadSize(){return 15;}
+
 	virtual void EmptyPayload(PesData & pesdata, CBufferRead &payload)
 	{
 		std::wcerr << L"Empty PES" << std::endl;
