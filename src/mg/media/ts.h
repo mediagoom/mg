@@ -815,7 +815,7 @@ protected:
 		_HasStruct = false;
 	};
 	virtual uint64_t getMinAnalyzeSize(){return 100;}
-	virtual uint64_t getMinAnalyzePayloadSize(){return 25;}
+	virtual size_t getMinAnalyzePayloadSize(){return 25;}
 	/**
 	Identify the starting point of the stream
 	*/

@@ -81,8 +81,13 @@ def dofile(url, name, thedir):
 def main(argv):
     """main program function"""
     url = 'http://defgroupdisks.blob.core.windows.net/builds/SINTEL'
+
+    print('main', url)
+
     mg = test_core.getmg()    
     cwd = test_core.getroot()
+
+    print('main before download')
 
     thedir = os.path.join(cwd, 'tmp','multi')
 
@@ -161,5 +166,5 @@ def main(argv):
     test_core.reporttest(testresult2)
 
 
-
+print("start multi-bitrate-test")
 main(sys.argv[1:])
