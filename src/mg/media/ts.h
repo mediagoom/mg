@@ -830,7 +830,7 @@ protected:
 	{
 		//payload.ByteToRead() + ms.getUnreadBufferSize())
 
-		while(getMinAnalyzePayloadSize <= payload.size() - ms.get_position())
+		while(getMinAnalyzePayloadSize() <= payload.size() - ms.get_position())
 		{
 			if(IsHim(ms))
 				return true;

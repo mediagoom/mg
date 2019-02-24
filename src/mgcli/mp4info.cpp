@@ -2252,7 +2252,7 @@ int interactive(CMP4 &mp4)
 			   || command == _T("f"))
 		   {
 			   uint64_t position(0);
-			   std::wcout << _T("(enter farward bytes) ");
+			   std::wcout << _T("(enter forward bytes) ");
 		       std::wcin >> position;
 
 			   mp4.skipbytes(position);
@@ -2285,6 +2285,33 @@ int interactive(CMP4 &mp4)
 				   << std::endl;
 			   
 		   }
+           else if(command == _T("export"))
+           {
+               size_t size(0);
+			   std::wcout << _T("(enter export size) ");
+		       std::wcin >> size;
+
+               std::string path;
+               std::wcout << _T("(enter path) ");
+               std::cin >> path;
+
+               CBuffer<unsigned char> buffer(size);
+
+               buffer.prepare(size);
+
+                   mp4.read_bytes(buffer.get(), size);
+
+               _sync_file_bitstream file;
+               file.open(path.c_str(), false);
+
+               file.write(buffer.get(), size);
+
+               file.flush();
+
+               
+
+               //mp4.read_bytes()
+           }
 		   else if(command == _T("target") 
 			   || command == _T("t"))
 		   {
