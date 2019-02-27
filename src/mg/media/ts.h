@@ -606,7 +606,7 @@ protected:
 
         Receive(payload);
 
-		//_hasData = false; //we will process the next one
+		_hasData = false; 
 	}
 	virtual void process(Transport_Packet &ts, CBufferRead &payload)
 	{
