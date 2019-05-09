@@ -16,16 +16,20 @@ msbuild /p:Configuration=Release /p:Platform=Win32 /p:gyp=$gypmain
        <gyp>../gyp/gyp_main.py</gyp>
    </PropertyGroup>
 
+   <PropertyGroup Condition="''==$(Python)">
+        <Python>python</Python>
+   </PropertyGroup>
+
   <ItemGroup>
         <ProjectToBuild Include="$(MSBuildProjectDirectory)\test\mgtest.sln"/>
    </ItemGroup>
 
 <Target Name="GYP32" Condition="'Win32'==$(Platform)">
-    <Exec Command='python $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi' WorkingDirectory=".\test" />
+    <Exec Command='$(Python) $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=ia32" -I../deps/libuv/common.gypi' WorkingDirectory="./test" />
 </Target>
 
 <Target Name="GYP64" Condition="'x64'==$(Platform)">
-    <Exec Command='python $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi' WorkingDirectory=".\test" />
+    <Exec Command='$(Python) $(gyp) mgtest.gyp --depth=. -Duv_library=static_library "-Dtarget_arch=x64" -I../deps/libuv/common.gypi' WorkingDirectory="./test" />
 </Target>
 
 <Target Name="Main" >
